@@ -1,0 +1,2 @@
+build-each.hxml
+-neko bin/Main.n
