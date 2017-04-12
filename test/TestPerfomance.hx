@@ -19,7 +19,7 @@ class TestPerfomance extends TestCase {
 	
 	public function test1() {
 		var ch = new Echo();
-		ch.addSystem(new Sys());
+		ch.addSystem(new Sys1());
 		
 		var ids = [ for (i in 0...10000) ch.id() ];
 		
@@ -71,7 +71,7 @@ class TestPerfomance extends TestCase {
 	
 }
 
-class Sys extends System {
+class Sys1 extends System {
 	
 	var v1 = new echo.GenericView<{a:A}>();
 	var v2 = new echo.GenericView<{a:A, b:B}>();
