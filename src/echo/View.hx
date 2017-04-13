@@ -70,7 +70,7 @@ class View {
 		select(id);
 		onRemove.dispatch(id);
 		
-		entities.remove(id);
+		entities.splice(entitiesMap.get(id), 1);
 		entitiesMap.remove(id);
 	}
 	
