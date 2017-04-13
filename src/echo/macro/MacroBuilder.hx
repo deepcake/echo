@@ -5,6 +5,7 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type.ClassField;
 
+using haxe.macro.Context;
 using echo.macro.Macro;
 using StringTools;
 using Lambda;
@@ -77,10 +78,12 @@ class MacroBuilder {
 						if (field.access.indexOf(APublic) == -1) return null; // only public
 						if (field.access.indexOf(AStatic) > -1) return null; // only non-static
 						
+						var componentClsName = Context.toComplexType(ct.fullname().getType().follow()).fullname(); // follow
+						
 						if (excluding) {
-							if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name, clsname: ct.fullname() };
+							if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name, clsname: componentClsName };
 						} else {
-							if (hasMeta(field, COMPONENTMETA)) return { name: field.name, clsname: ct.fullname() }; else null;
+							if (hasMeta(field, COMPONENTMETA)) return { name: field.name, clsname: componentClsName }; else null;
 						}
 					}
 				default:
@@ -183,7 +186,7 @@ class MacroBuilder {
 			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
 				
 				var components = p.fields.map(
-					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type) }
+					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
 				);
 				
 				var id = components.map(function(c) return c.cls.fullname()).join('_').replace('.', '_'); // TODO sort ?
