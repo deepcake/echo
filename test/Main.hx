@@ -13,6 +13,9 @@ class Main {
 	
 	static public function main() {
 		var r = new TestRunner();
+		
+		r.add(new TestFollow());
+		
 		r.add(new TestComponent());
 		r.add(new TestSystem());
 		r.add(new TestSmoke());
