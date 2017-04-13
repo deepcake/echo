@@ -73,11 +73,11 @@ class Echo {
 	}
 	
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
-		var esafe = macro var i = $id;
+		var esafe = macro var _id_ = $id;
 		var exprs = [ 
 			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
 				var n = Context.parse(n, Context.currentPos());
-				macro $n.__MAP.remove(i);
+				macro $n.__MAP.remove(_id_);
 			}
 		];
 		
@@ -85,9 +85,9 @@ class Echo {
 		
 		return macro {
 			$esafe;
-			for (v in $self.views) v.removeIfMatch(i);
+			for (_v_ in $self.views) _v_.removeIfMatch(_id_);
 			$b{exprs};
-			$self.entities.remove(i);
+			$self.entities.remove(_id_);
 		}
 	}
 	
@@ -95,13 +95,13 @@ class Echo {
 	// Component
 	
 	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<Expr>) {
-		var esafe = macro var i = $id; // TODO opt ( if EConst - safe is unnesessary )
+		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
 			for (c in components) {
 				var h = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType().fullname());
 				//if (h == null) continue; // TODO define ?
 				var n = Context.parse(h, Context.currentPos());
-				macro $n.__MAP.set(i, $c);
+				macro $n.__MAP.set(_id_, $c);
 			}
 		];
 		
@@ -110,20 +110,20 @@ class Echo {
 		return macro {
 			$esafe;
 			$b{exprs};
-			for (v in $self.views) v.addIfMatch(i);
+			for (_v_ in $self.views) _v_.addIfMatch(_id_);
 		}
 	}
 	
 	macro inline public function removeComponent<T:Class<Dynamic>>(self:Expr, id:ExprOf<Int>, type:ExprOf<T>) {
-		var esafe = macro var i = $id;
+		var esafe = macro var _id_ = $id;
 		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
 		//if (h == null) return macro null;
 		var n = Context.parse(h, Context.currentPos());
 		return macro {
 			$esafe;
-			if ($n.__MAP.exists(i)) {
-				for (v in $self.views) if (v.testcomponent($n.__ID)) v.removeIfMatch(i);
-				$n.__MAP.remove(i);
+			if ($n.__MAP.exists(_id_)) {
+				for (_v_ in $self.views) if (_v_.testcomponent($n.__ID)) _v_.removeIfMatch(_id_);
+				$n.__MAP.remove(_id_);
 			}
 		}
 	}
