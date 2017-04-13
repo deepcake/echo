@@ -9,12 +9,12 @@ import haxe.macro.Expr;
 abstract Signal<T>(Array<T>) {
 	
 	
-    public inline function new() this = [];
+	public inline function new() this = [];
 	
 
-    public inline function add(listener:T) {
-        this.push(listener);
-    }
+	public inline function add(listener:T) {
+		this.push(listener);
+	}
 	
 	public inline function has(listener:T):Bool {
 		return this.indexOf(listener) > -1;
@@ -34,8 +34,8 @@ abstract Signal<T>(Array<T>) {
 		return this[i];
 	}
 
-    macro public function dispatch(self:Expr, args:Array<Expr>) {
-        return macro {
+	macro public function dispatch(self:Expr, args:Array<Expr>) {
+		return macro {
 			var i = 0;
 			var l = $self.length;
 			while (i < l) {
@@ -49,5 +49,5 @@ abstract Signal<T>(Array<T>) {
 				}
 			}
 		}
-    }
+	}
 }
