@@ -16,8 +16,8 @@ class View {
 	public var onAdd = new Signal<Int->Void>();
 	public var onRemove = new Signal<Int->Void>();
 	
-	public var entitiesMap:Map<Int, Int> = new Map(); // id : index
-	public var entities:Array<Int> = []; // addiction array for sorting purposes
+	public var entitiesMap:Map<Int, Int> = new Map(); // map (id : index)
+	public var entities:Array<Int> = []; // additional array for sorting purposes
 	
 	
 	public var id:Int;
@@ -92,18 +92,18 @@ class ViewIterator<T:View> {
 	var v:T;
 	var i:Int;
 	
-    public inline function new(v:T) {
-        this.v = v;
+	public inline function new(v:T) {
+		this.v = v;
 		this.i = -1;
-    }
+	}
 
-    public inline function hasNext():Bool {
-        return ++i < v.entities.length;
-    }
+	public inline function hasNext():Bool {
+		return ++i < v.entities.length;
+	}
 
-    public inline function next():T {
+	public inline function next():T {
 		v.select(v.entities[i]);
 		return v;
-    }
+	}
 	
 }
