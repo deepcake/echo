@@ -12,6 +12,7 @@ class TestPerfomance extends TestCase {
 	
 	
 	static public var BOARD = '';
+	static public var COUNT = 0;
 	
 
 	public function new() super();
@@ -21,7 +22,8 @@ class TestPerfomance extends TestCase {
 		var ch = new Echo();
 		ch.addSystem(new Sys1());
 		
-		var ids = [ for (i in 0...10000) ch.id() ];
+		var count = 10000;
+		var ids = [ for (i in 0...count) ch.id() ];
 		
 		
 		var time = Date.now().getTime();
@@ -66,7 +68,7 @@ class TestPerfomance extends TestCase {
 		trace('update :: ${Date.now().getTime() - time} ms');
 		
 		
-		assertTrue(true);
+		assertEquals(count * 9, TestPerfomance.COUNT);
 	}
 	
 }
@@ -84,16 +86,16 @@ class Sys1 extends System {
 	var v9 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H, i:I}>();
 	
 	override public function update(dt:Float) {
-		TestPerfomance.BOARD = '';
-		for (v in v1) TestPerfomance.BOARD += 'a';
-		for (v in v2) TestPerfomance.BOARD += 'b';
-		for (v in v3) TestPerfomance.BOARD += 'c';
-		for (v in v4) TestPerfomance.BOARD += 'd';
-		for (v in v5) TestPerfomance.BOARD += 'e';
-		for (v in v6) TestPerfomance.BOARD += 'f';
-		for (v in v7) TestPerfomance.BOARD += 'j';
-		for (v in v8) TestPerfomance.BOARD += 'h';
-		for (v in v9) TestPerfomance.BOARD += 'i';
+		TestPerfomance.COUNT = 0;
+		for (v in v1) TestPerfomance.COUNT += 1;
+		for (v in v2) TestPerfomance.COUNT += 1;
+		for (v in v3) TestPerfomance.COUNT += 1;
+		for (v in v4) TestPerfomance.COUNT += 1;
+		for (v in v5) TestPerfomance.COUNT += 1;
+		for (v in v6) TestPerfomance.COUNT += 1;
+		for (v in v7) TestPerfomance.COUNT += 1;
+		for (v in v8) TestPerfomance.COUNT += 1;
+		for (v in v9) TestPerfomance.COUNT += 1;
 	}
 }
 

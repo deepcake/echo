@@ -16,13 +16,14 @@ class View {
 	public var onAdd = new Signal<Int->Void>();
 	public var onRemove = new Signal<Int->Void>();
 	
-	public var entities:Array<Int>; // TODO Map ? List ?
+	public var entitiesMap:Map<Int, Int> = new Map(); // id : index
+	public var entities:Array<Int> = []; // addiction array for sorting purposes
+	
+	
 	public var id:Int;
 	
 	
-	public function new() {
-		entities = [];
-	}
+	public function new() { }
 	
 	
 	@:allow(echo.Echo) function activate(echo:Echo) {
@@ -31,7 +32,7 @@ class View {
 	}
 	
 	@:allow(echo.Echo) function deactivate() {
-		while (entities.length > 0) entities.pop();
+		while (entities.length > 0) entitiesMap.remove(entities.pop());
 		this.echo = null;
 	}
 	
@@ -54,11 +55,13 @@ class View {
 	
 	
 	public inline function exists(id:Int):Bool {
-		return entities.indexOf(id) > -1;
+		return entitiesMap.exists(id);
 	}
 	
 	public inline function add(id:Int) {
+		entitiesMap.set(id, entities.length);
 		entities.push(id);
+		
 		select(id);
 		onAdd.dispatch(id);
 	}
@@ -66,7 +69,9 @@ class View {
 	public inline function remove(id:Int) {
 		select(id);
 		onRemove.dispatch(id);
+		
 		entities.remove(id);
+		entitiesMap.remove(id);
 	}
 	
 	
@@ -80,13 +85,12 @@ class View {
 	
 }
 
+@:noCompletion
 #if !js @:generic #end
 class ViewIterator<T:View> {
 	
-	
 	var v:T;
 	var i:Int;
-	
 	
     public inline function new(v:T) {
         this.v = v;
@@ -101,6 +105,5 @@ class ViewIterator<T:View> {
 		v.select(v.entities[i]);
 		return v;
     }
-	
 	
 }
