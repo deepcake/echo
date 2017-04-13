@@ -66,10 +66,10 @@ install:
 
 script:
 #  - haxe build-interp.hxml
-  - haxe build-neko.hxml         && neko bin/Main.n
+#  - haxe build-neko.hxml         && neko bin/Main.n
   - haxe build-js.hxml           && node bin/Main.js
 #                                 && haxe phantomjs/run.hxml bin/Main.js
-#  - haxe build-java.hxml         && java -jar bin/Main.jar
+  - haxe build-java.hxml         && java -jar bin/Main.jar
 #  - haxe build-php.hxml          && php bin/index.php
 #  - haxe build-cs.hxml           && mono bin/bin/Main.exe
 #  - haxe build-flash.hxml -D fdb && haxe flash/run.hxml bin/Main.swf
