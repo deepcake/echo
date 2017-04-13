@@ -16,7 +16,7 @@ class View {
 	public var onAdd = new Signal<Int->Void>();
 	public var onRemove = new Signal<Int->Void>();
 	
-	public var entitiesMap:Map<Int, Int> = new Map(); // map (id : index)
+	public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 	public var entities:Array<Int> = []; // additional array for sorting purposes
 	
 	
@@ -59,7 +59,7 @@ class View {
 	}
 	
 	public inline function add(id:Int) {
-		entitiesMap.set(id, entities.length);
+		entitiesMap.set(id, id);
 		entities.push(id);
 		
 		select(id);
@@ -70,7 +70,7 @@ class View {
 		select(id);
 		onRemove.dispatch(id);
 		
-		entities.splice(entitiesMap.get(id), 1);
+		entities.remove(id);
 		entitiesMap.remove(id);
 	}
 	
