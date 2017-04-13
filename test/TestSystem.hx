@@ -18,23 +18,17 @@ class TestSystem extends TestCase {
 		var id = ch.id();
 		var s = new NameSystem();
 		
+		
 		ch.addSystem(s);
-		assertEquals('', NameSystem.ADD_BOARD);
-		assertEquals('', NameSystem.BOARD);
-		assertEquals('', NameSystem.REM_BOARD);
-		
-		
 		ch.setComponent(id, new Name('ABC'));
 		assertEquals('ABC', NameSystem.ADD_BOARD);
 		assertEquals('', NameSystem.BOARD);
 		assertEquals('', NameSystem.REM_BOARD);
 		
-		
 		ch.update(0);
 		assertEquals('ABC', NameSystem.ADD_BOARD);
 		assertEquals('ABC', NameSystem.BOARD);
 		assertEquals('', NameSystem.REM_BOARD);
-		
 		
 		ch.removeComponent(id, Name);
 		assertEquals('ABC', NameSystem.REM_BOARD);
@@ -43,22 +37,37 @@ class TestSystem extends TestCase {
 		
 		
 		ch.removeSystem(s);
-		ch.setComponent(ch.id(), new Name('XYZ'));
+		ch.setComponent(id, new Name('XYZ'));
 		assertEquals('ABC', NameSystem.ADD_BOARD);
 		assertEquals('ABC', NameSystem.BOARD);
 		assertEquals('ABC', NameSystem.REM_BOARD);
 		
+		ch.update(0);
+		assertEquals('ABC', NameSystem.ADD_BOARD);
+		assertEquals('ABC', NameSystem.BOARD);
+		assertEquals('ABC', NameSystem.REM_BOARD);
 		
+		ch.removeComponent(id, Name);
+		assertEquals('ABC', NameSystem.REM_BOARD);
+		assertEquals('ABC', NameSystem.BOARD);
+		assertEquals('ABC', NameSystem.REM_BOARD);
+		
+		
+		ch.setComponent(id, new Name('XYZ'));
 		ch.addSystem(s);
 		assertEquals('ABCXYZ', NameSystem.ADD_BOARD);
 		assertEquals('ABC', NameSystem.BOARD);
 		assertEquals('ABC', NameSystem.REM_BOARD);
 		
-		
 		ch.update(0);
 		assertEquals('ABCXYZ', NameSystem.ADD_BOARD);
 		assertEquals('ABCXYZ', NameSystem.BOARD);
 		assertEquals('ABC', NameSystem.REM_BOARD);
+		
+		ch.removeComponent(id, Name);
+		assertEquals('ABCXYZ', NameSystem.ADD_BOARD);
+		assertEquals('ABCXYZ', NameSystem.BOARD);
+		assertEquals('ABCXYZ', NameSystem.REM_BOARD);
 	}
 	
 }

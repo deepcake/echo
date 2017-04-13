@@ -21,8 +21,8 @@ class TestSmoke extends TestCase {
 	
 	public function test1() { // views
 		var ch = new Echo();
-		ch.addSystem(new S1());
-		ch.addSystem(new S2());
+		ch.addSystem(new SA());
+		ch.addSystem(new SB());
 		
 		var i1 = ch.id();
 		var i2 = ch.id();
@@ -53,8 +53,8 @@ class TestSmoke extends TestCase {
 		ch.setComponent(ch.id(), new CA(), new CB());
 		ch.setComponent(ch.id(), new CB());
 		
-		var s1 = new S1();
-		var s2 = new S2();
+		var s1 = new SA();
+		var s2 = new SB();
 		ch.addSystem(s1);
 		ch.addSystem(s2);
 		ch.update(0);
@@ -76,7 +76,7 @@ class TestSmoke extends TestCase {
 	public function test3() { // complex
 		var ch = new Echo();
 		var ar = [];
-		ch.addSystem(new S3(ar));
+		ch.addSystem(new SAB(ar));
 		
 		ch.setComponent(ch.id(), new CA('John'), new CB('Hello'));
 		ch.setComponent(ch.id(), new CA('Luca'), new CB('Bonjour'));
@@ -95,9 +95,9 @@ class TestSmoke extends TestCase {
 	
 	public function test4() { // TODO no doublies ?
 		var ch = new Echo();
-		ch.addSystem(new S1());
-		ch.addSystem(new S2());
-		ch.addSystem(new S3([]));
+		ch.addSystem(new SA());
+		ch.addSystem(new SB());
+		ch.addSystem(new SAB([]));
 		
 		trace('views count: ${ch.views.length} ( TODO: 3!)');
 		assertTrue(true);
@@ -122,9 +122,31 @@ class TestSmoke extends TestCase {
 	}
 	
 	
+	public function test6() {
+		var ch = new Echo();
+		var abview = new GenericView<{ a:CA, b:CB }>();
+		var aview =  new GenericView<{ a:CA }>();
+		
+		ch.addView(abview);
+		ch.addView(aview);
+		
+		for (i in 0...20) {
+			var id = ch.id();
+			ch.setComponent(id, new CA('$i'));
+			if (i % 2 == 0) ch.setComponent(id, new CB('$i'));
+		}
+		
+		var s = [ for (i in 0...20) if (i % 2 == 0) '$i' ].join('_');
+		
+		var abstring = [ for (ab in abview) ab.a.val ].join('_');
+		
+		assertEquals(s, abstring);
+	}
+	
+	
 }
 
-class S1 extends System {
+class SA extends System {
 	var view = new echo.GenericView<{a:CA}>();
 	override public function update(dt:Float) {
 		for (c in view) {
@@ -133,7 +155,7 @@ class S1 extends System {
 	}
 }
 
-class S2 extends System {
+class SB extends System {
 	var view = new echo.GenericView<{b:CB}>();
 	override public function update(dt:Float) {
 		for (c in view) {
@@ -142,7 +164,7 @@ class S2 extends System {
 	}
 }
 
-class S3 extends System {
+class SAB extends System {
 	var viewab = new echo.GenericView<{a:CA, b:CB}>();
 	var viewa = new echo.GenericView<{a:CA}>();
 	var viewb = new echo.GenericView<{b:CB}>();
