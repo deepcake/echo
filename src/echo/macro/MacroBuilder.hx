@@ -155,7 +155,7 @@ class MacroBuilder {
 		} );
 		
 		
-		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, macro super()));
+		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
 		
 		
 		var activateExprs = [];

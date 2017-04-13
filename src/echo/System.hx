@@ -12,11 +12,6 @@ class System {
 	
 	var echo:Echo;
 	
-
-	public function new() {
-		
-	}
-	
 	
 	@:allow(echo.Echo) function activate(echo:Echo) {
 		this.echo = echo;

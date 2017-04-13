@@ -148,7 +148,6 @@ class S3 extends System {
 	var viewb = new echo.GenericView<{b:CB}>();
 	@skip var ar:Array<String>;
 	public function new(ar:Array<String>) {
-		super();
 		this.ar = ar;
 	}
 	override public function update(dt:Float) {
