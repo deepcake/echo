@@ -58,11 +58,25 @@ class Macro {
 	}
 	
 	
-	static public function traceFields(clsname:String, fields:Array<Field>) {
+	static public inline function traceFields(clsname:String, fields:Array<Field>) {
+		#if debug
 		var pr = new Printer();
 		var ret = '$clsname\n';
 		for (f in fields) ret += pr.printField(f) + '\n';
 		trace(ret);
+		#end
+	}
+	
+	static public inline function traceExprs(name:String, exprs:Array<Expr>) {
+		#if debug
+		trace('$name:\n' + new Printer().printExprs(exprs, '\n'));
+		#end
+	}
+	
+	static public inline function traceTypeDefenition(def:TypeDefinition) {
+		#if debug
+		trace(new Printer().printTypeDefinition(def));
+		#end
 	}
 	
 	#end

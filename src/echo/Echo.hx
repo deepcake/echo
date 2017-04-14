@@ -81,7 +81,7 @@ class Echo {
 			}
 		];
 		
-		trace(new Printer().printExprs(exprs, '\n'));
+		Macro.traceExprs('remove', exprs);
 		
 		return macro {
 			$esafe;
@@ -105,7 +105,7 @@ class Echo {
 			}
 		];
 		
-		trace(new Printer().printExprs(exprs, '\n'));
+		Macro.traceExprs('setComponent', exprs);
 		
 		return macro {
 			$esafe;

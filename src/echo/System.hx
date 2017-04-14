@@ -8,6 +8,7 @@ package echo;
 @:autoBuild(echo.macro.MacroBuilder.buildSystem())
 #end
 class System {
+	// TODO create view by passed args (update(b:Body, etc))
 	
 	
 	var echo:Echo;

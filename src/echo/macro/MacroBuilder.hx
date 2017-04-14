@@ -48,14 +48,12 @@ class MacroBuilder {
 			return Context.toComplexType(Context.getType(componentHolderClsName)).fullname();
 		}catch (er:Dynamic) {
 			
-			trace('define $componentHolderClsName');
-			
 			var def = macro class $componentHolderClsName {
 				static public var __ID:Int = $v{componentIndex++};
 				static public var __MAP:Map<Int, $componentCls> = new Map();
 			}
 			
-			trace(new Printer().printTypeDefinition(def));
+			traceTypeDefenition(def);
 			
 			Context.defineType(def);
 			
@@ -196,8 +194,6 @@ class MacroBuilder {
 					return Context.getType(clsname);
 				}catch (er:Dynamic) {
 					
-					trace('define $clsname');
-					
 					var def:TypeDefinition = macro class $clsname extends echo.View {
 						public function new() super();
 					}
@@ -206,7 +202,7 @@ class MacroBuilder {
 						def.fields.push(fvar([APublic], c.name, c.cls));
 					}
 					
-					trace(new Printer().printTypeDefinition(def));
+					traceTypeDefenition(def);
 					
 					Context.defineType(def);
 					
