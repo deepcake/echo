@@ -179,4 +179,19 @@ class TestComponent extends TestCase {
 		assertEquals('!', ch.getComponent(ids[0], String));
 		assertEquals(null, ch.getComponent(ids[0], Name));
 	}
+	
+	public function test12() {
+		var name = new Name('A');
+		ch.setComponent(ids[0], name);
+		ch.setComponent(ids[1], name);
+		
+		assertEquals(true, ch.getComponent(ids[0], Name) == ch.getComponent(ids[1], Name));
+	}
+	
+	public function test13() {
+		var ch = new Echo();
+		ch.setComponent(ch.id()); // empty
+		
+		assertEquals(1, ch.entities.length);
+	}
 }

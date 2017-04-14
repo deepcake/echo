@@ -11,10 +11,10 @@ import haxe.unit.TestCase;
 class TestPerfomance extends TestCase {
 	
 	
-	static public var BOARD = '';
-	static public var COUNT = 0;
+	static public inline var COUNT = 10000;
+	static public var ACTUAL = 0;
 	
-
+	
 	public function new() super();
 	
 	
@@ -22,9 +22,10 @@ class TestPerfomance extends TestCase {
 		var ch = new Echo();
 		ch.addSystem(new Sys1());
 		
-		var count = 10000;
-		var ids = [ for (i in 0...count) ch.id() ];
+		var ids = [ for (i in 0...COUNT) ch.id() ];
 		
+		
+		trace('');
 		
 		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new A());
@@ -68,7 +69,7 @@ class TestPerfomance extends TestCase {
 		trace('update :: ${Date.now().getTime() - time} ms');
 		
 		
-		assertEquals(count * 9, TestPerfomance.COUNT);
+		assertEquals(COUNT * 9, TestPerfomance.ACTUAL);
 	}
 	
 }
@@ -86,19 +87,18 @@ class Sys1 extends System {
 	var v9 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H, i:I}>();
 	
 	override public function update(dt:Float) {
-		TestPerfomance.COUNT = 0;
-		for (v in v1) TestPerfomance.COUNT += 1;
-		for (v in v2) TestPerfomance.COUNT += 1;
-		for (v in v3) TestPerfomance.COUNT += 1;
-		for (v in v4) TestPerfomance.COUNT += 1;
-		for (v in v5) TestPerfomance.COUNT += 1;
-		for (v in v6) TestPerfomance.COUNT += 1;
-		for (v in v7) TestPerfomance.COUNT += 1;
-		for (v in v8) TestPerfomance.COUNT += 1;
-		for (v in v9) TestPerfomance.COUNT += 1;
+		TestPerfomance.ACTUAL = 0;
+		for (v in v1) TestPerfomance.ACTUAL += 1;
+		for (v in v2) TestPerfomance.ACTUAL += 1;
+		for (v in v3) TestPerfomance.ACTUAL += 1;
+		for (v in v4) TestPerfomance.ACTUAL += 1;
+		for (v in v5) TestPerfomance.ACTUAL += 1;
+		for (v in v6) TestPerfomance.ACTUAL += 1;
+		for (v in v7) TestPerfomance.ACTUAL += 1;
+		for (v in v8) TestPerfomance.ACTUAL += 1;
+		for (v in v9) TestPerfomance.ACTUAL += 1;
 	}
 }
-
 
 class A {
 	public function new() {}

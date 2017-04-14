@@ -7,29 +7,30 @@ import echo.System;
  * ...
  * @author octocake1
  */
-class NameSystem extends System {
+class RoomSystem extends System {
 	
 	
-	@skip static public var ADD_BOARD = '';
-	@skip static public var BOARD = '';
-	@skip static public var REM_BOARD = '';
+	static public var LOG:Array<String> = [];
 	
 	
 	var names = new GenericView<{ name:Name }>();
+	var namesAndGreetings = new GenericView<{ name:Name, greeting:Greeting }>();
 	
 	
 	override public function onactivate() {
 		names.onAdd.add(function(_) {
-			ADD_BOARD += names.name.val;
+			LOG.push('${names.name.val} enter the room');
 		} );
 		names.onRemove.add(function(_) {
-			REM_BOARD += names.name.val;
+			LOG.push('${names.name.val} leave the room');
 		} );
 	}
 	
 	override public function update(dt:Float) {
-		for (e in names) {
-			BOARD += e.name.val;
+		for (ng in namesAndGreetings) {
+			for (n in names) {
+				if (ng.name != n.name) LOG.push('${ng.name.val} say ${ng.greeting.val} to ${n.name.val}');
+			}
 		}
 	}
 	

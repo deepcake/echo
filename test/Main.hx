@@ -16,9 +16,9 @@ class Main {
 		
 		r.add(new TestSignal());
 		r.add(new TestComponent());
+		r.add(new TestView());
 		r.add(new TestSystem());
 		r.add(new TestFollow());
-		
 		r.add(new TestSmoke());
 		r.add(new TestPerfomance());
 		
