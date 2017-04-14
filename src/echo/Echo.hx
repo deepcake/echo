@@ -68,7 +68,7 @@ class Echo {
 	
 	public function id() {
 		var e = ++__SEQUENCE;
-		entities.push(e);
+		entities.add(e);
 		return e;
 	}
 	
