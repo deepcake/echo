@@ -8,7 +8,6 @@ package echo;
 @:autoBuild(echo.macro.MacroBuilder.buildView())
 #end
 class View {
-	// TODO ViewData (iterator)
 	// TODO only generic
 	
 	
@@ -39,10 +38,10 @@ class View {
 	}
 	
 	
-	public function select(id:Int):View { // macro
+	/*public function select(id:Int):View { // macro
 		this.id = id;
 		return this;
-	}
+	}*/
 	
 	
 	@:noCompletion function test(id:Int):Bool { // macro
@@ -64,12 +63,12 @@ class View {
 		entitiesMap.set(id, id);
 		entities.push(id);
 		
-		select(id);
+		//select(id);
 		onAdd.dispatch(id);
 	}
 	
 	public inline function remove(id:Int) {
-		select(id);
+		//select(id);
 		onRemove.dispatch(id);
 		
 		entities.remove(id);
@@ -83,29 +82,6 @@ class View {
 	
 	@:noCompletion public function removeIfMatch(id:Int) {
 		if (exists(id)) remove(id);
-	}
-	
-}
-
-@:noCompletion
-#if !js @:generic #end
-class ViewIterator<T:View> {
-	
-	var v:T;
-	var i:Int;
-	
-	public inline function new(v:T) {
-		this.v = v;
-		this.i = -1;
-	}
-
-	public inline function hasNext():Bool {
-		return ++i < v.entities.length;
-	}
-
-	public inline function next():T {
-		v.select(v.entities[i]);
-		return v;
 	}
 	
 }

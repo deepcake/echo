@@ -79,9 +79,9 @@ class MacroBuilder {
 						var componentClsName = Context.toComplexType(ct.fullname().getType().follow()).fullname(); // follow
 						
 						if (excluding) {
-							if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name, clsname: componentClsName };
+							if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name, cls: ct, clsname: componentClsName };
 						} else {
-							if (hasMeta(field, COMPONENTMETA)) return { name: field.name, clsname: componentClsName }; else null;
+							if (hasMeta(field, COMPONENTMETA)) return { name: field.name, cls: ct, clsname: componentClsName }; else null;
 						}
 					}
 				default:
@@ -94,15 +94,19 @@ class MacroBuilder {
 		
 		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, macro super()));
 		
-		var selectExprs = [];
+		
+		/*var selectExprs = [];
 		selectExprs.push(Context.parse('this.id = id', Context.currentPos()));
 		selectExprs = selectExprs.concat(components.map(function(c) return Context.parse('this.${c.name} = ${getComponentHolder(c.clsname)}.__MAP.get(id)', Context.currentPos())));
 		selectExprs.push(Context.parse('return this', Context.currentPos()));
-		fields.push(ffun([APublic, AOverride], 'select', [arg('id', macro:Int)], cls, macro $b{selectExprs}));
+		fields.push(ffun([APublic, AOverride], 'select', [arg('id', macro:Int)], cls, macro $b{selectExprs}));*/
 		
 		
-		var iterBody = Context.parse('return new echo.View.ViewIterator(this)', Context.currentPos());
-		fields.push(ffun([APublic, AInline], 'iterator', null, macro:echo.View.ViewIterator<$cls>, iterBody));
+		//var iterBody = Context.parse('return new echo.View.ViewIterator(this)', Context.currentPos());
+		//fields.push(ffun([APublic, AInline], 'iterator', null, macro:echo.View.ViewIterator<$cls>, iterBody));
+		var iterViewDataClsName = getViewData(components);
+		var iterBody = Context.parse('return new ${getIterator(iterViewDataClsName)}(this.entities, new ${iterViewDataClsName}())', Context.currentPos());
+		fields.push(ffun([APublic, AInline], 'iterator', null, null, iterBody));
 		
 		
 		var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.clsname)}.__MAP.exists(id)').join(' && '), Context.currentPos());
@@ -180,7 +184,7 @@ class MacroBuilder {
 	
 	
 	static public function genericView() {
-		switch (haxe.macro.Context.getLocalType()) {
+		switch (Context.getLocalType()) {
 			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
 				
 				var components = p.fields.map(
@@ -211,6 +215,70 @@ class MacroBuilder {
 				}
 				
 			case x: throw 'Expected: TInst(_.get() => cls, [TAnonymous(_.get() => p)]); Actual: $x';
+		}
+	}
+	
+	
+	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):String {
+		var id = components.map(function(c) return c.cls.fullname()).join('_').replace('.', '_'); // TODO sort ?
+		var clsname = 'ViewData_$id';
+		
+		try {
+			return Context.getType(clsname).toComplexType().fullname();
+		}catch (er:Dynamic) {
+			
+			var def:TypeDefinition = macro class $clsname {
+				inline public function new() { }
+				public var id:Int;
+			}
+			
+			for (c in components) {
+				def.fields.push(fvar([APublic], c.name, c.cls));
+			}
+			
+			var selectExprs = [];
+			selectExprs.push(Context.parse('this.id = id', Context.currentPos()));
+			selectExprs = selectExprs.concat(components.map(function(c) return Context.parse('this.${c.name} = ${getComponentHolder(c.cls.fullname())}.__MAP.get(id)', Context.currentPos())));
+			selectExprs.push(Context.parse('return this', Context.currentPos()));
+			def.fields.push(ffun([APublic, AInline], 'set', [arg('id', macro:Int)], null, macro $b{selectExprs}));
+			
+			traceTypeDefenition(def);
+			
+			Context.defineType(def);
+			
+			return Context.getType(clsname).toComplexType().fullname();
+			
+		}
+	}
+	
+	
+	static public function getIterator(dataViewClsName:String) {
+		var dataViewCls = Context.toComplexType(Context.getType(dataViewClsName));
+		var iteratorClsName = 'ViewIterator_' + dataViewCls.fullname().replace('.', '_');
+		
+		try {
+			return Context.toComplexType(Context.getType(iteratorClsName)).fullname();
+		}catch (er:Dynamic) {
+			
+			var def = macro class $iteratorClsName {
+				var ar:Array<Int>;
+				var vd:$dataViewCls;
+				var i:Int;
+				public inline function new(ar:Array<Int>, vd:$dataViewCls) {
+					this.ar = ar;
+					this.vd = vd;
+					this.i = -1;
+				}
+				public inline function hasNext():Bool return ++i < ar.length;
+				public inline function next():$dataViewCls return vd.set(ar[i]);
+			}
+			
+			traceTypeDefenition(def);
+			
+			Context.defineType(def);
+			
+			return Context.toComplexType(Context.getType(iteratorClsName)).fullname();
+			
 		}
 	}
 	
