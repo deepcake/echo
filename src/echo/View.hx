@@ -8,6 +8,8 @@ package echo;
 @:autoBuild(echo.macro.MacroBuilder.buildView())
 #end
 class View {
+	// TODO ViewData (iterator)
+	// TODO only generic
 	
 	
 	var echo:Echo;
