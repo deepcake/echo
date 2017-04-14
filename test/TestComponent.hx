@@ -15,6 +15,7 @@ class TestComponent extends TestCase {
 	
 
 	var ch:Echo;
+	var ids:Array<Int>;
 	
 	
 	public function new() super();
@@ -22,55 +23,160 @@ class TestComponent extends TestCase {
 	
 	override public function setup() {
 		ch = new Echo();
+		ids = [];
+		
+		for (v in '01234'.split('')) {
+			var e = ch.id();
+			ch.setComponent(e, v);
+			ids.push(e);
+		}
 	}
 	
 	public function test1() {
-		var ids = [];
+		var c0 = ch.getComponent(ids[0], String);
+		var c1 = ch.getComponent(ids[1], String);
+		var c2 = ch.getComponent(ids[2], String);
+		var c3 = ch.getComponent(ids[3], String);
+		var c4 = ch.getComponent(ids[4], String);
+		var act = c0 + c1 + c2 + c3 + c4;
 		
-		for (v in 'ABCDE'.split('')) {
-			var e = ch.id();
-			ch.setComponent(e, new Name(v));
-			ids.push(e);
-		}
-		this.assertEquals(ch.entities.length, 5);
-		
-		
-		ch.removeComponent(ids[1], Name);
-		this.assertEquals(ch.entities.length, 5);
-		this.assertEquals(null, ch.getComponent(ids[1], Name));
-		
-		
-		ch.remove(ids[1]);
-		this.assertEquals(ch.entities.length, 4);
-		this.assertEquals(null, ch.getComponent(ids[1], Name));
-		
-		
-		ch.remove(ids[3]);
-		this.assertEquals(ch.entities.length, 3);
-		this.assertEquals(null, ch.getComponent(ids[3], Name));
-		
-		
-		ch.removeComponent(ids[3], Name);
-		this.assertEquals(ch.entities.length, 3);
-		this.assertEquals(null, ch.getComponent(ids[3], Name));
-		
-		
-		var c1 = ch.getComponent(ids[0], Name);
-		var c2 = ch.getComponent(ids[2], Name);
-		var c3 = ch.getComponent(ids[4], Name);
-		assertEquals('ACE', c1.val + c2.val + c3.val);
-		assertEquals('ACE', ch.getComponent(ids[0], Name).val + ch.getComponent(ids[2], Name).val + ch.getComponent(ids[4], Name).val);
-		
-		
-		var r1 = ids.map(function(i) if (ch.getComponent(i, Name) != null) return ch.getComponent(i, Name).val; else return '').join('');
-		assertEquals('ACE', r1);
-		
-		
-		ch.setComponent(ids[0], new Name('X'));
-		ch.getComponent(ids[2], Name).val = 'X';
-		ch.setComponent(ids[4], new Name('X'));
-		var r2 = ids.map(function(i) if (ch.getComponent(i, Name) != null) return ch.getComponent(i, Name).val; else return '').join('');
-		assertEquals('XXX', r2);
+		assertEquals('01234', act);
 	}
 	
+	public function test2() {
+		ch.setComponent(ids[0], 'A');
+		ch.setComponent(ids[2], 'A');
+		ch.setComponent(ids[4], 'A');
+		
+		var c0 = ch.getComponent(ids[0], String);
+		var c1 = ch.getComponent(ids[1], String);
+		var c2 = ch.getComponent(ids[2], String);
+		var c3 = ch.getComponent(ids[3], String);
+		var c4 = ch.getComponent(ids[4], String);
+		var act = c0 + c1 + c2 + c3 + c4;
+		
+		assertEquals('A1A3A', act);
+	}
+	
+	public function test3() {
+		ch.removeComponent(ids[0], String);
+		ch.removeComponent(ids[2], String);
+		ch.removeComponent(ids[4], String);
+		
+		var c0 = ch.getComponent(ids[0], String);
+		var c1 = ch.getComponent(ids[1], String);
+		var c2 = ch.getComponent(ids[2], String);
+		var c3 = ch.getComponent(ids[3], String);
+		var c4 = ch.getComponent(ids[4], String);
+		
+		assertEquals(5, ch.entities.length);
+		assertEquals(null, ch.getComponent(ids[0], String));
+		assertEquals('1', ch.getComponent(ids[1], String));
+		assertEquals(null, ch.getComponent(ids[2], String));
+		assertEquals('3', ch.getComponent(ids[3], String));
+		assertEquals(null, ch.getComponent(ids[4], String));
+	}
+	
+	public function test4() {
+		ch.remove(ids[0]);
+		ch.remove(ids[2]);
+		ch.remove(ids[4]);
+		
+		var c0 = ch.getComponent(ids[0], String);
+		var c1 = ch.getComponent(ids[1], String);
+		var c2 = ch.getComponent(ids[2], String);
+		var c3 = ch.getComponent(ids[3], String);
+		var c4 = ch.getComponent(ids[4], String);
+		
+		assertEquals(2, ch.entities.length);
+		assertEquals(null, ch.getComponent(ids[0], String));
+		assertEquals('1', ch.getComponent(ids[1], String));
+		assertEquals(null, ch.getComponent(ids[2], String));
+		assertEquals('3', ch.getComponent(ids[3], String));
+		assertEquals(null, ch.getComponent(ids[4], String));
+	}
+	
+	public function test5() {
+		ch.removeComponent(ids[1], String);
+		ch.removeComponent(ids[2], String);
+		ch.removeComponent(ids[3], String);
+		
+		var act = ch.entities.map(function(i) if (ch.getComponent(i, String) != null) return ch.getComponent(i, String); else return 'A').join('');
+		
+		assertEquals('0AAA4', act);
+	}
+	
+	public function test6() {
+		assertEquals(null, ch.getComponent(ids[0], Name));
+		assertEquals(null, ch.getComponent(ids[1], Name));
+		assertEquals(null, ch.getComponent(ids[2], Name));
+		assertEquals(null, ch.getComponent(ids[3], Name));
+		assertEquals(null, ch.getComponent(ids[4], Name));
+	}
+	
+	public function test7() {
+		for (id in ids) ch.setComponent(id, new Name('$id'));
+		
+		assertEquals(5, ch.entities.length);
+		
+		assertEquals('${ids[0]}', ch.getComponent(ids[0], Name).val);
+		assertEquals('${ids[1]}', ch.getComponent(ids[1], Name).val);
+		assertEquals('${ids[2]}', ch.getComponent(ids[2], Name).val);
+		assertEquals('${ids[3]}', ch.getComponent(ids[3], Name).val);
+		assertEquals('${ids[4]}', ch.getComponent(ids[4], Name).val);
+	}
+	
+	public function test8() {
+		for (id in ids) ch.setComponent(id, new Name('A'), 'B');
+		
+		assertEquals(5, ch.entities.length);
+		
+		assertEquals('A', ch.getComponent(ids[0], Name).val);
+		assertEquals('A', ch.getComponent(ids[1], Name).val);
+		assertEquals('A', ch.getComponent(ids[2], Name).val);
+		assertEquals('A', ch.getComponent(ids[3], Name).val);
+		assertEquals('A', ch.getComponent(ids[4], Name).val);
+		
+		assertEquals('B', ch.getComponent(ids[0], String));
+		assertEquals('B', ch.getComponent(ids[1], String));
+		assertEquals('B', ch.getComponent(ids[2], String));
+		assertEquals('B', ch.getComponent(ids[3], String));
+		assertEquals('B', ch.getComponent(ids[4], String));
+	}
+	
+	public function test9() {
+		for (id in ids) ch.setComponent(id, new Name('A'));
+		
+		var c0 = ch.getComponent(ids[0], Name);
+		var c1 = ch.getComponent(ids[1], Name);
+		var c2 = ch.getComponent(ids[2], Name);
+		var c3 = ch.getComponent(ids[3], Name);
+		var c4 = ch.getComponent(ids[4], Name);
+		
+		c0.val = '+';
+		c2.val = '+';
+		c4.val = '+';
+		
+		var act = ch.entities.map(function(i) return ch.getComponent(i, Name).val).join('');
+		
+		assertEquals('+A+A+', act); 
+	}
+	
+	public function test10() {
+		ch.setComponent(ids[0], new Name('A'), 'A');
+		ch.removeComponent(ids[0], String);
+		ch.setComponent(ids[0], '!');
+		
+		assertEquals('!', ch.getComponent(ids[0], String));
+		assertEquals('A', ch.getComponent(ids[0], Name).val);
+	}
+	
+	public function test11() {
+		ch.setComponent(ids[0], new Name('A'), 'A');
+		ch.remove(ids[0]);
+		ch.setComponent(ids[0], '!');
+		
+		assertEquals('!', ch.getComponent(ids[0], String));
+		assertEquals(null, ch.getComponent(ids[0], Name));
+	}
 }
