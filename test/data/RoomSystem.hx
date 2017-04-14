@@ -18,11 +18,13 @@ class RoomSystem extends System {
 	
 	
 	override public function onactivate() {
-		names.onAdd.add(function(_) {
-			LOG.push('${names.name.val} enter the room');
+		names.onAdd.add(function(id) {
+			var val = echo.getComponent(id, Name).val;
+			LOG.push('${val} enter the room');
 		} );
-		names.onRemove.add(function(_) {
-			LOG.push('${names.name.val} leave the room');
+		names.onRemove.add(function(id) {
+			var val = echo.getComponent(id, Name).val;
+			LOG.push('${val} leave the room');
 		} );
 	}
 	
