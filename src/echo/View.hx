@@ -5,10 +5,16 @@ package echo;
  * @author octocake1
  */
 #if !macro
-@:autoBuild(echo.macro.MacroBuilder.buildView())
+@:genericBuild(echo.macro.MacroBuilder.genericView())
 #end
-class View {
-	// TODO only generic
+class View<T> { }
+
+/**
+ * 
+ */
+@:noCompletion
+class ViewBase {
+	// TODO sort
 	
 	
 	var echo:Echo;

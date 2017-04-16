@@ -67,60 +67,6 @@ class MacroBuilder {
 		}
 	}
 	
-	static public function buildView() {
-		var fields = Context.getBuildFields();
-		var cls = Context.getLocalType().toComplexType();
-		
-		
-		var excluding = fields.filter(function(f) return hasMeta(f, COMPONENTMETA)).length == 0; // no component meta, so use direct-skip-way (all vars without @skip are included)
-		
-		var components = fields.map(function(field) {
-			switch(field.kind) {
-				case FVar(ct, _):
-					if (field.access != null) {
-						if (field.access.indexOf(APublic) == -1) return null; // only public
-						if (field.access.indexOf(AStatic) > -1) return null; // only non-static
-						
-						var componentClsName = Context.toComplexType(ct.fullname().getType().follow()).fullname(); // follow
-						
-						if (excluding) {
-							if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name, cls: ct, clsname: componentClsName };
-						} else {
-							if (hasMeta(field, COMPONENTMETA)) return { name: field.name, cls: ct, clsname: componentClsName }; else null;
-						}
-					}
-				default:
-			}
-			return null;
-		} ).filter(function(el) {
-			return el != null;
-		});
-		
-		
-		var iteratorTypePath = getIterator(components).tp();
-		fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
-		
-		
-		var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.clsname)}.__MAP.exists(id)').join(' && '), Context.currentPos());
-		fields.push(ffun([APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
-		
-		
-		// testcomponent
-		// TODO opt use map
-		// TODO opt use static
-		fields.push(ffun([APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return mask.indexOf(c) > -1));
-		
-		
-		var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.clsname)}.__ID').join(', ') + ']', Context.currentPos());
-		fields.push(fvar([APublic], 'mask', null, maskBody));
-		
-		
-		traceFields(cls.fullname(), fields);
-		
-		
-		return fields;
-	}
-	
 	
 	static public function buildSystem() {
 		var fields = Context.getBuildFields();
@@ -191,13 +137,23 @@ class MacroBuilder {
 					return Context.getType(clsname);
 				}catch (er:Dynamic) {
 					
-					var def:TypeDefinition = macro class $clsname extends echo.View {
+					var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
 						public function new() {}
 					}
 					
-					for (c in components) {
-						def.fields.push(fvar([APublic], c.name, c.cls));
-					}
+					var iteratorTypePath = getIterator(components).tp();
+					def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
+					
+					var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
+					def.fields.push(ffun([APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
+					
+					// testcomponent
+					// TODO opt use map
+					// TODO opt use static
+					def.fields.push(ffun([APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return mask.indexOf(c) > -1));
+					
+					var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID').join(', ') + ']', Context.currentPos());
+					def.fields.push(fvar([APublic], 'mask', null, maskBody));
 					
 					
 					traceTypeDefenition(def);
