@@ -64,8 +64,22 @@ class TestView extends TestCase {
 		assertEquals('ABCDE', ACTUAL);
 	}
 	
+	public function test_sorting() {
+		var viewa = new echo.View<{a:C1}>();
+		ch.addView(viewa);
+		
+		for (i in 'QWERTYUIOP'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+		
+		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
+		
+		for (va in viewa) ACTUAL += va.a;
+		
+		assertEquals('EIOPQRTUWY', ACTUAL);
+	}
+	
 }
 
+@:forward(charCodeAt)
 abstract C1(String) {
 	public function new(s:String = '') this = s;
 }
