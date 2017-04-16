@@ -13,7 +13,7 @@ class TestPerfomance extends TestCase {
 	
 	static public inline var COUNT = 10000;
 	static public var ACTUAL = 0;
-	static public var time = Date.now().getTime();
+	static public var time = 0.0;
 	
 	
 	public function new() super();
@@ -28,7 +28,7 @@ class TestPerfomance extends TestCase {
 		
 		trace('');
 		
-		stamp('go');
+		time = Date.now().getTime();
 		
 		for (i in ids) ch.setComponent(i, new A());
 		stamp('A');
