@@ -5,7 +5,6 @@ import haxe.macro.Expr;
  * ...
  * @author octocake1
  */
-@:forward(splice, length)
 abstract Signal<T>(Array<T>) {
 	
 	
@@ -29,22 +28,27 @@ abstract Signal<T>(Array<T>) {
 		for (i in 0...this.length) this[i] = null;
 	}
 	
-	@:arrayAccess
-	public inline function get(i:Int):T {
+	@:noCompletion public inline function del(i:Int) {
+		this.splice(i, 1);
+	}
+	@:noCompletion public inline function len():Int {
+		return this.length;
+	}
+	@:noCompletion public inline function get(i:Int):T {
 		return this[i];
 	}
-
+	
 	macro public function dispatch(self:Expr, args:Array<Expr>) {
 		return macro {
 			var i = 0;
-			var l = $self.length;
+			var l = $self.len();
 			while (i < l) {
-				var listener = $self[i];
+				var listener = $self.get(i);
 				if (listener != null) {
 					listener($a{args});
 					i++;
 				}else {
-					$self.splice(i, 1);
+					$self.del(i);
 					l--;
 				}
 			}

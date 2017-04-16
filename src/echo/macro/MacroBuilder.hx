@@ -1,4 +1,5 @@
 package echo.macro;
+#if macro
 import echo.macro.Macro.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -28,8 +29,6 @@ class MacroBuilder {
 	static public var componentIndex:Int = 0;
 	static public var componentHoldersMap:Map<String, String> = new Map();
 	
-	
-	#if macro
 	
 	static function hasMeta(field:Field, metas:Array<String>) {
 		for (m in field.meta) for (meta in metas) if (m.name == meta) return true;
@@ -145,13 +144,13 @@ class MacroBuilder {
 					def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
 					
 					var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
-					def.fields.push(ffun([APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
+					def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
 					
 					// testcomponent
-					def.fields.push(ffun([APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
+					def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
 					
 					var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
-					def.fields.push(fvar([AStatic], '__MASK', null, maskBody));
+					def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 					
 					
 					traceTypeDefenition(def);
@@ -231,7 +230,5 @@ class MacroBuilder {
 		}
 	}
 	
-	#end
-	
-	
 }
+#end
