@@ -13,6 +13,7 @@ class TestPerfomance extends TestCase {
 	
 	static public inline var COUNT = 10000;
 	static public var ACTUAL = 0;
+	static public var time = Date.now().getTime();
 	
 	
 	public function new() super();
@@ -27,49 +28,45 @@ class TestPerfomance extends TestCase {
 		
 		trace('');
 		
-		var time = Date.now().getTime();
+		stamp('go');
+		
 		for (i in ids) ch.setComponent(i, new A());
-		trace('A :: ${Date.now().getTime() - time} ms');
+		stamp('A');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new B());
-		trace('B :: ${Date.now().getTime() - time} ms');
+		stamp('B');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new C());
-		trace('C :: ${Date.now().getTime() - time} ms');
+		stamp('C');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new D());
-		trace('D :: ${Date.now().getTime() - time} ms');
+		stamp('D');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new E());
-		trace('E :: ${Date.now().getTime() - time} ms');
+		stamp('E');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new F());
-		trace('F :: ${Date.now().getTime() - time} ms');
+		stamp('F');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new G());
-		trace('G :: ${Date.now().getTime() - time} ms');
+		stamp('G');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new H());
-		trace('H :: ${Date.now().getTime() - time} ms');
+		stamp('H');
 		
-		var time = Date.now().getTime();
 		for (i in ids) ch.setComponent(i, new I());
-		trace('I :: ${Date.now().getTime() - time} ms');
+		stamp('I');
 		
-		
-		var time = Date.now().getTime();
 		ch.update(0);
-		trace('update :: ${Date.now().getTime() - time} ms');
+		stamp('update');
 		
 		
 		assertEquals(COUNT * 9, TestPerfomance.ACTUAL);
+	}
+	
+	public function stamp(prefix:String) {
+		trace('$prefix :: ${Date.now().getTime() - time} ms');
+		time = Date.now().getTime();
 	}
 	
 }
