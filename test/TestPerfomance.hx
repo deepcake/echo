@@ -76,15 +76,15 @@ class TestPerfomance extends TestCase {
 
 class Sys1 extends System {
 	
-	var v1 = new echo.GenericView<{a:A}>();
-	var v2 = new echo.GenericView<{a:A, b:B}>();
-	var v3 = new echo.GenericView<{a:A, b:B, c:C}>();
-	var v4 = new echo.GenericView<{a:A, b:B, c:C, d:D}>();
-	var v5 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E}>();
-	var v6 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F}>();
-	var v7 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F, g:G}>();
-	var v8 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H}>();
-	var v9 = new echo.GenericView<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H, i:I}>();
+	var v1 = new echo.View<{a:A}>();
+	var v2 = new echo.View<{a:A, b:B}>();
+	var v3 = new echo.View<{a:A, b:B, c:C}>();
+	var v4 = new echo.View<{a:A, b:B, c:C, d:D}>();
+	var v5 = new echo.View<{a:A, b:B, c:C, d:D, e:E}>();
+	var v6 = new echo.View<{a:A, b:B, c:C, d:D, e:E, f:F}>();
+	var v7 = new echo.View<{a:A, b:B, c:C, d:D, e:E, f:F, g:G}>();
+	var v8 = new echo.View<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H}>();
+	var v9 = new echo.View<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H, i:I}>();
 	
 	override public function update(dt:Float) {
 		TestPerfomance.ACTUAL = 0;

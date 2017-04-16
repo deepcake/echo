@@ -88,7 +88,7 @@ class SomeSystem extends System {
 }
 
 class SA extends System {
-	var view = new echo.GenericView<{a:CA}>();
+	var view = new echo.View<{a:CA}>();
 	override public function update(dt:Float) {
 		for (c in view) {
 			TestView.ACTUAL += c.a.val;
@@ -97,7 +97,7 @@ class SA extends System {
 }
 
 class SB extends System {
-	var view = new echo.GenericView<{b:CB}>();
+	var view = new echo.View<{b:CB}>();
 	override public function update(dt:Float) {
 		for (c in view) {
 			TestView.ACTUAL += c.b.val;
@@ -106,9 +106,9 @@ class SB extends System {
 }
 
 class SAB extends System {
-	var viewab = new echo.GenericView<{a:CA, b:CB}>();
-	var viewa = new echo.GenericView<{a:CA}>();
-	var viewb = new echo.GenericView<{b:CB}>();
+	var viewab = new echo.View<{a:CA, b:CB}>();
+	var viewa = new echo.View<{a:CA}>();
+	var viewb = new echo.View<{b:CB}>();
 	override public function update(dt:Float) {
 		for (c in viewab) {
 			TestView.ACTUAL += (c.a.val + c.b.val);

@@ -1,7 +1,7 @@
 package;
 
 import echo.Echo;
-import echo.GenericView;
+import echo.View;
 import echo.System;
 import haxe.unit.TestCase;
 
@@ -26,10 +26,10 @@ class TestView extends TestCase {
 	}
 	
 	public function test1() {
-		var viewabc = new echo.GenericView<{a:C1, b:C2, c:C3}>();
-		var viewa = new echo.GenericView<{a:C1}>();
-		var viewb = new echo.GenericView<{b:C2}>();
-		var viewc = new echo.GenericView<{c:C3}>();
+		var viewabc = new echo.View<{a:C1, b:C2, c:C3}>();
+		var viewa = new echo.View<{a:C1}>();
+		var viewb = new echo.View<{b:C2}>();
+		var viewc = new echo.View<{c:C3}>();
 		ch.addView(viewabc);
 		ch.addView(viewa);
 		ch.addView(viewb);
@@ -49,7 +49,7 @@ class TestView extends TestCase {
 	}
 	
 	public function test2() {
-		var viewa = new echo.GenericView<{a:C1}>();
+		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		
 		for (i in 'ABCDE'.split('')) {
