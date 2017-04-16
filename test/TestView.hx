@@ -26,18 +26,10 @@ class TestView extends TestCase {
 	}
 	
 	public function test1() {
-		ch.addSystem(new SA());
-		ch.addSystem(new SB());
-		ch.addSystem(new SAB());
-		
-		assertEquals(5, ch.views.length); 
-	}
-	
-	public function test2() {
-		var viewabc = new echo.GenericView<{a:CA, b:CB, c:CC}>();
-		var viewa = new echo.GenericView<{a:CA}>();
-		var viewb = new echo.GenericView<{b:CB}>();
-		var viewc = new echo.GenericView<{c:CC}>();
+		var viewabc = new echo.GenericView<{a:C1, b:C2, c:C3}>();
+		var viewa = new echo.GenericView<{a:C1}>();
+		var viewb = new echo.GenericView<{b:C2}>();
+		var viewc = new echo.GenericView<{c:C3}>();
 		ch.addView(viewabc);
 		ch.addView(viewa);
 		ch.addView(viewb);
@@ -45,9 +37,9 @@ class TestView extends TestCase {
 		
 		for (i in 0...100) {
 			var id = ch.id();
-			ch.setComponent(id, new CA());
-			if (i % 2 == 0) ch.setComponent(id, new CB());
-			if (i % 5 == 0) ch.setComponent(id, new CC());
+			ch.setComponent(id, new C1());
+			if (i % 2 == 0) ch.setComponent(id, new C2());
+			if (i % 5 == 0) ch.setComponent(id, new C3());
 		}
 		
 		assertEquals(100, viewa.entities.length);
@@ -56,54 +48,32 @@ class TestView extends TestCase {
 		assertEquals(10, viewabc.entities.length);
 	}
 	
-}
-
-class SA extends System {
-	var view = new echo.GenericView<{a:CA}>();
-	override public function update(dt:Float) {
-		for (c in view) {
-			TestView.ACTUAL += c.a.val;
+	public function test2() {
+		var viewa = new echo.GenericView<{a:C1}>();
+		ch.addView(viewa);
+		
+		for (i in 'ABCDE'.split('')) {
+			var id = ch.id();
+			ch.setComponent(id, new C1('$i'));
 		}
-	}
-}
-
-class SB extends System {
-	var view = new echo.GenericView<{b:CB}>();
-	override public function update(dt:Float) {
-		for (c in view) {
-			TestView.ACTUAL += c.b.val;
+		
+		for (va in viewa) {
+			ACTUAL += va.a;
 		}
+		
+		assertEquals('ABCDE', ACTUAL);
 	}
+	
 }
 
-class SAB extends System {
-	var viewab = new echo.GenericView<{a:CA, b:CB}>();
-	var viewa = new echo.GenericView<{a:CA}>();
-	var viewb = new echo.GenericView<{b:CB}>();
-	override public function update(dt:Float) {
-		for (c in viewab) {
-			TestView.ACTUAL += (c.a.val + c.b.val);
-		}
-	}
+abstract C1(String) {
+	public function new(s:String = '') this = s;
 }
 
-class CA {
-	public var val:String;
-	public function new(val:String = 'A') {
-		this.val = val;
-	}
+abstract C2(String) {
+	public function new(s:String = '') this = s;
 }
 
-class CB {
-	public var val:String;
-	public function new(val:String = 'B') {
-		this.val = val;
-	}
-}
-
-class CC {
-	public var val:String;
-	public function new(val:String = 'C') {
-		this.val = val;
-	}
+abstract C3(String) {
+	public function new(s:String = '') this = s;
 }
