@@ -14,18 +14,16 @@ class View<T> { }
  */
 @:noCompletion
 class ViewBase {
-	// TODO sort
 	
 	
 	var echo:Echo;
+	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 	
 	
 	public var onAdd = new Signal<Int->Void>();
 	public var onRemove = new Signal<Int->Void>();
 	
-	public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
-	public var entities:Array<Int> = []; // additional array for sorting purposes
-	
+	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 	
 	
 	@:allow(echo.Echo) function activate(echo:Echo) {
@@ -50,17 +48,17 @@ class ViewBase {
 	}
 	
 	
-	public inline function exists(id:Int):Bool {
+	inline function exists(id:Int):Bool {
 		return entitiesMap.exists(id);
 	}
 	
-	public inline function add(id:Int) {
+	inline function add(id:Int) {
 		entitiesMap.set(id, id);
 		entities.push(id);
 		onAdd.dispatch(id);
 	}
 	
-	public inline function remove(id:Int) {
+	inline function remove(id:Int) {
 		onRemove.dispatch(id);
 		entities.remove(id);
 		entitiesMap.remove(id);

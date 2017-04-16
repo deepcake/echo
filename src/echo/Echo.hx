@@ -20,10 +20,9 @@ class Echo {
 	@:noCompletion static public var __SEQUENCE = 0;
 	
 	
-	public var entities:List<Int>;
-	
-	public var views:Array<View.ViewBase>;
-	public var systems:Array<System>;
+	public var entities(default, null):List<Int>;
+	public var views(default, null):Array<View.ViewBase>;
+	public var systems(default, null):Array<System>;
 	
 	
 	public function new() {
