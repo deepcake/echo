@@ -22,7 +22,7 @@ class Echo {
 	
 	public var entities:List<Int>;
 	
-	public var views:Array<View>;
+	public var views:Array<View.ViewBase>;
 	public var systems:Array<System>;
 	
 	
@@ -53,12 +53,12 @@ class Echo {
 	
 	// View
 	
-	public function addView(v:View) {
+	public function addView(v:View.ViewBase) {
 		v.activate(this);
 		views.push(v);
 	}
 	
-	public function removeView(v:View) {
+	public function removeView(v:View.ViewBase) {
 		v.deactivate();
 		views.remove(v);
 	}
