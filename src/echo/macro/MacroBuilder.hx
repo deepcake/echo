@@ -131,7 +131,7 @@ class MacroBuilder {
 					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
 				);
 				
-				var clsname = 'GenericView_' + getClsNameID(components.map(function(c) return c.cls.fullname()).join('_')); // TODO sort ?
+				var clsname = 'View_' + getClsNameID(components.map(function(c) return c.cls.fullname()).join('_')); // TODO sort ?
 				
 				try {
 					return Context.getType(clsname);
@@ -148,12 +148,10 @@ class MacroBuilder {
 					def.fields.push(ffun([APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
 					
 					// testcomponent
-					// TODO opt use map
-					// TODO opt use static
-					def.fields.push(ffun([APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return mask.indexOf(c) > -1));
+					def.fields.push(ffun([APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
 					
-					var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID').join(', ') + ']', Context.currentPos());
-					def.fields.push(fvar([APublic], 'mask', null, maskBody));
+					var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
+					def.fields.push(fvar([AStatic], '__MASK', null, maskBody));
 					
 					
 					traceTypeDefenition(def);
