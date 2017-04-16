@@ -21,11 +21,6 @@ class View {
 	public var entities:Array<Int> = []; // additional array for sorting purposes
 	
 	
-	public var id:Int;
-	
-	
-	public function new() { }
-	
 	
 	@:allow(echo.Echo) function activate(echo:Echo) {
 		this.echo = echo;
@@ -36,12 +31,6 @@ class View {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
 		this.echo = null;
 	}
-	
-	
-	/*public function select(id:Int):View { // macro
-		this.id = id;
-		return this;
-	}*/
 	
 	
 	@:noCompletion function test(id:Int):Bool { // macro
@@ -62,15 +51,11 @@ class View {
 	public inline function add(id:Int) {
 		entitiesMap.set(id, id);
 		entities.push(id);
-		
-		//select(id);
 		onAdd.dispatch(id);
 	}
 	
 	public inline function remove(id:Int) {
-		//select(id);
 		onRemove.dispatch(id);
-		
 		entities.remove(id);
 		entitiesMap.remove(id);
 	}
