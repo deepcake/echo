@@ -37,7 +37,7 @@ Example.main = function() {
 };
 Example.createGrass = function(x,y) {
 	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = _$Example_Position_$Impl_$._new(x,y);
+	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
 	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<i>w</i>");
 	var _g = 0;
 	var _g1 = Example.echo.views;
@@ -49,7 +49,7 @@ Example.createGrass = function(x,y) {
 };
 Example.createTree = function(x,y) {
 	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = _$Example_Position_$Impl_$._new(x,y);
+	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
 	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<strong style=\"color:#4C1E00;\">T</strong>");
 	var _g = 0;
 	var _g1 = Example.echo.views;
@@ -61,9 +61,9 @@ Example.createTree = function(x,y) {
 };
 Example.createRabbit = function(x,y,vx,vy) {
 	var id = Example.echo.id();
-	var vel = _$Example_Velocity_$Impl_$._new(vx,vy);
-	GenericComponentHolder_$Example_$Position.__MAP.h[id] = _$Example_Position_$Impl_$._new(x,y);
-	GenericComponentHolder_$Example_$Velocity.__MAP.h[id] = vel;
+	var this1 = new Vec2(vx,vy);
+	GenericComponentHolder_$Example_$Position.__MAP.h[id] = new Vec2(x,y);
+	GenericComponentHolder_$Example_$Velocity.__MAP.h[id] = this1;
 	var _g = 0;
 	var _g1 = Example.echo.views;
 	while(_g < _g1.length) {
@@ -82,8 +82,8 @@ Example.createRabbit = function(x,y,vx,vy) {
 };
 Example.createUnicorn = function(x,y,vx,vy) {
 	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = _$Example_Position_$Impl_$._new(x,y);
-	GenericComponentHolder_$Example_$Velocity.__MAP.h[_id_] = _$Example_Velocity_$Impl_$._new(vx,vy);
+	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
+	GenericComponentHolder_$Example_$Velocity.__MAP.h[_id_] = new Vec2(vx,vy);
 	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<strong style=\"color:#F0F0F0;background-color:#B200FF\">&</strong>");
 	var _g = 0;
 	var _g1 = Example.echo.views;
@@ -96,14 +96,6 @@ Example.createUnicorn = function(x,y,vx,vy) {
 var Vec2 = function(x,y) {
 	this.x = x != null ? x : .0;
 	this.y = y != null ? y : .0;
-};
-var _$Example_Velocity_$Impl_$ = {};
-_$Example_Velocity_$Impl_$._new = function(x,y) {
-	return new Vec2(x,y);
-};
-var _$Example_Position_$Impl_$ = {};
-_$Example_Position_$Impl_$._new = function(x,y) {
-	return new Vec2(x,y);
 };
 var Sprite = function(value) {
 	this.value = value;
