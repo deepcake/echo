@@ -1,4 +1,5 @@
 package echo.macro;
+#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
@@ -12,15 +13,15 @@ import haxe.macro.Printer;
  * ...
  * @author octocake1
  */
+@:noCompletion
 @:final
 @:dce
 class Macro {
 	
 	
-	#if macro
-	
-	static public function ffun(?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr):Field {
+	static public function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr):Field {
 		return {
+			meta: meta != null ? meta : [],
 			name: name,
 			access: access != null ? access : [],
 			kind: FFun({
@@ -60,26 +61,24 @@ class Macro {
 	
 	static public inline function traceFields(clsname:String, fields:Array<Field>) {
 		#if debug
-		var pr = new Printer();
-		var ret = '$clsname\n';
-		for (f in fields) ret += pr.printField(f) + '\n';
-		trace(ret);
+			var pr = new Printer();
+			var ret = '$clsname\n';
+			for (f in fields) ret += pr.printField(f) + '\n';
+			trace(ret);
 		#end
 	}
 	
 	static public inline function traceExprs(name:String, exprs:Array<Expr>) {
 		#if debug
-		trace('$name:\n' + new Printer().printExprs(exprs, '\n'));
+			trace('$name:\n' + new Printer().printExprs(exprs, '\n'));
 		#end
 	}
 	
 	static public inline function traceTypeDefenition(def:TypeDefinition) {
 		#if debug
-		trace(new Printer().printTypeDefinition(def));
+			trace(new Printer().printTypeDefinition(def));
 		#end
 	}
-	
-	#end
 	
 	
 	static public function fullname(ct:ComplexType):String {
@@ -106,5 +105,5 @@ class Macro {
 		}
 	}
 	
-	
 }
+#end

@@ -1,0 +1,6 @@
+-main Example
+-cp src
+-cp test
+-js web/example.js
+-dce full
+-D analyzer-optimize

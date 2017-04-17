@@ -20,10 +20,9 @@ class Echo {
 	@:noCompletion static public var __SEQUENCE = 0;
 	
 	
-	public var entities:List<Int>;
-	
-	public var views:Array<View>;
-	public var systems:Array<System>;
+	public var entities(default, null):List<Int>;
+	public var views(default, null):Array<View.ViewBase>;
+	public var systems(default, null):Array<System>;
 	
 	
 	public function new() {
@@ -53,12 +52,12 @@ class Echo {
 	
 	// View
 	
-	public function addView(v:View) {
+	public function addView(v:View.ViewBase) {
 		v.activate(this);
 		views.push(v);
 	}
 	
-	public function removeView(v:View) {
+	public function removeView(v:View.ViewBase) {
 		v.deactivate();
 		views.remove(v);
 	}

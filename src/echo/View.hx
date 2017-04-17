@@ -5,27 +5,25 @@ package echo;
  * @author octocake1
  */
 #if !macro
-@:autoBuild(echo.macro.MacroBuilder.buildView())
+@:genericBuild(echo.macro.MacroBuilder.genericView())
 #end
-class View {
-	// TODO ViewData (iterator)
-	// TODO only generic
+class View<T> { }
+
+/**
+ * 
+ */
+@:noCompletion
+class ViewBase {
 	
 	
 	var echo:Echo;
+	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 	
 	
 	public var onAdd = new Signal<Int->Void>();
 	public var onRemove = new Signal<Int->Void>();
 	
-	public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
-	public var entities:Array<Int> = []; // additional array for sorting purposes
-	
-	
-	public var id:Int;
-	
-	
-	public function new() { }
+	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 	
 	
 	@:allow(echo.Echo) function activate(echo:Echo) {
@@ -36,12 +34,6 @@ class View {
 	@:allow(echo.Echo) function deactivate() {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
 		this.echo = null;
-	}
-	
-	
-	public function select(id:Int):View { // macro
-		this.id = id;
-		return this;
 	}
 	
 	
@@ -56,22 +48,18 @@ class View {
 	}
 	
 	
-	public inline function exists(id:Int):Bool {
+	inline function exists(id:Int):Bool {
 		return entitiesMap.exists(id);
 	}
 	
-	public inline function add(id:Int) {
+	inline function add(id:Int) {
 		entitiesMap.set(id, id);
 		entities.push(id);
-		
-		select(id);
 		onAdd.dispatch(id);
 	}
 	
-	public inline function remove(id:Int) {
-		select(id);
+	inline function remove(id:Int) {
 		onRemove.dispatch(id);
-		
 		entities.remove(id);
 		entitiesMap.remove(id);
 	}
@@ -83,29 +71,6 @@ class View {
 	
 	@:noCompletion public function removeIfMatch(id:Int) {
 		if (exists(id)) remove(id);
-	}
-	
-}
-
-@:noCompletion
-#if !js @:generic #end
-class ViewIterator<T:View> {
-	
-	var v:T;
-	var i:Int;
-	
-	public inline function new(v:T) {
-		this.v = v;
-		this.i = -1;
-	}
-
-	public inline function hasNext():Bool {
-		return ++i < v.entities.length;
-	}
-
-	public inline function next():T {
-		v.select(v.entities[i]);
-		return v;
 	}
 	
 }

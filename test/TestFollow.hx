@@ -1,7 +1,7 @@
 package;
 
 import echo.Echo;
-import echo.GenericView;
+import echo.View;
 import haxe.unit.TestCase;
 import echo.System;
 
@@ -105,9 +105,9 @@ abstract FollowComponentAbstract(FollowComponent) {
 
 class FollowSystem extends System {
 	static public var BOARD = '';
-	var v1 = new GenericView<{ c:FollowComponent }>();
-	var v2 = new GenericView<{ c:FollowComponentTypedef }>();
-	var v3 = new GenericView<{ c:FollowComponentAbstract }>();
+	var v1 = new View<{ c:FollowComponent }>();
+	var v2 = new View<{ c:FollowComponentTypedef }>();
+	var v3 = new View<{ c:FollowComponentAbstract }>();
 	override public function update(dt:Float) {
 		BOARD = '';
 		for (v in v1) BOARD += 'C' + v.c.val;
