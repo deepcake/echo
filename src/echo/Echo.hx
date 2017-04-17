@@ -6,9 +6,8 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 using haxe.macro.Context;
 using echo.macro.Macro;
-#end
-
 using Lambda;
+#end
 
 /**
  * ...
@@ -32,8 +31,30 @@ class Echo {
 	}
 	
 	
+	#if debug
+		var updateStats:Map<System, Float> = new Map();
+	#end
+	inline public function stats():String {
+		var ret = 'Echo' + ' [${entities.length}]' + '\n'; // TODO add version or something
+		#if debug
+			for (s in systems) {
+				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms\n';
+			}
+		#end
+		return ret;
+	}
+	
+	
 	public function update(dt:Float) {
-		for (s in systems) s.update(dt);
+		for (s in systems) {
+			#if debug
+				var stamp = haxe.Timer.stamp();
+			#end
+			s.update(dt);
+			#if debug
+				updateStats.set(s, Std.int((haxe.Timer.stamp() - stamp) * 1000));
+			#end
+		}
 	}
 	
 	
