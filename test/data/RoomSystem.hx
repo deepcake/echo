@@ -1,6 +1,6 @@
 package data;
 
-import echo.GenericView;
+import echo.View;
 import echo.System;
 
 /**
@@ -13,8 +13,8 @@ class RoomSystem extends System {
 	static public var LOG:Array<String> = [];
 	
 	
-	var names = new GenericView<{ name:Name }>();
-	var namesAndGreetings = new GenericView<{ name:Name, greeting:Greeting }>();
+	var names = new View<{ name:Name }>();
+	var namesAndGreetings = new View<{ name:Name, greeting:Greeting }>();
 	
 	
 	override public function onactivate() {
