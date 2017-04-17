@@ -88,12 +88,12 @@ class Vec2 {
 
 @:forward(x, y)
 abstract Velocity(Vec2) { // abstracts can be used to create different ComponentClasses from the same BaseClass without overhead
-	public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
+	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
 @:forward(x, y)
 abstract Position(Vec2) {
-	public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
+	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
 class Sprite {
