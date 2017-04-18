@@ -13,8 +13,8 @@ import js.html.Element;
 class Example {
 	
 	static var echo:Echo;
-	static var w = 120;
-	static var h = 40;
+	static var w = 60;
+	static var h = 30;
 	
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
@@ -30,10 +30,13 @@ class Example {
 		
 		for (i in 0...1000) createGrass(Std.random(w), Std.random(h));
 		for (i in 0...100) createTree(Std.random(w), Std.random(h));
-		for (i in 0...10) createRabbit(Std.random(w), Std.random(h), 3 - Math.random() * 6, 3 - Math.random() * 6); // (-3 : 3)
+		for (i in 0...10) {
+			var d = Math.random() * Math.PI * 2;
+			createRabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
+		}
 		
 		var d = Math.random() * Math.PI * 2;
-		createUnicorn(Std.random(w), Std.random(h), Math.cos(d) * 12, Math.sin(d) * 12);
+		createTiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
 		
 		
 		Browser.window.setInterval(function() echo.update(.100), 100);
@@ -43,30 +46,29 @@ class Example {
 	static function createGrass(x:Float, y:Float) {
 		echo.setComponent(echo.id(), 
 			new Position(x, y), 
-			new Sprite('<i>w</i>'));
+			new Sprite('&#x1F33E;'));
 	}
 	
 	static function createTree(x:Float, y:Float) {
 		echo.setComponent(echo.id(), 
 			new Position(x, y), 
-			new Sprite('<strong style="color:#4C1E00;">T</strong>'));
+			new Sprite('&#x1F333;')); //1F332
 	}
 	
-	static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
+	static function createDynamic(x:Float, y:Float, vx:Float, vy:Float):Int {
 		var id = echo.id();
 		var pos = new Position(x, y);
 		var vel = new Velocity(vx, vy);
 		echo.setComponent(id, pos, vel);
-		
-		var s = new Sprite('<span style="color:#606060;"><b><i>b</i></b></span>');
-		echo.setComponent(id, s);
+		return id;
 	}
 	
-	static function createUnicorn(x:Float, y:Float, vx:Float, vy:Float) {
-		echo.setComponent(echo.id(),
-			new Position(x, y),
-			new Velocity(vx, vy),
-			new Sprite('<strong style="color:#F0F0F0;background-color:#B200FF">&</strong>'));
+	static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
+		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F407;'));
+	}
+	
+	static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
+		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F405;'));
 	}
 	
 }
@@ -150,7 +152,7 @@ class Render extends System {
 	override public function update(dt:Float) {
 		for (y in 0...h) {
 			for (x in 0...w) {
-				world[y][x].innerHTML = '.';
+				world[y][x].innerHTML = '&#x1F33F;';
 			}
 		}
 		for (v in visuals) {
