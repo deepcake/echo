@@ -176,6 +176,23 @@ class TestView extends TestCase {
 		assertEquals(10, viewa.entities.length);
 	}
 	
+	
+	public function test_cache() {
+		var ab = new echo.View<{a:C1, b:C2}>();
+		ch.addView(ab);
+		
+		var cache = [ for (i in 0...10) ch.next() ];
+		for (id in cache) ch.setComponent(id, new C1('A'), new C2('A'));
+		
+		assertEquals(0, ch.entities.length);
+		assertEquals(0, ab.entities.length);
+		
+		for (id in cache) ch.add(id);
+		
+		assertEquals(10, ch.entities.length);
+		assertEquals(10, ab.entities.length);
+	}
+	
 }
 
 @:forward(charCodeAt)

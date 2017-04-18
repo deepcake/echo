@@ -253,6 +253,37 @@ class TestComponent extends TestCase {
 	}
 	
 	
+	public function test_add_after_id() {
+		var ch = new Echo();
+		var id = ch.id();
+		
+		assertEquals(1, ch.entities.length);
+		
+		ch.add(id);
+		
+		assertEquals(1, ch.entities.length);
+		
+		ch.add(id);
+		
+		assertEquals(1, ch.entities.length);
+	}
+	
+	public function test_add_after_next() {
+		var ch = new Echo();
+		var id = ch.next();
+		
+		assertEquals(0, ch.entities.length);
+		
+		ch.add(id);
+		
+		assertEquals(1, ch.entities.length);
+		
+		ch.add(id);
+		
+		assertEquals(1, ch.entities.length);
+	}
+	
+	
 	// Some exotic
 	
 	public function test_set_singleton() {
