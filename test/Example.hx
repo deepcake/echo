@@ -22,6 +22,11 @@ class Example {
 		
 		Browser.document.body.appendChild(canvas);
 		
+		canvas.innerHTML = '&#x1F33E;'; // get width
+		w = Std.int(Browser.document.documentElement.clientWidth / canvas.offsetWidth);
+		h = Std.int((Browser.document.documentElement.clientHeight - Browser.document.documentElement.clientHeight / canvas.offsetHeight) / canvas.offsetHeight);
+		canvas.innerHTML = '';
+		
 		
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
