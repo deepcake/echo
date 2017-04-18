@@ -27,10 +27,11 @@ Example.main = function() {
 	var _g2 = 0;
 	while(_g2 < 10) {
 		_g2++;
-		Example.createRabbit(Std.random(Example.w),Std.random(Example.h),3 - Math.random() * 6,3 - Math.random() * 6);
+		var d = Math.random() * Math.PI * 2;
+		Example.createRabbit(Std.random(Example.w),Std.random(Example.h),Math.cos(d) * 2,Math.sin(d) * 2);
 	}
-	var d = Math.random() * Math.PI * 2;
-	Example.createUnicorn(Std.random(Example.w),Std.random(Example.h),Math.cos(d) * 12,Math.sin(d) * 12);
+	var d1 = Math.random() * Math.PI * 2;
+	Example.createTiger(Std.random(Example.w),Std.random(Example.h),Math.cos(d1) * 6,Math.sin(d1) * 6);
 	window.setInterval(function() {
 		Example.echo.update(.100);
 	},100);
@@ -38,59 +39,71 @@ Example.main = function() {
 Example.createGrass = function(x,y) {
 	var _id_ = Example.echo.id();
 	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<i>w</i>");
-	var _g = 0;
-	var _g1 = Example.echo.views;
-	while(_g < _g1.length) {
-		var _v_ = _g1[_g];
-		++_g;
-		_v_.addIfMatch(_id_);
+	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F33E;");
+	if(Example.echo.entitiesMap.exists(_id_)) {
+		var _g = 0;
+		var _g1 = Example.echo.views;
+		while(_g < _g1.length) {
+			var _v_ = _g1[_g];
+			++_g;
+			_v_.addIfMatch(_id_);
+		}
 	}
 };
 Example.createTree = function(x,y) {
 	var _id_ = Example.echo.id();
 	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<strong style=\"color:#4C1E00;\">T</strong>");
-	var _g = 0;
-	var _g1 = Example.echo.views;
-	while(_g < _g1.length) {
-		var _v_ = _g1[_g];
-		++_g;
-		_v_.addIfMatch(_id_);
+	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F333;");
+	if(Example.echo.entitiesMap.exists(_id_)) {
+		var _g = 0;
+		var _g1 = Example.echo.views;
+		while(_g < _g1.length) {
+			var _v_ = _g1[_g];
+			++_g;
+			_v_.addIfMatch(_id_);
+		}
 	}
 };
-Example.createRabbit = function(x,y,vx,vy) {
+Example.createDynamic = function(x,y,vx,vy) {
 	var id = Example.echo.id();
 	var this1 = new Vec2(vx,vy);
 	GenericComponentHolder_$Example_$Position.__MAP.h[id] = new Vec2(x,y);
 	GenericComponentHolder_$Example_$Velocity.__MAP.h[id] = this1;
-	var _g = 0;
-	var _g1 = Example.echo.views;
-	while(_g < _g1.length) {
-		var _v_ = _g1[_g];
-		++_g;
-		_v_.addIfMatch(id);
+	if(Example.echo.entitiesMap.exists(id)) {
+		var _g = 0;
+		var _g1 = Example.echo.views;
+		while(_g < _g1.length) {
+			var _v_ = _g1[_g];
+			++_g;
+			_v_.addIfMatch(id);
+		}
 	}
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[id] = new Sprite("<span style=\"color:#606060;\"><b><i>b</i></b></span>");
-	var _g2 = 0;
-	var _g11 = Example.echo.views;
-	while(_g2 < _g11.length) {
-		var _v_1 = _g11[_g2];
-		++_g2;
-		_v_1.addIfMatch(id);
+	return id;
+};
+Example.createRabbit = function(x,y,vx,vy) {
+	var _id_ = Example.createDynamic(x,y,vx,vy);
+	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F407;");
+	if(Example.echo.entitiesMap.exists(_id_)) {
+		var _g = 0;
+		var _g1 = Example.echo.views;
+		while(_g < _g1.length) {
+			var _v_ = _g1[_g];
+			++_g;
+			_v_.addIfMatch(_id_);
+		}
 	}
 };
-Example.createUnicorn = function(x,y,vx,vy) {
-	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Velocity.__MAP.h[_id_] = new Vec2(vx,vy);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("<strong style=\"color:#F0F0F0;background-color:#B200FF\">&</strong>");
-	var _g = 0;
-	var _g1 = Example.echo.views;
-	while(_g < _g1.length) {
-		var _v_ = _g1[_g];
-		++_g;
-		_v_.addIfMatch(_id_);
+Example.createTiger = function(x,y,vx,vy) {
+	var _id_ = Example.createDynamic(x,y,vx,vy);
+	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F405;");
+	if(Example.echo.entitiesMap.exists(_id_)) {
+		var _g = 0;
+		var _g1 = Example.echo.views;
+		while(_g < _g1.length) {
+			var _v_ = _g1[_g];
+			++_g;
+			_v_.addIfMatch(_id_);
+		}
 	}
 };
 var Vec2 = function(x,y) {
@@ -178,7 +191,7 @@ Render.prototype = $extend(echo_System.prototype,{
 			var y = _g1++;
 			var _g3 = 0;
 			var _g2 = this.w;
-			while(_g3 < _g2) this.world[y][_g3++].innerHTML = ".";
+			while(_g3 < _g2) this.world[y][_g3++].innerHTML = "&#x1F33F;";
 		}
 		var _g_vd;
 		var _g_i;
@@ -214,26 +227,10 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
-	,iterator: function() {
-		return new _$List_ListIterator(this.h);
-	}
 };
 var _$List_ListNode = function(item,next) {
 	this.item = item;
 	this.next = next;
-};
-var _$List_ListIterator = function(head) {
-	this.head = head;
-};
-_$List_ListIterator.prototype = {
-	hasNext: function() {
-		return this.head != null;
-	}
-	,next: function() {
-		var val = this.head.item;
-		this.head = this.head.next;
-		return val;
-	}
 };
 var Std = function() { };
 Std.random = function(x) {
@@ -311,6 +308,7 @@ View_$Example_$Position_$Example_$Velocity.prototype = $extend(echo_ViewBase.pro
 	}
 });
 var echo_Echo = function() {
+	this.entitiesMap = new haxe_ds_IntMap();
 	this.entities = new List();
 	this.views = [];
 	this.systems = [];
@@ -334,9 +332,10 @@ echo_Echo.prototype = {
 		this.views.push(v);
 	}
 	,id: function() {
-		var e = ++echo_Echo.__SEQUENCE;
-		this.entities.add(e);
-		return e;
+		var id = ++echo_Echo.__SEQUENCE;
+		this.entitiesMap.h[id] = id;
+		this.entities.add(id);
+		return id;
 	}
 };
 var haxe_IMap = function() { };
@@ -355,8 +354,8 @@ haxe_ds_IntMap.prototype = {
 		return this.h.hasOwnProperty(key);
 	}
 };
-Example.w = 120;
-Example.h = 40;
+Example.w = 60;
+Example.h = 30;
 Movement.__meta__ = { fields : { w : { skip : null}, h : { skip : null}}};
 Render.__meta__ = { fields : { visuals : { view : null}}};
 GenericComponentHolder_$Example_$Position.__MAP = new haxe_ds_IntMap();
