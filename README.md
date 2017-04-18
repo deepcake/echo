@@ -99,10 +99,10 @@ class Render extends System {
 [See web demo](https://octocake1.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/octocake1/echo/blob/master/test/Example.hx))
 
 #### Overview
-* `Component` is an instance of any `Class`
-* `Entity` is the `Int` _id_, referenced to global `Map<Int, ComponentClass>`
-* `View` is a collection of suitable `Int` _ids_ with ability to iterate over them
-* `System` is a wrapper for `View`'s with some macro syntactic sugar
+* `Component` is an instance of any `Class`.
+* `Entity` is the `Int` _id_, referenced to global `Map<Int, ComponentClass>`s.
+* `View<T>` is a collection of suitable for filter `T` _ids_ with ability to iterate over them.
+* `System` is a wrapper for `View`'s with some ~~syntactic~~ macro sugar.
 
 #### API
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
@@ -110,14 +110,18 @@ class Render extends System {
   * `.next():Int` - only create new _id_, without adding it to _the workflow_.
   * `.add(id:Int)` - add _id_ to _the workflow_
   * `.remove(id:Int)` - remove _id_ from _the workflow_.
-  * `.dispose(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If you expect to use _id_ with all its components after removing from _the workflow_ - use `remove()`, otherwise use `dispose()`.
-  * `.setComponent`, `.getComponent`, `.removeComponent(id:Int, type:Class)` - set/get/remove component from the _id_.
+  * `.dispose(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `remove()`, otherwise use `dispose()`.
+  * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
+  * `.getComponent(id:Int, type:Class<T>):T` - get component form _id_ by type.
+  * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.
   * `.addSystem`, `.removeSystem(system:System)` - add/remove system from _the workflow_
-  * `.addView`, `.removeView` - add/remove view from _the workflow_. In most cases you will not call that functions directly, macro will do it for you.
-* `View<T>` - collects all _ids_ from _the workflow_, suitable for its filter `T`.
+  * `.addView`, `.removeView` - add/remove view from _the workflow_. In most cases we will not call that functions directly, macro will do it for us.
+* `View<T>`
   * `.onAdd`, `.onRemove:Signal<Int->Void>` - signals, called at add/remove an suitable _id_ to _the workflow_.
   * `.entities:Array<Int>` - array of _ids_ into this view. Can be sorted.
-  * `.iterator<T>` - produce iterating over _ids_ like they was an instances of `T`.
+  * `.iterator:Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` with minimal overhead.
 * `System` - to be extended.
   * `.onactivate`, `.ondeactivate` - to be overridden. Called at add/remove from _the workflow_.
-  * `.update(dt:Float)` - to be overridden.
+  * `.update(dt:Float)` - to be overridden. Main logic place.
+  * `@view`, `@skip` - macro tags to check\uncheck variable as a View
+  
