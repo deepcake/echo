@@ -6,9 +6,8 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 using haxe.macro.Context;
 using echo.macro.Macro;
-#end
-
 using Lambda;
+#end
 
 /**
  * ...
@@ -19,6 +18,8 @@ class Echo {
 	
 	@:noCompletion static public var __SEQUENCE = 0;
 	
+	
+	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	
 	public var entities(default, null):List<Int>;
 	public var views(default, null):Array<View.ViewBase>;
@@ -32,8 +33,30 @@ class Echo {
 	}
 	
 	
+	#if debug
+		var updateStats:Map<System, Float> = new Map();
+	#end
+	inline public function stats():String {
+		var ret = 'Echo' + ' [${entities.length}]' + '\n'; // TODO add version or something
+		#if debug
+			for (s in systems) {
+				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms\n';
+			}
+		#end
+		return ret;
+	}
+	
+	
 	public function update(dt:Float) {
-		for (s in systems) s.update(dt);
+		for (s in systems) {
+			#if debug
+				var stamp = haxe.Timer.stamp();
+			#end
+			s.update(dt);
+			#if debug
+				updateStats.set(s, Std.int((haxe.Timer.stamp() - stamp) * 1000));
+			#end
+		}
 	}
 	
 	
@@ -65,13 +88,38 @@ class Echo {
 	
 	// Entity
 	
-	public function id() {
-		var e = ++__SEQUENCE;
-		entities.add(e);
-		return e;
+	public function id():Int {
+		var id = next();
+		entitiesMap.set(id, id);
+		entities.add(id);
+		return id;
 	}
 	
-	macro public function remove(self:Expr, id:ExprOf<Int>) {
+	public inline function next():Int {
+		return ++__SEQUENCE;
+	}
+	
+	public inline function has(id:Int):Bool {
+		return entitiesMap.exists(id);
+	}
+	
+	public inline function add(id:Int) {
+		if (!this.has(id)) {
+			entitiesMap.set(id, id);
+			entities.add(id);
+			for (v in views) v.addIfMatch(id);
+		}
+	}
+	
+	public inline function remove(id:Int) {
+		if (this.has(id)) {
+			entitiesMap.remove(id);
+			entities.remove(id);
+			for (v in views) v.removeIfMatch(id);
+		}
+	}
+	
+	macro public function dispose(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [ 
 			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
@@ -84,9 +132,8 @@ class Echo {
 		
 		return macro {
 			$esafe;
-			for (_v_ in $self.views) _v_.removeIfMatch(_id_);
+			$self.remove(_id_);
 			$b{exprs};
-			$self.entities.remove(_id_);
 		}
 	}
 	
@@ -109,7 +156,7 @@ class Echo {
 		return macro {
 			$esafe;
 			$b{exprs};
-			for (_v_ in $self.views) _v_.addIfMatch(_id_);
+			if ($self.has(_id_)) for (_v_ in $self.views) _v_.addIfMatch(_id_);
 		}
 	}
 	
@@ -121,7 +168,7 @@ class Echo {
 		return macro {
 			$esafe;
 			if ($n.__MAP.exists(_id_)) {
-				for (_v_ in $self.views) if (_v_.testcomponent($n.__ID)) _v_.removeIfMatch(_id_);
+				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.testcomponent($n.__ID)) _v_.removeIfMatch(_id_);
 				$n.__MAP.remove(_id_);
 			}
 		}

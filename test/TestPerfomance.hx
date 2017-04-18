@@ -57,11 +57,12 @@ class TestPerfomance extends TestCase {
 		for (i in ids) ch.setComponent(i, new I());
 		stamp('I');
 		
-		ch.update(0);
-		stamp('update');
-		
-		
-		assertEquals(COUNT * 9, TestPerfomance.ACTUAL);
+		for (i in 0...10) {
+			ch.update(0);
+			stamp('update');
+			
+			assertEquals(COUNT * 45 * (i + 1), TestPerfomance.ACTUAL);
+		}
 	}
 	
 	public function stamp(prefix:String) {
@@ -84,43 +85,51 @@ class Sys1 extends System {
 	var v9 = new echo.View<{a:A, b:B, c:C, d:D, e:E, f:F, g:G, h:H, i:I}>();
 	
 	override public function update(dt:Float) {
-		TestPerfomance.ACTUAL = 0;
-		for (v in v1) TestPerfomance.ACTUAL += 1;
-		for (v in v2) TestPerfomance.ACTUAL += 1;
-		for (v in v3) TestPerfomance.ACTUAL += 1;
-		for (v in v4) TestPerfomance.ACTUAL += 1;
-		for (v in v5) TestPerfomance.ACTUAL += 1;
-		for (v in v6) TestPerfomance.ACTUAL += 1;
-		for (v in v7) TestPerfomance.ACTUAL += 1;
-		for (v in v8) TestPerfomance.ACTUAL += 1;
-		for (v in v9) TestPerfomance.ACTUAL += 1;
+		for (v in v1) TestPerfomance.ACTUAL += v.a.value;
+		for (v in v2) TestPerfomance.ACTUAL += v.b.value;
+		for (v in v3) TestPerfomance.ACTUAL += v.c.value;
+		for (v in v4) TestPerfomance.ACTUAL += v.d.value;
+		for (v in v5) TestPerfomance.ACTUAL += v.e.value;
+		for (v in v6) TestPerfomance.ACTUAL += v.f.value;
+		for (v in v7) TestPerfomance.ACTUAL += v.g.value;
+		for (v in v8) TestPerfomance.ACTUAL += v.h.value;
+		for (v in v9) TestPerfomance.ACTUAL += v.i.value;
 	}
 }
 
 class A {
+	public var value = 1;
 	public function new() {}
 }
 class B {
+	public var value = 2;
 	public function new() {}
 }
 class C {
+	public var value = 3;
 	public function new() {}
 }
 class D {
+	public var value = 4;
 	public function new() {}
 }
 class E {
+	public var value = 5;
 	public function new() {}
 }
 class F {
+	public var value = 6;
 	public function new() {}
 }
 class G {
+	public var value = 7;
 	public function new() {}
 }
 class H {
+	public var value = 8;
 	public function new() {}
 }
 class I {
+	public var value = 9;
 	public function new() {}
 }
