@@ -11,6 +11,10 @@ Example.main = function() {
 	var canvas = window.document.createElement("code");
 	canvas.style.color = "#007F0E";
 	window.document.body.appendChild(canvas);
+	canvas.innerHTML = "&#x1F33E;";
+	Example.w = window.document.documentElement.clientWidth / canvas.offsetWidth | 0;
+	Example.h = (window.document.documentElement.clientHeight - window.document.documentElement.clientHeight / canvas.offsetHeight) / canvas.offsetHeight | 0;
+	canvas.innerHTML = "";
 	Example.echo = new echo_Echo();
 	Example.echo.addSystem(new Movement(Example.w,Example.h));
 	Example.echo.addSystem(new Render(Example.w,Example.h,canvas));
