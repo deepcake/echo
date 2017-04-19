@@ -113,9 +113,9 @@ class Echo {
 	
 	public inline function remove(id:Int) {
 		if (this.has(id)) {
+			for (v in views) v.removeIfMatch(id);
 			entitiesMap.remove(id);
 			entities.remove(id);
-			for (v in views) v.removeIfMatch(id);
 		}
 	}
 	
@@ -160,7 +160,7 @@ class Echo {
 		}
 	}
 	
-	macro inline public function removeComponent<T:Class<Dynamic>>(self:Expr, id:ExprOf<Int>, type:ExprOf<T>) {
+	macro inline public function removeComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>) {
 		var esafe = macro var _id_ = $id;
 		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
 		//if (h == null) return macro null;
@@ -174,7 +174,7 @@ class Echo {
 		}
 	}
 	
-	macro inline public function getComponent<T:Class<Dynamic>>(self:Expr, id:ExprOf<Int>, type:ExprOf<T>):ExprOf<T> {
+	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
 		//if (h == null) return macro null;
 		var n = Context.parse(h, Context.currentPos());
