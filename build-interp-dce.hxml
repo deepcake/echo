@@ -1,0 +1,5 @@
+build-each.hxml
+-dce full
+-D analyzer-optimize
+-debug
+--interp
