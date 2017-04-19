@@ -177,7 +177,7 @@ class TestView extends TestCase {
 	}
 	
 	
-	public function test_cache() {
+	public function test_delayed_add() {
 		var ab = new echo.View<{a:C1, b:C2}>();
 		ch.addView(ab);
 		
@@ -191,6 +191,78 @@ class TestView extends TestCase {
 		
 		assertEquals(10, ch.entities.length);
 		assertEquals(10, ab.entities.length);
+	}
+	
+	
+	public function test_onadd() {
+		var view = new echo.View<{a:C1}>();
+		ch.addView(view);
+		
+		view.onAdd.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		
+		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+		
+		assertEquals('QWERTY', ACTUAL);
+	}
+	
+	public function test_onremove_remove_component() {
+		var view = new echo.View<{a:C1}>();
+		ch.addView(view);
+		
+		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		
+		var ids = [];
+		for (i in 'QWERTY'.split('')) {
+			var id = ch.id();
+			ids.push(id);
+			ch.setComponent(id, new C1('$i'));
+		}
+		
+		assertEquals('', ACTUAL);
+		
+		for (id in ids) ch.removeComponent(id, C1);
+		
+		assertEquals('QWERTY', ACTUAL);
+	}
+	
+	public function test_onremove_remove_entity() {
+		var view = new echo.View<{a:C1}>();
+		ch.addView(view);
+		
+		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		
+		var ids = [];
+		for (i in 'QWERTY'.split('')) {
+			var id = ch.id();
+			ids.push(id);
+			ch.setComponent(id, new C1('$i'));
+		}
+		
+		assertEquals('', ACTUAL);
+		
+		for (id in ids) ch.remove(id);
+		
+		assertEquals('QWERTY', ACTUAL);
+	}
+	
+	public function test_onremove_dispose_entity() {
+		var view = new echo.View<{a:C1}>();
+		ch.addView(view);
+		
+		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		
+		var ids = [];
+		for (i in 'QWERTY'.split('')) {
+			var id = ch.id();
+			ids.push(id);
+			ch.setComponent(id, new C1('$i'));
+		}
+		
+		assertEquals('', ACTUAL);
+		
+		for (id in ids) ch.dispose(id);
+		
+		assertEquals('QWERTY', ACTUAL);
 	}
 	
 }
