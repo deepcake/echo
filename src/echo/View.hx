@@ -20,8 +20,8 @@ class ViewBase {
 	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 	
 	
-	public var onAdd = new Signal<Int->Void>();
-	public var onRemove = new Signal<Int->Void>();
+	public var onAdd = new echo.utils.Signal<Int->Void>();
+	public var onRemove = new echo.utils.Signal<Int->Void>();
 	
 	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 	

@@ -1,19 +1,19 @@
 package;
 
-import echo.Signal;
+import echo.utils.Signal;
 import haxe.unit.TestCase;
 
 /**
  * ...
  * @author octocake1
  */
-class TestSignal extends TestCase{
-
-	public function new() {
-		super();
-	}
+class TestSignal extends TestCase {
 	
-	public function test1() {
+	
+	public function new() super();
+	
+	
+	public function test_build() {
 		var s0 = new Signal();
 		var s2 = new Signal<Int->Void>();
 		var s4 = new Signal<Int->Int->Float->Bool>();
@@ -25,7 +25,7 @@ class TestSignal extends TestCase{
 		assertEquals(true, actual);
 	}
 	
-	public function test2() {
+	public function test_lifecycle() {
 		var s = new Signal<String->Void>();
 		var actual = '';
 		var f1 = function(str) actual += str;
