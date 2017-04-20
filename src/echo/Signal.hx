@@ -1,5 +1,7 @@
 package echo;
+#if macro
 import haxe.macro.Expr;
+#end
 
 /**
  * ...
