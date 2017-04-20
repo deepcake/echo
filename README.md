@@ -1,9 +1,9 @@
 # Echo
 [![TravisCI Build Status](https://travis-ci.org/octocake1/echo.svg?branch=master)](https://travis-ci.org/octocake1/echo)
 
-Super lightweight Entity Component System framework for Haxe.
-
-Inspired by other haxe ecs frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx) and [ESKIMO](https://github.com/PDeveloper/eskimo).
+Super lightweight Entity Component System framework for Haxe. 
+Focused to be simple and perfomant.
+Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx) and [ESKIMO](https://github.com/PDeveloper/eskimo).
 
 #### Example
 ```haxe
@@ -13,16 +13,15 @@ import echo.View;
 
 class Example {
   static var echo:Echo;
+  
   static function main() {
     echo = new Echo();
     echo.addSystem(new Movement());
     echo.addSystem(new Render(500, 500));
+    
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
-    for (i in 0...10) {
-      var spd = 5;
-      var dir = Math.random() * Math.PI * 2;
-      createRabbit(Std.random(500), Std.random(500), Math.cos(dir) * spd, Math.sin(dir) * spd);
-    }
+    createRabbit(Std.random(500), Std.random(500), Std.random(10), Std.random(10));
+    createTiger(Std.random(500), Std.random(500), Std.random(15), Std.random(15));
   }
   static function createTree(x:Float, y:Float) {
     echo.setComponent(echo.id(), 
@@ -30,14 +29,16 @@ class Example {
       new Sprite());
   }
   static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
-    echo.setComponent(createDynamic(x, y, vx, vy), new Sprite());
+    echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/rabbit.png'));
+  }
+  static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
+    echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/tiger.png'));
   }
   // sort of entity decorator
-  static function createDynamic(x:Float, y:Float, vx:Float, vy:Float):Int {
-    var id = echo.id(); // creates and adds a new "Entity" (actualy just integer id) to the workflow
+  static function createDynamic(id:Int, x:Float, y:Float, vx:Float, vy:Float):Int {
     var pos = new Position(x, y);
     var vel = new Velocity(vx, vy);
-    echo.setComponent(id, pos, vel); // adds a couple of components to our "Entity"
+    echo.setComponent(id, pos, vel);
     return id;
   }
 }
@@ -104,7 +105,7 @@ class Render extends System {
 * `View<T>` is a collection of suitable for its filter `T` _ids_.
 * `System` is a container for main logic and a better place to work with views.
 
-#### API
+#### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - create and add new _id_ to _the workflow_.
   * `.next():Int` - only create new _id_, without adding it to _the workflow_.
@@ -125,3 +126,5 @@ class Render extends System {
   * `.update(dt:Float)` - to be overridden. Main logic place.
   * `@view`, `@skip` - macro tags to check\uncheck variable as a View.
   
+#### Wip
+Work in progress, with all its concomitant effects
