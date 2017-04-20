@@ -147,7 +147,7 @@ class Echo {
 				var h = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType().fullname());
 				//if (h == null) continue; // TODO define ?
 				var n = Context.parse(h, Context.currentPos());
-				macro $n.__MAP.set(_id_, $c);
+				macro $n.__MAP[_id_] = $c;
 			}
 		];
 		
