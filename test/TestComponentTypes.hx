@@ -43,15 +43,13 @@ class TestComponentTypes extends TestCase {
 		assertEquals('A', ch.getComponent(id, AbstractComponent).val);
 	}
 	
-	#if !java
-		public function test_notfollow_enumabstract() {
-			ch.setComponent(id, 1337, EnumAbstractComponent.EATwo);
-			
-			assertEquals(1337, ch.getComponent(id, Int));
-			assertEquals(EnumAbstractComponent.EATwo, ch.getComponent(id, EnumAbstractComponent));
-			assertEquals(2, ch.getComponent(id, EnumAbstractComponent));
-		}
-	#end
+	public function test_notfollow_enumabstract() {
+		ch.setComponent(id, 1337, EnumAbstractComponent.EATwo);
+		
+		assertEquals(1337, ch.getComponent(id, Int));
+		assertEquals(EnumAbstractComponent.EATwo, ch.getComponent(id, EnumAbstractComponent));
+		assertEquals(2, ch.getComponent(id, EnumAbstractComponent));
+	}
 	
 	
 	public function test_abstract() {
@@ -74,17 +72,15 @@ class TestComponentTypes extends TestCase {
 		assertEquals(EnumComponent.EOne, ch.getComponent(id, EnumComponent));
 	}
 	
-	#if !java
-		public function test_enumabstract() {
-			var view = new View<{ c:EnumAbstractComponent }>();
-			ch.addView(view);
-			
-			ch.setComponent(id, EnumAbstractComponent.EAOne);
-			
-			assertEquals(1, view.entities.length);
-			assertEquals(EnumAbstractComponent.EAOne, ch.getComponent(id, EnumAbstractComponent));
-		}
-	#end
+	public function test_enumabstract() {
+		var view = new View<{ c:EnumAbstractComponent }>();
+		ch.addView(view);
+		
+		ch.setComponent(id, EnumAbstractComponent.EAOne);
+		
+		assertEquals(1, view.entities.length);
+		assertEquals(EnumAbstractComponent.EAOne, ch.getComponent(id, EnumAbstractComponent));
+	}
 	
 	public function test_primitive() {
 		var view = new View<{ c:Int }>();
