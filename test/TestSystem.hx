@@ -8,7 +8,7 @@ import haxe.unit.TestCase;
  * ...
  * @author octocake1
  */
-class TestSystem extends TestCase {	
+class TestSystem extends TestCase {
 	
 	
 	var ch:Echo;
@@ -16,13 +16,13 @@ class TestSystem extends TestCase {
 	
 	public function new() super();
 	
-	
 	override public function setup() {
 		ch = new Echo();
 		SomeSystem.STATIC_ACTUAL = '';
 	}
 	
-	public function test1() {
+	
+	public function test_build() {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
 		ch.addSystem(new SAB());
@@ -31,7 +31,7 @@ class TestSystem extends TestCase {
 		assertEquals(5, ch.views.length); 
 	}
 	
-	public function test2() {
+	public function test_lifecycle() {
 		var ss = new SomeSystem('');
 		ch.addSystem(ss);
 		
@@ -45,27 +45,6 @@ class TestSystem extends TestCase {
 		
 		ch.update(0);
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
-	}
-	
-	public function test3() {
-		var s1 = new SomeSystem('1');
-		var s2 = new SomeSystem('2');
-		ch.addSystem(s1);
-		ch.addSystem(s2);
-		
-		assertEquals('A1A2', SomeSystem.STATIC_ACTUAL);
-		
-		ch.update(0);
-		
-		assertEquals('A1A2U1U2', SomeSystem.STATIC_ACTUAL);
-		
-		ch.removeSystem(s2);
-		
-		assertEquals('A1A2U1U2D2', SomeSystem.STATIC_ACTUAL);
-		
-		ch.update(0);
-		
-		assertEquals('A1A2U1U2D2U1', SomeSystem.STATIC_ACTUAL);
 	}
 	
 }
