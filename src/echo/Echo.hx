@@ -1,12 +1,9 @@
 package echo;
 #if macro
 import echo.macro.MacroBuilder;
-import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Printer;
 using haxe.macro.Context;
 using echo.macro.Macro;
-using Lambda;
 #end
 
 /**
