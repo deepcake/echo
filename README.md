@@ -100,10 +100,10 @@ class Render extends System {
 [See web demo](https://octocake1.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/octocake1/echo/blob/master/test/Example.hx))
 
 #### Overview
-* `Component` is an instance of `Class<Any>`.
-* `Entity` is the `Int` _id_, referenced to global `Map<Int, Class<Any>>` maps, that will be generated for each used `Class<Any>` component class.
-* `View<T>` is a collection of suitable for its filter `T` _ids_.
-* `System` is a container for main logic and a better place to work with views.
+* `Component` is an instance of `Class<Any>`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
+* `Entity` is just the `Int` _id_, using as a key in global component maps.
+* `View<T>` is a collection of suitable _ids_.
+* `System` is a container for main logic and a good place to work with views.
 
 #### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
@@ -113,7 +113,7 @@ class Render extends System {
   * `.remove(id:Int)` - remove _id_ from _the workflow_.
   * `.dispose(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `remove()`, otherwise use `dispose()`.
   * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
-  * `.getComponent(id:Int, type:Class<T>):T` - get component form _id_ by type.
+  * `.getComponent(id:Int, type:Class<T>):T` - get component from _id_ by type.
   * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.
   * `.addSystem`, `.removeSystem(system:System)` - add/remove system from _the workflow_.
   * `.addView`, `.removeView` - add/remove view from _the workflow_. In most cases we will not call that functions directly, macro will do it for us.

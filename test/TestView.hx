@@ -2,7 +2,6 @@ package;
 
 import echo.Echo;
 import echo.View;
-import echo.System;
 import haxe.unit.TestCase;
 
 /**
