@@ -1,3 +1,4 @@
 *.hxproj
+/.vscode
 *.map
 /bin
