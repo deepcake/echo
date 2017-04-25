@@ -6,9 +6,6 @@ import haxe.unit.TestRunner;
  * ...
  * @author octocake1
  */
-
-
-
 class Main {
 	
 	static public function main() {
