@@ -100,18 +100,23 @@ class MacroBuilder {
 
 
 		var activateExprs = [];
-		activateExprs.push(macro super.activate(echo));
-		/*activateExprs = activateExprs.concat(views.map(function(el) {
-			var cls = el.type;
-			return macro $i{el.name} = new $cls();
-		}));*/
-		activateExprs = activateExprs.concat(views.map(function(el) return Context.parse('this.echo.addView(this.${el.name})', Context.currentPos())));
-		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
-
-
 		var deactivateExprs = [];
-		deactivateExprs = deactivateExprs.concat(views.map(function(el) return Context.parse('this.echo.removeView(this.${el.name})', Context.currentPos())));
+
+		activateExprs.push(macro super.activate(echo));
+		views.iter(function(el) {
+			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));
+			deactivateExprs.push(Context.parse('echo.removeView(${el.name})', Context.currentPos()));
+		} );
 		deactivateExprs.push(macro super.deactivate());
+
+		fields.iter(function(f) {
+			if (hasMeta(f, ['onadd']) && views.length > 0) {
+				activateExprs.push(Context.parse('this.${views[0].name}.onAdd.add(${f.name})', Context.currentPos()));
+				deactivateExprs.push(Context.parse('this.${views[0].name}.onAdd.remove(${f.name})', Context.currentPos()));
+			};
+		} );
+
+		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
 
 
