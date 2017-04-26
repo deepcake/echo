@@ -24,6 +24,8 @@ class MacroBuilder {
 	static var EXCLUDEMETA = ['skip'];
 	static var COMPONENTMETA = ['component', 'c'];
 	static var VIEWMETA = ['view', 'v'];
+	static var ONADD_META = ['onadd'];
+	static var ONREMOVE_META = ['onremove', 'onrem'];
 
 
 	static public var componentIndex:Int = 0;
@@ -33,6 +35,11 @@ class MacroBuilder {
 	static function hasMeta(field:Field, metas:Array<String>) {
 		for (m in field.meta) for (meta in metas) if (m.name == meta) return true;
 		return false;
+	}
+
+	static function getMeta(field:Field, metas:Array<String>) {
+		for (m in field.meta) for (meta in metas) if (m.name == meta) return m;
+		return null;
 	}
 
 	static function getClsNameID(clsname:String) {
@@ -102,18 +109,35 @@ class MacroBuilder {
 		var activateExprs = [];
 		var deactivateExprs = [];
 
-		activateExprs.push(macro super.activate(echo));
 		views.iter(function(el) {
 			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));
 			deactivateExprs.push(Context.parse('echo.removeView(${el.name})', Context.currentPos()));
 		} );
-		deactivateExprs.push(macro super.deactivate());
+
+		activateExprs.push(macro super.activate(echo));
+		deactivateExprs.unshift(macro super.deactivate());
 
 		fields.iter(function(f) {
-			if (hasMeta(f, ['onadd']) && views.length > 0) {
-				activateExprs.push(Context.parse('this.${views[0].name}.onAdd.add(${f.name})', Context.currentPos()));
-				deactivateExprs.push(Context.parse('this.${views[0].name}.onAdd.remove(${f.name})', Context.currentPos()));
-			};
+			var onaddMeta = getMeta(f, ONADD_META);
+			if (onaddMeta != null) {
+				var viewname = switch (onaddMeta.params[0].expr) {
+					case EConst(CString(x)): x;
+					case EConst(CInt(x)): views[Std.parseInt(x)].name;
+					case x: throw "Unexp $x";
+				}
+				activateExprs.unshift(macro this.$viewname.onAdd.add($i{f.name}));
+				deactivateExprs.push(macro this.$viewname.onAdd.remove($i{f.name}));
+			}
+			var onremMeta = getMeta(f, ONREMOVE_META);
+			if (onremMeta != null) {
+				var viewname = switch (onremMeta.params[0].expr) {
+					case EConst(CString(x)): x;
+					case EConst(CInt(x)): views[Std.parseInt(x)].name;
+					case x: throw "Unexp $x";
+				}
+				activateExprs.unshift(macro this.$viewname.onRemove.add($i{f.name}));
+				deactivateExprs.push(macro this.$viewname.onRemove.remove($i{f.name}));
+			}
 		} );
 
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));

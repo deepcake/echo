@@ -55,10 +55,11 @@ class TestSystem extends TestCase {
 }
 
 class MetaSystem extends System {
-	@v var view = new echo.View<{a:CA}>();
-	@onadd function onadd(id:Int) {
-
-	}
+	@v var viewa = new echo.View<{a:CA}>();
+	//@v var viewb = new echo.View<{b:CB}>();
+	@onadd("viewa") function onadda(id:Int) trace('A!');
+	@onrem("viewa") function onrema(id:Int) trace('!A');
+	//@onadd(1) function onaddb(id:Int) trace('B!');
 }
 
 class SomeSystem extends System {
