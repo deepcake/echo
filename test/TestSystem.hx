@@ -46,7 +46,19 @@ class TestSystem extends TestCase {
 		ch.update(0);
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
 	}
+
+	public function test_meta() {
+		ch.addSystem(new MetaSystem());
+		assertEquals(1, ch.systems.length); 
+	}
 	
+}
+
+class MetaSystem extends System {
+	@v var view = new echo.View<{a:CA}>();
+	@onadd function onadd(id:Int) {
+
+	}
 }
 
 class SomeSystem extends System {
