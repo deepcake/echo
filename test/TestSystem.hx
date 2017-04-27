@@ -47,19 +47,40 @@ class TestSystem extends TestCase {
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
 	}
 
-	public function test_meta() {
+	public function test_meta_view() {
 		ch.addSystem(new MetaSystem());
-		assertEquals(1, ch.systems.length); 
+		assertEquals(2, ch.views.length);
 	}
-	
+
+	public function test_meta_onadd_onrem() {
+		ch.addSystem(new MetaSystem());
+		var id = ch.id();
+
+		ch.setComponent(id, new CA(), new CB());
+
+		assertEquals('A!B1!', MetaSystem.STATIC_ACTUAL);
+
+		ch.removeComponent(id, CA);
+		ch.removeComponent(id, CB);
+
+		assertEquals('A!B1!!A!B1', MetaSystem.STATIC_ACTUAL);
+	}
+
 }
 
 class MetaSystem extends System {
+	static public var STATIC_ACTUAL = '';
+
+	public function new() STATIC_ACTUAL = '';
+
 	@v var viewa = new echo.View<{a:CA}>();
-	//@v var viewb = new echo.View<{b:CB}>();
-	@onadd("viewa") function onadda(id:Int) trace('A!');
-	@onrem("viewa") function onrema(id:Int) trace('!A');
-	//@onadd(1) function onaddb(id:Int) trace('B!');
+	@v var viewb = new echo.View<{b:CB}>();
+
+	@onadd("viewa") function onadda(id:Int) STATIC_ACTUAL += 'A!';
+	@onrem("viewa") function onrema(id:Int) STATIC_ACTUAL += '!A';
+
+	@onadd(1) function onaddb(id:Int) STATIC_ACTUAL += 'B1!';
+	@onrem(1) function onremb(id:Int) STATIC_ACTUAL += '!B1';
 }
 
 class SomeSystem extends System {
