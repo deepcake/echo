@@ -66,6 +66,7 @@ install:
 
 script:
   - haxe build-interp-dce.hxml
+  - haxe build-interp-dce-release.hxml
 #  - haxe build-neko.hxml         && neko bin/Main.n
   - haxe build-js.hxml           && node bin/Main.js
 #                                 && haxe phantomjs/run.hxml bin/Main.js
