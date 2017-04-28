@@ -31,6 +31,8 @@ class MacroBuilder {
 	static public var componentIndex:Int = 0;
 	static public var componentHoldersMap:Map<String, String> = new Map();
 
+	static var shortenMap:Map<String, String> = new Map();
+
 
 	static function hasMeta(field:Field, metas:Array<String>) {
 		for (m in field.meta) for (meta in metas) if (m.name == meta) return true;
@@ -46,21 +48,22 @@ class MacroBuilder {
 		#if debug
 			return clsname.replace('.', '_');
 		#else
-			return 'C' + haxe.crypto.Md5.encode(clsname).toUpperCase();
+			var hash = haxe.crypto.Md5.encode(clsname).toUpperCase();
+			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'EC' + shortenMap.count());
+			return shortenMap.get(hash);
 		#end
 	}
 
 	static function getClsNameSuffixByComponents(components:Array<{ name:String, cls:ComplexType }>) {
-		components.map(function(c) {
-			return c.name + '_' + c.cls.fullname();
-		}).sort(function(a, b) {
+		var suf = components.map(function(c) return c.name + '_' + c.cls.fullname());
+		suf.sort(function(a, b) {
 			a = a.toLowerCase();
 			b = b.toLowerCase();
 			if (a < b) return -1;
 			if (a > b) return 1;
 			return 0;
 		});
-		return components.join('_');
+		return suf.join('_');
 	}
 
 
