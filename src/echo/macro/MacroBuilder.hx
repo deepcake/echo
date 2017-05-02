@@ -6,6 +6,7 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type.ClassField;
 
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using echo.macro.Macro;
 using StringTools;
@@ -26,6 +27,7 @@ class MacroBuilder {
 	static var VIEWMETA = ['view', 'v'];
 	static var ONADD_META = ['onadd'];
 	static var ONREMOVE_META = ['onremove', 'onrem'];
+	static var ONEACH_META = ['oneach'];
 
 
 	static public var componentIndex:Int = 0;
@@ -159,6 +161,22 @@ class MacroBuilder {
 			}
 		} );
 
+		fields.iter(function(f) {
+			if (hasMeta(f, ONEACH_META)) {
+				var func = switch (f.kind) {
+					case FFun(x): x;
+					case x: throw "Unexp $x";
+				}
+				var components = func.args.map(function(a) {
+					return { name: a.name, cls: a.type };
+				});
+				var viewCls = getView(components);
+				var viewType = viewCls.tp();
+				var viewName = viewCls.fullname();
+				fields.push(fvar([APublic], viewName.toLowerCase(), macro new $viewType()));
+			}
+		});
+
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
 
@@ -178,37 +196,40 @@ class MacroBuilder {
 					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
 				);
 
-				var clsname = getClsNameID('View_' + getClsNameSuffixByComponents(components));
-				try {
-					return Context.getType(clsname);
-				}catch (er:Dynamic) {
-
-					var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
-						public function new() {}
-					}
-
-					var iteratorTypePath = getIterator(components).tp();
-					def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
-
-					var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
-					def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
-
-					// testcomponent
-					def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
-
-					var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
-					def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
-
-
-					traceTypeDefenition(def);
-
-					Context.defineType(def);
-
-					return Context.getType(clsname);
-
-				}
+				return getView(components).toType();
 
 			case x: throw 'Expected: TInst(_.get() => cls, [TAnonymous(_.get() => p)]); Actual: $x';
+		}
+	}
+
+
+	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+		var clsname = getClsNameID('View_' + getClsNameSuffixByComponents(components));
+		try {
+			return Context.getType(clsname).toComplexType();
+		}catch (er:Dynamic) {
+
+			var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
+				public function new() {}
+			}
+
+			var iteratorTypePath = getIterator(components).tp();
+			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
+
+			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
+			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
+
+			// testcomponent
+			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
+
+			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
+			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
+
+
+			traceTypeDefenition(def);
+
+			Context.defineType(def);
+			return Context.getType(clsname).toComplexType();
 		}
 	}
 
