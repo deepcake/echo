@@ -32,7 +32,7 @@ class TestSystem extends TestCase {
 	}
 	
 	public function test_lifecycle() {
-		var ss = new SomeSystem('');
+		var ss = new SomeSystem();
 		ch.addSystem(ss);
 		
 		assertEquals('A', SomeSystem.STATIC_ACTUAL);
@@ -47,30 +47,61 @@ class TestSystem extends TestCase {
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
 	}
 
-	public function test_meta_view() {
-		ch.addSystem(new MetaSystem());
+	public function test_meta_view_skip() {
+		ch.addSystem(new SA());
+		ch.addSystem(new SB());
+
 		assertEquals(2, ch.views.length);
 	}
 
 	public function test_meta_onadd_onrem() {
-		ch.addSystem(new MetaSystem());
+		ch.addSystem(new MetaAddRemSystem());
 		var id = ch.id();
 
 		ch.setComponent(id, new CA(), new CB());
 
-		assertEquals('A!B1!', MetaSystem.STATIC_ACTUAL);
+		assertEquals('A!B1!', MetaAddRemSystem.STATIC_ACTUAL);
 
 		ch.removeComponent(id, CA);
 		ch.removeComponent(id, CB);
 
-		assertEquals('A!B1!!A!B1', MetaSystem.STATIC_ACTUAL);
+		assertEquals('A!B1!!A!B1', MetaAddRemSystem.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach1() {
+		ch.addSystem(new MetaEachSystem1());
+		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('AB#%!', MetaEachSystem1.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach2() {
+		ch.addSystem(new MetaEachSystem2());
+		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.update(0);
+
+		assertEquals(2, ch.views.length);
+		assertEquals('AB!#%!', MetaEachSystem2.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach3() {
+		ch.addSystem(new MetaEachSystem3());
+		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.update(0);
+
+		assertEquals(2, ch.views.length);
+		assertEquals('A#B%!', MetaEachSystem3.STATIC_ACTUAL);
 	}
 
 }
 
-class MetaSystem extends System {
+class MetaAddRemSystem extends System {
 	static public var STATIC_ACTUAL = '';
-
 	public function new() STATIC_ACTUAL = '';
 
 	@v var viewa = new echo.View<{a:CA}>();
@@ -83,50 +114,65 @@ class MetaSystem extends System {
 	@onrem(1) function onremb(id:Int) STATIC_ACTUAL += '!B1';
 }
 
+
+class MetaEachSystem1 extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach(a:CA, b:CB) STATIC_ACTUAL += a.val + b.val;
+
+	override public function update(dt:Float) STATIC_ACTUAL += '!';
+}
+
+class MetaEachSystem2 extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
+
+	var viewa = new echo.View<{a:CA}>();
+}
+
+class MetaEachSystem3 extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach1(a:CA) STATIC_ACTUAL += a.val;
+	@oneach function oneach2(b:CB) STATIC_ACTUAL += b.val;
+
+	override public function update(dt:Float) STATIC_ACTUAL += '!';
+}
+
+
 class SomeSystem extends System {
 	static public var STATIC_ACTUAL = '';
-	@skip public var val = '';
-	public function new(v:String) {
-		val = v;
-	}
 	override public function onactivate() {
-		STATIC_ACTUAL += 'A' + val;
+		STATIC_ACTUAL += 'A';
 	}
 	override public function ondeactivate() {
-		STATIC_ACTUAL += 'D' + val;
+		STATIC_ACTUAL += 'D';
 	}
 	override public function update(dt:Float) {
-		STATIC_ACTUAL += 'U' + val;
+		STATIC_ACTUAL += 'U';
 	}
 }
 
 class SA extends System {
-	var view = new echo.View<{a:CA}>();
-	override public function update(dt:Float) {
-		for (c in view) {
-			TestView.ACTUAL += c.a.val;
-		}
-	}
+	var view1 = new echo.View<{a:CA}>();
+	@skip var view2 = new echo.View<{b:CB}>();
+	@skip var view3 = new echo.View<{c:CC}>();
 }
 
 class SB extends System {
-	var view = new echo.View<{b:CB}>();
-	override public function update(dt:Float) {
-		for (c in view) {
-			TestView.ACTUAL += c.b.val;
-		}
-	}
+	var view1 = new echo.View<{a:CA}>();
+	@view var view2 = new echo.View<{b:CB}>();
+	var view3 = new echo.View<{c:CC}>();
 }
 
 class SAB extends System {
 	var viewab = new echo.View<{a:CA, b:CB}>();
 	var viewa = new echo.View<{a:CA}>();
 	var viewb = new echo.View<{b:CB}>();
-	override public function update(dt:Float) {
-		for (c in viewab) {
-			TestView.ACTUAL += (c.a.val + c.b.val);
-		}
-	}
 }
 
 class CA {
