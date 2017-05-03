@@ -22,12 +22,12 @@ using Lambda;
 class MacroBuilder {
 
 
-	static var EXCLUDEMETA = ['skip'];
-	static var COMPONENTMETA = ['component', 'c'];
-	static var VIEWMETA = ['view', 'v'];
-	static var ONADD_META = ['onadd'];
-	static var ONREMOVE_META = ['onremove', 'onrem'];
-	static var ONEACH_META = ['oneach'];
+	static var EXCLUDE_META = ['skip', 'i'];
+	static var COMPONENT_META = ['component', 'c'];
+	static var VIEW_META = ['view', 'v'];
+	static var ONADD_META = ['onadd', 'a'];
+	static var ONREMOVE_META = ['onremove', 'onrem', 'r'];
+	static var ONEACH_META = ['oneach', 'e'];
 
 
 	static public var componentIndex:Int = 0;
@@ -50,7 +50,7 @@ class MacroBuilder {
 		#if debug
 			return clsname.replace('.', '_');
 		#else
-			var hash = haxe.crypto.Md5.encode(clsname).toUpperCase();
+			var hash = haxe.crypto.Md5.encode(clsname.replace('.', '_')).toUpperCase();
 			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'EC' + shortenMap.count());
 			return shortenMap.get(hash);
 		#end
@@ -65,7 +65,7 @@ class MacroBuilder {
 			if (a > b) return 1;
 			return 0;
 		});
-		return suf.join('_');
+		return suf.join('_').replace('.', '_');
 	}
 
 
@@ -84,13 +84,10 @@ class MacroBuilder {
 				static public var __MAP:Map<Int, $componentCls> = new Map();
 			}
 
-
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-
 			return Context.getType(componentHolderClsName).toComplexType().fullname();
-
 		}
 	}
 
@@ -103,11 +100,12 @@ class MacroBuilder {
 
 		var activateExprs = [];
 		var deactivateExprs = [];
+		var updateExprs = [];
 
-		var excluding = fields.filter(function(f) return hasMeta(f, VIEWMETA)).length == 0;
+		var excluding = fields.filter(function(f) return hasMeta(f, VIEW_META)).length == 0;
 
 		fields.iter(function(f) {
-			if (hasMeta(f, ONEACH_META)) {
+			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
 				var func = switch (f.kind) {
 					case FFun(x): x;
 					case x: throw "Unexp $x";
@@ -115,11 +113,19 @@ class MacroBuilder {
 				var components = func.args.map(function(a) {
 					return { name: a.name, cls: a.type };
 				});
-				var viewCls = getView(components);
-				var viewType = viewCls.tp();
-				var viewName = viewCls.fullname();
 
-				fields.push(fvar(excluding ? [] : [meta('view')], [APublic], viewName.toLowerCase(), macro new $viewType()));
+				var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
+				var viewBody = Context.parse('new echo.View<{$params}>()', Context.currentPos());
+				var viewName = getClsNameSuffixByComponents(components).toLowerCase();
+
+				fields.push(fvar((excluding ? [] : [meta('view')]), null, viewName, viewBody));
+
+				var funcName = f.name;
+				var funcParams = components.map(function(c) {
+					return Context.parse('i.${c.name}', Context.currentPos());
+				});
+
+				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcParams})); // TODO inline ?
 			}
 		});
 
@@ -129,12 +135,12 @@ class MacroBuilder {
 
 					if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
 
-					for (m in field.meta) for (em in MacroBuilder.EXCLUDEMETA) if (m.name == em) return null; // skip by meta
+					for (m in field.meta) for (em in MacroBuilder.EXCLUDE_META) if (m.name == em) return null; // skip by meta
 
 					if (excluding) {
-						if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name };
+						if (hasMeta(field, EXCLUDE_META)) return null; else return { name: field.name };
 					} else {
-						if (hasMeta(field, VIEWMETA)) return { name: field.name }; else return null;
+						if (hasMeta(field, VIEW_META)) return { name: field.name }; else return null;
 					}
 
 				default:
@@ -175,23 +181,30 @@ class MacroBuilder {
 			}
 		} );
 
-		var updateExprs = []; // TODO
-
-		/*fields = fields.filter(function(field) {
-			switch (field.kind) {
-				case FFun(func): 
-					if (field.name == 'update') {
-						updateExprs.push(func.expr);
-						return false;
+		if (updateExprs.length > 0) {
+			var func = (function() {
+				for (field in fields) {
+					switch (field.kind) {
+						case FFun(func): if (field.name == 'update') return func;
+						default:
 					}
-				default: return true;
-			}
-		} );
+				}
+				return null;
+			})();
 
-		fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}));*/
+			if (func != null) {
+				switch (func.expr.expr) {
+					case EBlock(exprs): for (expr in exprs) updateExprs.push(expr);
+					case e: updateExprs.push(func.expr);
+				}
+				func.expr = macro $b{updateExprs};
+			} else {
+				fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}));
+			}
+		}
+
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
-
 
 		traceFields(cls.fullname(), fields);
 
@@ -236,7 +249,6 @@ class MacroBuilder {
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 
-
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
@@ -258,13 +270,10 @@ class MacroBuilder {
 
 			for (c in components) def.fields.push(fvar([APublic], c.name, c.cls));
 
-
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-
 			return Context.getType(viewdataClsName).toComplexType();
-
 		}
 	}
 
@@ -297,13 +306,10 @@ class MacroBuilder {
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewdataCls, macro $b{nextExprs}));
 
-
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-
 			return Context.getType(iteratorClsName).toComplexType();
-
 		}
 	}
 
