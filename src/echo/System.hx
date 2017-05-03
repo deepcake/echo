@@ -8,7 +8,6 @@ package echo;
 @:autoBuild(echo.macro.MacroBuilder.buildSystem())
 #end
 class System {
-	// TODO create view by passed args (update(b:Body, etc))
 
 
 	var echo:Echo;
@@ -25,16 +24,10 @@ class System {
 	}
 
 
-	public function onactivate() {
+	public function onactivate() { }
 
-	}
+	public function ondeactivate() { }
 
-	public function ondeactivate() {
-
-	}
-
-	public function update(dt:Float) {
-
-	}
+	public function update(dt:Float) { }
 
 }
