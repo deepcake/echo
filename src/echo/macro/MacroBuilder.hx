@@ -99,8 +99,29 @@ class MacroBuilder {
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
+		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
+
+		var activateExprs = [];
+		var deactivateExprs = [];
 
 		var excluding = fields.filter(function(f) return hasMeta(f, VIEWMETA)).length == 0;
+
+		fields.iter(function(f) {
+			if (hasMeta(f, ONEACH_META)) {
+				var func = switch (f.kind) {
+					case FFun(x): x;
+					case x: throw "Unexp $x";
+				}
+				var components = func.args.map(function(a) {
+					return { name: a.name, cls: a.type };
+				});
+				var viewCls = getView(components);
+				var viewType = viewCls.tp();
+				var viewName = viewCls.fullname();
+
+				fields.push(fvar(excluding ? [] : [meta('view')], [APublic], viewName.toLowerCase(), macro new $viewType()));
+			}
+		});
 
 		var views = fields.map(function(field) {
 			switch(field.kind) {
@@ -113,7 +134,7 @@ class MacroBuilder {
 					if (excluding) {
 						if (hasMeta(field, EXCLUDEMETA)) return null; else return { name: field.name };
 					} else {
-						if (hasMeta(field, VIEWMETA)) return { name: field.name }; else null;
+						if (hasMeta(field, VIEWMETA)) return { name: field.name }; else return null;
 					}
 
 				default:
@@ -122,13 +143,6 @@ class MacroBuilder {
 		} ).filter(function(el) {
 			return el != null;
 		} );
-
-
-		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
-
-
-		var activateExprs = [];
-		var deactivateExprs = [];
 
 		views.iter(function(el) {
 			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));
@@ -161,28 +175,25 @@ class MacroBuilder {
 			}
 		} );
 
-		fields.iter(function(f) {
-			if (hasMeta(f, ONEACH_META)) {
-				var func = switch (f.kind) {
-					case FFun(x): x;
-					case x: throw "Unexp $x";
-				}
-				var components = func.args.map(function(a) {
-					return { name: a.name, cls: a.type };
-				});
-				var viewCls = getView(components);
-				var viewType = viewCls.tp();
-				var viewName = viewCls.fullname();
-				fields.push(fvar([APublic], viewName.toLowerCase(), macro new $viewType()));
-			}
-		});
+		var updateExprs = []; // TODO
 
+		/*fields = fields.filter(function(field) {
+			switch (field.kind) {
+				case FFun(func): 
+					if (field.name == 'update') {
+						updateExprs.push(func.expr);
+						return false;
+					}
+				default: return true;
+			}
+		} );
+
+		fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}));*/
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
 
 
 		traceFields(cls.fullname(), fields);
-
 
 		return fields;
 	}
