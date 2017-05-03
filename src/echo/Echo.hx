@@ -11,25 +11,25 @@ using echo.macro.Macro;
  * @author octocake1
  */
 class Echo {
-	
-	
+
+
 	@:noCompletion static public var __SEQUENCE = 0;
-	
-	
+
+
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
-	
+
 	public var entities(default, null):List<Int>;
 	public var views(default, null):Array<View.ViewBase>;
 	public var systems(default, null):Array<System>;
-	
-	
+
+
 	public function new() {
 		entities = new List();
 		views = [];
 		systems = [];
 	}
-	
-	
+
+
 	#if debug
 		var updateStats:Map<System, Float> = new Map();
 	#end
@@ -42,8 +42,8 @@ class Echo {
 		#end
 		return ret;
 	}
-	
-	
+
+
 	public function update(dt:Float) {
 		for (s in systems) {
 			#if debug
@@ -55,51 +55,51 @@ class Echo {
 			#end
 		}
 	}
-	
-	
+
+
 	// System
-	
+
 	public function addSystem(s:System) {
 		s.activate(this);
 		systems.push(s);
 	}
-	
+
 	public function removeSystem(s:System) {
 		s.deactivate();
 		systems.remove(s);
 	}
-	
-	
+
+
 	// View
-	
+
 	public function addView(v:View.ViewBase) {
 		v.activate(this);
 		views.push(v);
 	}
-	
+
 	public function removeView(v:View.ViewBase) {
 		v.deactivate();
 		views.remove(v);
 	}
-	
-	
+
+
 	// Entity
-	
+
 	public function id():Int {
 		var id = next();
 		entitiesMap.set(id, id);
 		entities.add(id);
 		return id;
 	}
-	
+
 	public inline function next():Int {
 		return ++__SEQUENCE;
 	}
-	
+
 	public inline function has(id:Int):Bool {
 		return entitiesMap.exists(id);
 	}
-	
+
 	public inline function add(id:Int) {
 		if (!this.has(id)) {
 			entitiesMap.set(id, id);
@@ -107,7 +107,7 @@ class Echo {
 			for (v in views) v.addIfMatch(id);
 		}
 	}
-	
+
 	public inline function remove(id:Int) {
 		if (this.has(id)) {
 			for (v in views) v.removeIfMatch(id);
@@ -115,28 +115,28 @@ class Echo {
 			entities.remove(id);
 		}
 	}
-	
+
 	macro public function dispose(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
-		var exprs = [ 
+		var exprs = [
 			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
 				var n = Context.parse(n, Context.currentPos());
 				macro $n.__MAP.remove(_id_);
 			}
 		];
-		
+
 		Macro.traceExprs('remove', exprs);
-		
+
 		return macro {
 			$esafe;
 			$self.remove(_id_);
 			$b{exprs};
 		}
 	}
-	
-	
+
+
 	// Component
-	
+
 	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<Expr>) {
 		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
@@ -147,16 +147,16 @@ class Echo {
 				macro $n.__MAP[_id_] = $c;
 			}
 		];
-		
+
 		Macro.traceExprs('setComponent', exprs);
-		
+
 		return macro {
 			$esafe;
 			$b{exprs};
 			if ($self.has(_id_)) for (_v_ in $self.views) _v_.addIfMatch(_id_);
 		}
 	}
-	
+
 	macro inline public function removeComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>) {
 		var esafe = macro var _id_ = $id;
 		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
@@ -170,12 +170,12 @@ class Echo {
 			}
 		}
 	}
-	
+
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
 		//if (h == null) return macro null;
 		var n = Context.parse(h, Context.currentPos());
 		return macro $n.__MAP.get($id);
 	}
-	
+
 }
