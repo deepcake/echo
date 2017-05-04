@@ -108,8 +108,8 @@ class TestView extends TestCase {
 		
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 		
-		ch.dispose(ids[0]);
-		ch.dispose(ids[2]);
+		ch.remove(ids[0]);
+		ch.remove(ids[2]);
 		
 		for (va in viewa) ACTUAL += va.a;
 		
@@ -149,7 +149,7 @@ class TestView extends TestCase {
 		var ids = [ for(i in 0...10) ch.id() ];
 		for (id in ids) ch.setComponent(id, new C1('A'));
 		
-		for (id in ids) ch.dispose(id);
+		for (id in ids) ch.remove(id);
 		
 		assertEquals(0, viewa.entities.length);
 		
@@ -259,7 +259,7 @@ class TestView extends TestCase {
 		
 		assertEquals('', ACTUAL);
 		
-		for (id in ids) ch.dispose(id);
+		for (id in ids) ch.remove(id);
 		
 		assertEquals('QWERTY', ACTUAL);
 	}

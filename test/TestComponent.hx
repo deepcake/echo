@@ -157,9 +157,9 @@ class TestComponent extends TestCase {
 	}
 	
 	public function test_dispose_entity() {
-		ch.dispose(ids[0]);
-		ch.dispose(ids[2]);
-		ch.dispose(ids[4]);
+		ch.remove(ids[0]);
+		ch.remove(ids[2]);
+		ch.remove(ids[4]);
 		
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -201,9 +201,9 @@ class TestComponent extends TestCase {
 	}
 	
 	public function test_dispose_and_add_entity() {
-		ch.dispose(ids[0]);
-		ch.dispose(ids[2]);
-		ch.dispose(ids[4]);
+		ch.remove(ids[0]);
+		ch.remove(ids[2]);
+		ch.remove(ids[4]);
 		
 		ch.add(ids[0]);
 		ch.add(ids[2]);
@@ -245,7 +245,7 @@ class TestComponent extends TestCase {
 	
 	public function test_set_after_dispose_entity() {
 		ch.setComponent(ids[0], 'A');
-		ch.dispose(ids[0]);
+		ch.remove(ids[0]);
 		ch.setComponent(ids[0], '!');
 		
 		assertEquals(4, ch.entities.length);

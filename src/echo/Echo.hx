@@ -120,7 +120,7 @@ class Echo {
 		}
 	}
 
-	macro public function dispose(self:Expr, id:ExprOf<Int>) {
+	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
 			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
