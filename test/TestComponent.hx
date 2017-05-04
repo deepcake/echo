@@ -137,9 +137,9 @@ class TestComponent extends TestCase {
 	}
 	
 	public function test_remove_entity() {
-		ch.remove(ids[0]);
-		ch.remove(ids[2]);
-		ch.remove(ids[4]);
+		ch.pull(ids[0]);
+		ch.pull(ids[2]);
+		ch.pull(ids[4]);
 		
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -177,9 +177,9 @@ class TestComponent extends TestCase {
 	}
 	
 	public function test_remove_and_add_entity() {
-		ch.remove(ids[0]);
-		ch.remove(ids[2]);
-		ch.remove(ids[4]);
+		ch.pull(ids[0]);
+		ch.pull(ids[2]);
+		ch.pull(ids[4]);
 		
 		ch.add(ids[0]);
 		ch.add(ids[2]);
@@ -236,7 +236,7 @@ class TestComponent extends TestCase {
 	
 	public function test_set_after_remove_entity() {
 		ch.setComponent(ids[0], 'A');
-		ch.remove(ids[0]);
+		ch.pull(ids[0]);
 		ch.setComponent(ids[0], '!');
 		
 		assertEquals(4, ch.entities.length);
