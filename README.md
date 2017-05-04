@@ -108,10 +108,10 @@ class Render extends System {
 #### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - create and add new _id_ to _the workflow_.
-  * `.next():Int` - only create new _id_, without adding it to _the workflow_.
+  * `.next():Int` - create new _id_ without adding it to _the workflow_.
   * `.add(id:Int)` - add _id_ to _the workflow_.
-  * `.remove(id:Int)` - remove _id_ from _the workflow_.
-  * `.dispose(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `remove()`, otherwise use `dispose()`.
+  * `.pull(id:Int)` - remove _id_ from _the workflow_ without removing its components.
+  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `pull()`, otherwise use `remove()`.
   * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
   * `.getComponent(id:Int, type:Class<T>):T` - get component from _id_ by type.
   * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.
