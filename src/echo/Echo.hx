@@ -96,6 +96,10 @@ class Echo {
 		return ++__SEQUENCE;
 	}
 
+	public inline function last():Int {
+		return __SEQUENCE;
+	}
+
 	public inline function has(id:Int):Bool {
 		return entitiesMap.exists(id);
 	}
