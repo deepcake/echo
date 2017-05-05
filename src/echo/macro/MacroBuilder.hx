@@ -158,28 +158,35 @@ class MacroBuilder {
 		activateExprs.push(macro super.activate(echo));
 		deactivateExprs.unshift(macro super.deactivate());
 
+		// onadd, onremove
+		var addExprs = [];
+		var remExprs = [];
 		fields.iter(function(f) {
 			var onaddMeta = getMeta(f, ONADD_META);
 			if (onaddMeta != null) {
-				var viewname = switch (onaddMeta.params[0].expr) {
-					case EConst(CString(x)): x;
-					case EConst(CInt(x)): views[Std.parseInt(x)].name;
-					case x: throw "Unexp $x";
+				var viewname = switch (onaddMeta.params) {
+					case [ _.expr => EConst(CString(x)) ]: x;
+					case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
+					case []: views[0].name;
+					case x: throw 'Unexp $x';
 				}
-				activateExprs.unshift(macro this.$viewname.onAdd.add($i{f.name}));
-				deactivateExprs.push(macro this.$viewname.onAdd.remove($i{f.name}));
+				addExprs.push(macro this.$viewname.onAdd.add($i{f.name}));
+				remExprs.push(macro this.$viewname.onAdd.remove($i{f.name}));
 			}
 			var onremMeta = getMeta(f, ONREMOVE_META);
 			if (onremMeta != null) {
-				var viewname = switch (onremMeta.params[0].expr) {
-					case EConst(CString(x)): x;
-					case EConst(CInt(x)): views[Std.parseInt(x)].name;
-					case x: throw "Unexp $x";
+				var viewname = switch (onremMeta.params) {
+					case [ _.expr => EConst(CString(x)) ]: x;
+					case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
+					case []: views[0].name;
+					case x: throw 'Unexp $x';
 				}
-				activateExprs.unshift(macro this.$viewname.onRemove.add($i{f.name}));
-				deactivateExprs.push(macro this.$viewname.onRemove.remove($i{f.name}));
+				addExprs.push(macro this.$viewname.onRemove.add($i{f.name}));
+				remExprs.push(macro this.$viewname.onRemove.remove($i{f.name}));
 			}
 		} );
+		activateExprs = addExprs.concat(activateExprs);
+		deactivateExprs = deactivateExprs.concat(remExprs);
 
 		if (updateExprs.length > 0) {
 			var func = (function() {
