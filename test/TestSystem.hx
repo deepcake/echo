@@ -60,12 +60,22 @@ class TestSystem extends TestCase {
 
 		ch.setComponent(id, new CA(), new CB());
 
-		assertEquals('A!B1!', MetaAddRemSystem.STATIC_ACTUAL);
+		assertEquals('A!B!', MetaAddRemSystem.STATIC_ACTUAL);
 
 		ch.removeComponent(id, CA);
 		ch.removeComponent(id, CB);
 
-		assertEquals('A!B1!!A!B1', MetaAddRemSystem.STATIC_ACTUAL);
+		assertEquals('A!B!!A!B', MetaAddRemSystem.STATIC_ACTUAL);
+	}
+
+	public function test_meta_onadd_onrem_order() {
+		ch.addSystem(new MetaAddRemOrderSystem());
+		ch.setComponent(ch.id(), new CA(), new CB());
+
+		ch.removeComponent(ch.last(), CA);
+		ch.removeComponent(ch.last(), CB);
+
+		assertEquals('A0!A1!B0!B1!!A0!A1!B0!B1', MetaAddRemOrderSystem.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach1() {
@@ -110,8 +120,28 @@ class MetaAddRemSystem extends System {
 	@onadd("viewa") function onadda(id:Int) STATIC_ACTUAL += 'A!';
 	@onrem("viewa") function onrema(id:Int) STATIC_ACTUAL += '!A';
 
-	@onadd(1) function onaddb(id:Int) STATIC_ACTUAL += 'B1!';
-	@onrem(1) function onremb(id:Int) STATIC_ACTUAL += '!B1';
+	@onadd(1) function onaddb(id:Int) STATIC_ACTUAL += 'B!';
+	@onrem(1) function onremb(id:Int) STATIC_ACTUAL += '!B';
+}
+
+class MetaAddRemOrderSystem extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@v var viewa = new echo.View<{a:CA}>();
+	@v var viewb = new echo.View<{b:CB}>();
+
+	@onadd("viewb") function onaddb0(id:Int) STATIC_ACTUAL += 'B0!';
+	@onrem("viewb") function onremb0(id:Int) STATIC_ACTUAL += '!B0';
+
+	@onadd("viewb") function onaddb1(id:Int) STATIC_ACTUAL += 'B1!';
+	@onrem("viewb") function onremb1(id:Int) STATIC_ACTUAL += '!B1';
+
+	@a function onadda0(id:Int) STATIC_ACTUAL += 'A0!';
+	@a function onadda1(id:Int) STATIC_ACTUAL += 'A1!';
+
+	@r function onrema0(id:Int) STATIC_ACTUAL += '!A0';
+	@r function onrema1(id:Int) STATIC_ACTUAL += '!A1';
 }
 
 
