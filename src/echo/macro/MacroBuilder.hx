@@ -47,7 +47,7 @@ class MacroBuilder {
 	}
 
 	static function getClsNameID(clsname:String) {
-		#if echo_shorten
+		#if !echo_shorten
 			return clsname.replace('.', '_');
 		#else
 			var hash = haxe.crypto.Md5.encode(clsname.replace('.', '_')).toUpperCase();
