@@ -136,7 +136,7 @@ class TestComponent extends TestCase {
 		assertEquals(null, ch.getComponent(ids[4], String));
 	}
 	
-	public function test_remove_entity() {
+	public function test_pull_entity() {
 		ch.pull(ids[0]);
 		ch.pull(ids[2]);
 		ch.pull(ids[4]);
@@ -156,7 +156,7 @@ class TestComponent extends TestCase {
 		assertEquals('4', ch.getComponent(ids[4], String));
 	}
 	
-	public function test_dispose_entity() {
+	public function test_remove_entity() {
 		ch.remove(ids[0]);
 		ch.remove(ids[2]);
 		ch.remove(ids[4]);
@@ -176,7 +176,7 @@ class TestComponent extends TestCase {
 		assertEquals(null, ch.getComponent(ids[4], String));
 	}
 	
-	public function test_remove_and_add_entity() {
+	public function test_pull_and_add_entity() {
 		ch.pull(ids[0]);
 		ch.pull(ids[2]);
 		ch.pull(ids[4]);
@@ -200,7 +200,7 @@ class TestComponent extends TestCase {
 		assertEquals('4', ch.getComponent(ids[4], String));
 	}
 	
-	public function test_dispose_and_add_entity() {
+	public function test_remove_and_add_entity() {
 		ch.remove(ids[0]);
 		ch.remove(ids[2]);
 		ch.remove(ids[4]);
@@ -234,7 +234,7 @@ class TestComponent extends TestCase {
 		assertEquals('!', ch.getComponent(ids[0], String));
 	}
 	
-	public function test_set_after_remove_entity() {
+	public function test_set_after_pull_entity() {
 		ch.setComponent(ids[0], 'A');
 		ch.pull(ids[0]);
 		ch.setComponent(ids[0], '!');
@@ -243,7 +243,7 @@ class TestComponent extends TestCase {
 		assertEquals('!', ch.getComponent(ids[0], String));
 	}
 	
-	public function test_set_after_dispose_entity() {
+	public function test_set_after_remove_entity() {
 		ch.setComponent(ids[0], 'A');
 		ch.remove(ids[0]);
 		ch.setComponent(ids[0], '!');

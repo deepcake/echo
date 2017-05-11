@@ -80,7 +80,7 @@ class TestView extends TestCase {
 		assertEquals('IOPRTUWY', ACTUAL);
 	}
 	
-	public function test_sort_and_remove_entity() {
+	public function test_sort_and_pull_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -98,7 +98,7 @@ class TestView extends TestCase {
 		assertEquals('IOPRTUWY', ACTUAL);
 	}
 	
-	public function test_sort_and_dispose_entity() {
+	public function test_sort_and_remove_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -128,7 +128,7 @@ class TestView extends TestCase {
 		assertEquals(0, viewa.entities.length);
 	}
 	
-	public function test_remove_entity() {
+	public function test_pull_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
@@ -143,7 +143,7 @@ class TestView extends TestCase {
 		assertEquals(10, viewa.entities.length);
 	}
 	
-	public function test_dispose_entity() {
+	public function test_remove_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
@@ -224,7 +224,7 @@ class TestView extends TestCase {
 		assertEquals('QWERTY', ACTUAL);
 	}
 	
-	public function test_onremove_remove_entity() {
+	public function test_onremove_pull_entity() {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 		
@@ -244,7 +244,7 @@ class TestView extends TestCase {
 		assertEquals('QWERTY', ACTUAL);
 	}
 	
-	public function test_onremove_dispose_entity() {
+	public function test_onremove_remove_entity() {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 		
