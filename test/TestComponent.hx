@@ -9,7 +9,7 @@ using Lambda;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class TestComponent extends TestCase {
 	

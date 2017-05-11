@@ -14,7 +14,7 @@ using Lambda;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 @:noCompletion
 @:final

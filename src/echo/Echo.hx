@@ -8,7 +8,7 @@ using echo.macro.Macro;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class Echo {
 

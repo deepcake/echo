@@ -2,7 +2,7 @@ package echo;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 #if !macro
 @:genericBuild(echo.macro.MacroBuilder.genericView())

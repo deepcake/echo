@@ -4,7 +4,7 @@ import haxe.unit.TestRunner;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class Main {
 	

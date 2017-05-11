@@ -8,7 +8,7 @@ import js.html.Element;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class Example {
 	

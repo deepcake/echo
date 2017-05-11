@@ -11,7 +11,7 @@ import haxe.macro.Printer;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 @:noCompletion
 @:final

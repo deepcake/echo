@@ -6,7 +6,7 @@ import haxe.unit.TestCase;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class TestPerfomance extends TestCase {
 	

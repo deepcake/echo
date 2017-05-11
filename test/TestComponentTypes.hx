@@ -7,7 +7,7 @@ import echo.System;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class TestComponentTypes extends TestCase {
 	
