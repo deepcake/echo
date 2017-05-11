@@ -6,6 +6,9 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var ComponentHolder_$Example_$Position = function() { };
+var ComponentHolder_$Example_$Sprite = function() { };
+var ComponentHolder_$Example_$Velocity = function() { };
 var Example = function() { };
 Example.main = function() {
 	var canvas = window.document.createElement("code");
@@ -38,8 +41,8 @@ Example.main = function() {
 };
 Example.createGrass = function(x,y) {
 	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F33E;");
+	ComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F33E;");
 	if(Example.echo.entitiesMap.exists(_id_)) {
 		var _g = 0;
 		var _g1 = Example.echo.views;
@@ -52,8 +55,8 @@ Example.createGrass = function(x,y) {
 };
 Example.createTree = function(x,y) {
 	var _id_ = Example.echo.id();
-	GenericComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F333;");
+	ComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F333;");
 	if(Example.echo.entitiesMap.exists(_id_)) {
 		var _g = 0;
 		var _g1 = Example.echo.views;
@@ -67,8 +70,8 @@ Example.createTree = function(x,y) {
 Example.createDynamic = function(x,y,vx,vy) {
 	var id = Example.echo.id();
 	var this1 = new Vec2(vx,vy);
-	GenericComponentHolder_$Example_$Position.__MAP.h[id] = new Vec2(x,y);
-	GenericComponentHolder_$Example_$Velocity.__MAP.h[id] = this1;
+	ComponentHolder_$Example_$Position.__MAP.h[id] = new Vec2(x,y);
+	ComponentHolder_$Example_$Velocity.__MAP.h[id] = this1;
 	if(Example.echo.entitiesMap.exists(id)) {
 		var _g = 0;
 		var _g1 = Example.echo.views;
@@ -82,7 +85,7 @@ Example.createDynamic = function(x,y,vx,vy) {
 };
 Example.createRabbit = function(x,y,vx,vy) {
 	var _id_ = Example.createDynamic(x,y,vx,vy);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F407;");
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F407;");
 	if(Example.echo.entitiesMap.exists(_id_)) {
 		var _g = 0;
 		var _g1 = Example.echo.views;
@@ -95,7 +98,7 @@ Example.createRabbit = function(x,y,vx,vy) {
 };
 Example.createTiger = function(x,y,vx,vy) {
 	var _id_ = Example.createDynamic(x,y,vx,vy);
-	GenericComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F405;");
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F405;");
 	if(Example.echo.entitiesMap.exists(_id_)) {
 		var _g = 0;
 		var _g1 = Example.echo.views;
@@ -122,7 +125,7 @@ echo_System.prototype = {
 	}
 };
 var Movement = function(w,h) {
-	this.bodies = new View_$Example_$Position_$Example_$Velocity();
+	this.bodies = new View_$pos_$Example_$Position_$vel_$Example_$Velocity();
 	this.w = w;
 	this.h = h;
 };
@@ -133,11 +136,11 @@ Movement.prototype = $extend(echo_System.prototype,{
 		var _g_i;
 		var list = this.bodies.entities;
 		_g_i = -1;
-		_g_vd = new ViewData_$Example_$Position_$Example_$Velocity();
+		_g_vd = new ViewData_$pos_$Example_$Position_$vel_$Example_$Velocity();
 		while(++_g_i < list.length) {
 			_g_vd.id = list[_g_i];
-			_g_vd.pos = GenericComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
-			_g_vd.vel = GenericComponentHolder_$Example_$Velocity.__MAP.get(_g_vd.id);
+			_g_vd.pos = ComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
+			_g_vd.vel = ComponentHolder_$Example_$Velocity.__MAP.get(_g_vd.id);
 			_g_vd.pos.x += _g_vd.vel.x * dt;
 			_g_vd.pos.y += _g_vd.vel.y * dt;
 			if(_g_vd.pos.x >= this.w) {
@@ -155,12 +158,12 @@ Movement.prototype = $extend(echo_System.prototype,{
 		}
 	}
 	,activate: function(echo1) {
+		echo1.addView(this.bodies);
 		echo_System.prototype.activate.call(this,echo1);
-		this.echo.addView(this.bodies);
 	}
 });
 var Render = function(w,h,canvas) {
-	this.visuals = new View_$Example_$Position_$Example_$Sprite();
+	this.visuals = new View_$pos_$Example_$Position_$spr_$Example_$Sprite();
 	this.h = 0;
 	this.w = 0;
 	this.canvas = canvas;
@@ -197,22 +200,19 @@ Render.prototype = $extend(echo_System.prototype,{
 		var _g_i;
 		var list = this.visuals.entities;
 		_g_i = -1;
-		_g_vd = new ViewData_$Example_$Position_$Example_$Sprite();
+		_g_vd = new ViewData_$pos_$Example_$Position_$spr_$Example_$Sprite();
 		while(++_g_i < list.length) {
 			_g_vd.id = list[_g_i];
-			_g_vd.pos = GenericComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
-			_g_vd.spr = GenericComponentHolder_$Example_$Sprite.__MAP.get(_g_vd.id);
+			_g_vd.pos = ComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
+			_g_vd.spr = ComponentHolder_$Example_$Sprite.__MAP.get(_g_vd.id);
 			this.world[_g_vd.pos.y | 0][_g_vd.pos.x | 0].innerHTML = _g_vd.spr.value;
 		}
 	}
 	,activate: function(echo1) {
+		echo1.addView(this.visuals);
 		echo_System.prototype.activate.call(this,echo1);
-		this.echo.addView(this.visuals);
 	}
 });
-var GenericComponentHolder_$Example_$Position = function() { };
-var GenericComponentHolder_$Example_$Sprite = function() { };
-var GenericComponentHolder_$Example_$Velocity = function() { };
 var List = function() {
 	this.length = 0;
 };
@@ -240,9 +240,9 @@ Std.random = function(x) {
 		return Math.floor(Math.random() * x);
 	}
 };
-var ViewData_$Example_$Position_$Example_$Sprite = function() {
+var ViewData_$pos_$Example_$Position_$spr_$Example_$Sprite = function() {
 };
-var ViewData_$Example_$Position_$Example_$Velocity = function() {
+var ViewData_$pos_$Example_$Position_$vel_$Example_$Velocity = function() {
 };
 var echo_ViewBase = function() {
 	this.entities = [];
@@ -281,27 +281,27 @@ echo_ViewBase.prototype = {
 		}
 	}
 };
-var View_$Example_$Position_$Example_$Sprite = function() {
+var View_$pos_$Example_$Position_$spr_$Example_$Sprite = function() {
 	echo_ViewBase.call(this);
 };
-View_$Example_$Position_$Example_$Sprite.__super__ = echo_ViewBase;
-View_$Example_$Position_$Example_$Sprite.prototype = $extend(echo_ViewBase.prototype,{
+View_$pos_$Example_$Position_$spr_$Example_$Sprite.__super__ = echo_ViewBase;
+View_$pos_$Example_$Position_$spr_$Example_$Sprite.prototype = $extend(echo_ViewBase.prototype,{
 	test: function(id) {
-		if(GenericComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
-			return GenericComponentHolder_$Example_$Sprite.__MAP.h.hasOwnProperty(id);
+		if(ComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
+			return ComponentHolder_$Example_$Sprite.__MAP.h.hasOwnProperty(id);
 		} else {
 			return false;
 		}
 	}
 });
-var View_$Example_$Position_$Example_$Velocity = function() {
+var View_$pos_$Example_$Position_$vel_$Example_$Velocity = function() {
 	echo_ViewBase.call(this);
 };
-View_$Example_$Position_$Example_$Velocity.__super__ = echo_ViewBase;
-View_$Example_$Position_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
+View_$pos_$Example_$Position_$vel_$Example_$Velocity.__super__ = echo_ViewBase;
+View_$pos_$Example_$Position_$vel_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
 	test: function(id) {
-		if(GenericComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
-			return GenericComponentHolder_$Example_$Velocity.__MAP.h.hasOwnProperty(id);
+		if(ComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
+			return ComponentHolder_$Example_$Velocity.__MAP.h.hasOwnProperty(id);
 		} else {
 			return false;
 		}
@@ -354,13 +354,13 @@ haxe_ds_IntMap.prototype = {
 		return this.h.hasOwnProperty(key);
 	}
 };
+ComponentHolder_$Example_$Position.__MAP = new haxe_ds_IntMap();
+ComponentHolder_$Example_$Sprite.__MAP = new haxe_ds_IntMap();
+ComponentHolder_$Example_$Velocity.__MAP = new haxe_ds_IntMap();
 Example.w = 60;
 Example.h = 30;
 Movement.__meta__ = { fields : { w : { skip : null}, h : { skip : null}}};
 Render.__meta__ = { fields : { visuals : { view : null}}};
-GenericComponentHolder_$Example_$Position.__MAP = new haxe_ds_IntMap();
-GenericComponentHolder_$Example_$Sprite.__MAP = new haxe_ds_IntMap();
-GenericComponentHolder_$Example_$Velocity.__MAP = new haxe_ds_IntMap();
 echo_Echo.__SEQUENCE = 0;
 Example.main();
 })();
