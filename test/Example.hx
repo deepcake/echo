@@ -11,50 +11,50 @@ import js.html.Element;
  * @author https://github.com/wimcake
  */
 class Example {
-	
+
 	static var echo:Echo;
 	static var w = 60;
 	static var h = 30;
-	
+
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
 		canvas.style.color = '#007F0E';
-		
+
 		Browser.document.body.appendChild(canvas);
-		
-		
+
+
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
 		echo.addSystem(new Render(w, h, canvas));
-		
-		
+
+
 		for (i in 0...1000) createGrass(Std.random(w), Std.random(h));
 		for (i in 0...100) createTree(Std.random(w), Std.random(h));
 		for (i in 0...10) {
 			var d = Math.random() * Math.PI * 2;
 			createRabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
 		}
-		
+
 		var d = Math.random() * Math.PI * 2;
 		createTiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
-		
-		
+
+
 		Browser.window.setInterval(function() echo.update(.100), 100);
 	}
-	
-	
+
+
 	static function createGrass(x:Float, y:Float) {
-		echo.setComponent(echo.id(), 
-			new Position(x, y), 
+		echo.setComponent(echo.id(),
+			new Position(x, y),
 			new Sprite('&#x1F33E;'));
 	}
-	
+
 	static function createTree(x:Float, y:Float) {
-		echo.setComponent(echo.id(), 
-			new Position(x, y), 
+		echo.setComponent(echo.id(),
+			new Position(x, y),
 			new Sprite('&#x1F333;')); //1F332
 	}
-	
+
 	static function createDynamic(x:Float, y:Float, vx:Float, vy:Float):Int {
 		var id = echo.id();
 		var pos = new Position(x, y);
@@ -62,15 +62,15 @@ class Example {
 		echo.setComponent(id, pos, vel);
 		return id;
 	}
-	
+
 	static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
 		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F407;'));
 	}
-	
+
 	static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
 		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F405;'));
 	}
-	
+
 }
 
 

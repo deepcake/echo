@@ -9,40 +9,40 @@ import haxe.unit.TestCase;
  * @author https://github.com/wimcake
  */
 class TestSystem extends TestCase {
-	
-	
+
+
 	var ch:Echo;
-	
-	
+
+
 	public function new() super();
-	
+
 	override public function setup() {
 		ch = new Echo();
 		SomeSystem.STATIC_ACTUAL = '';
 	}
-	
-	
+
+
 	public function test_build() {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
 		ch.addSystem(new SAB());
-		
-		assertEquals(3, ch.systems.length); 
-		assertEquals(5, ch.views.length); 
+
+		assertEquals(3, ch.systems.length);
+		assertEquals(5, ch.views.length);
 	}
-	
+
 	public function test_lifecycle() {
 		var ss = new SomeSystem();
 		ch.addSystem(ss);
-		
+
 		assertEquals('A', SomeSystem.STATIC_ACTUAL);
-		
+
 		ch.update(0);
 		assertEquals('AU', SomeSystem.STATIC_ACTUAL);
-		
+
 		ch.removeSystem(ss);
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
-		
+
 		ch.update(0);
 		assertEquals('AUD', SomeSystem.STATIC_ACTUAL);
 	}
