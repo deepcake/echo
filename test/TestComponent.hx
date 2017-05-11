@@ -284,6 +284,34 @@ class TestComponent extends TestCase {
 	}
 
 
+	public function test_set_before_add() {
+		var ch = new Echo();
+		var id = ch.next();
+
+		ch.setComponent(id, 'A');
+
+		assertEquals(0, ch.entities.length);
+		assertEquals('A', ch.getComponent(id, String));
+
+		ch.add(id);
+
+		assertEquals(1, ch.entities.length);
+		assertEquals('A', ch.getComponent(id, String));
+	}
+
+
+	public function test_last() {
+		var ch = new Echo();
+		ch.setComponent(ch.id(), 'A');
+
+		assertEquals('A', ch.getComponent(ch.last(), String));
+
+		ch.setComponent(ch.id(), 'B');
+
+		assertEquals('B', ch.getComponent(ch.last(), String));
+	}
+
+
 	// Some exotic
 
 	public function test_set_singleton() {
