@@ -2,7 +2,7 @@ package data;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class Greeting {
 	public var val:String;

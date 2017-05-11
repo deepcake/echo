@@ -5,18 +5,18 @@ import echo.System;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class RoomSystem extends System {
-	
-	
+
+
 	static public var LOG:Array<String> = [];
-	
-	
+
+
 	var names = new View<{ name:Name }>();
 	var namesAndGreetings = new View<{ name:Name, greeting:Greeting }>();
-	
-	
+
+
 	override public function onactivate() {
 		names.onAdd.add(function(id) {
 			var val = echo.getComponent(id, Name).val;
@@ -27,7 +27,7 @@ class RoomSystem extends System {
 			LOG.push('${val} leave the room');
 		} );
 	}
-	
+
 	override public function update(dt:Float) {
 		for (ng in namesAndGreetings) {
 			for (n in names) {
@@ -35,10 +35,10 @@ class RoomSystem extends System {
 			}
 		}
 	}
-	
+
 	override public function ondeactivate() {
 		names.onAdd.removeAll();
 		names.onRemove.removeAll();
 	}
-	
+
 }

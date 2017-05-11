@@ -8,7 +8,7 @@ using echo.macro.Macro;
 
 /**
  * ...
- * @author octocake1
+ * @author https://github.com/wimcake
  */
 class Echo {
 
@@ -96,6 +96,10 @@ class Echo {
 		return ++__SEQUENCE;
 	}
 
+	public inline function last():Int {
+		return __SEQUENCE;
+	}
+
 	public inline function has(id:Int):Bool {
 		return entitiesMap.exists(id);
 	}
@@ -108,7 +112,7 @@ class Echo {
 		}
 	}
 
-	public inline function remove(id:Int) {
+	public inline function pull(id:Int) {
 		if (this.has(id)) {
 			for (v in views) v.removeIfMatch(id);
 			entitiesMap.remove(id);
@@ -116,7 +120,7 @@ class Echo {
 		}
 	}
 
-	macro public function dispose(self:Expr, id:ExprOf<Int>) {
+	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
 			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
@@ -129,7 +133,7 @@ class Echo {
 
 		return macro {
 			$esafe;
-			$self.remove(_id_);
+			$self.pull(_id_);
 			$b{exprs};
 		}
 	}
