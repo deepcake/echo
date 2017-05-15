@@ -74,14 +74,14 @@ class Echo {
 
 	// View
 
-	public function addView(v:View.ViewBase) {
-		v.activate(this);
-		views.push(v);
+	macro public function addView(self:Expr, view:ExprOf<View.ViewBase>) {
+		var v = Context.parse(view.typeof().follow().toComplexType().fullname(), Context.currentPos());
+		return macro $self.__addView($v.__ID, $view);
 	}
 
-	public function removeView(v:View.ViewBase) {
-		v.deactivate();
-		views.remove(v);
+	macro public function removeView(self:Expr, view:ExprOf<View.ViewBase>) {
+		var v = Context.parse(view.typeof().follow().toComplexType().fullname(), Context.currentPos());
+		return macro $self.__removeView($v.__ID, $view);
 	}
 
 	macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
@@ -96,13 +96,26 @@ class Echo {
 		}
 	}
 
-	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
+	@:noCompletion public function __addView(id:Int, view:View.ViewBase) {
 		if (!viewsMap.exists(id)) {
 			viewsMap[id] = view;
+			views.push(view);
+			view.activate(this);
 		}
-		return viewsMap[id];
 	}
 
+	@:noCompletion public function __removeView(id:Int, view:View.ViewBase) {
+		if (viewsMap.exists(id)) {
+			view.deactivate();
+			viewsMap.remove(id);
+			views.remove(view);
+		}
+	}
+
+	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
+		__addView(id, view);
+		return viewsMap[id];
+	}
 
 
 	// Entity
