@@ -28,7 +28,7 @@ class TestSystem extends TestCase {
 		ch.addSystem(new SAB());
 
 		assertEquals(3, ch.systems.length);
-		assertEquals(5, ch.views.length);
+		assertEquals(3, ch.views.length);
 	}
 
 	public function test_lifecycle() {
