@@ -264,6 +264,13 @@ class TestView extends TestCase {
 		assertEquals('QWERTY', ACTUAL);
 	}
 
+	public function test_view_define() {
+		var v1 = ch.defineView({ a:C1 });
+		var v2:View<{ a:C1 }> = cast ch.defineView({ a:C1 });
+
+		assertEquals(v1, v2);
+	}
+
 }
 
 @:forward(charCodeAt)

@@ -4,6 +4,7 @@ import echo.macro.MacroBuilder;
 import haxe.macro.Expr;
 using haxe.macro.Context;
 using echo.macro.Macro;
+using Lambda;
 #end
 
 /**
@@ -17,6 +18,7 @@ class Echo {
 
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
+	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
 
 	public var entities(default, null):List<Int>;
 	public var views(default, null):Array<View.ViewBase>;
@@ -81,6 +83,26 @@ class Echo {
 		v.deactivate();
 		views.remove(v);
 	}
+
+	macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
+		switch (components.expr) {
+			case EObjectDecl(fields):
+				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
+				var viewCls = MacroBuilder.getView(components);
+				var viewType = viewCls.tp();
+				var v = Context.parse(viewCls.fullname(), Context.currentPos());
+				return macro $self.__defineView($v.__ID, new $viewType());
+			case x: throw 'Unexp $x';
+		}
+	}
+
+	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
+		if (!viewsMap.exists(id)) {
+			viewsMap[id] = view;
+		}
+		return viewsMap[id];
+	}
+
 
 
 	// Entity
