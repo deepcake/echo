@@ -5,7 +5,7 @@ package echo;
  * @author https://github.com/wimcake
  */
 #if !macro
-@:genericBuild(echo.macro.MacroBuilder.genericView())
+@:genericBuild(echo.macro.MacroBuilder.genericBuildView())
 #end
 class View<T> { }
 

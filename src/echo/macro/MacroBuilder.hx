@@ -23,7 +23,6 @@ class MacroBuilder {
 
 
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
-	static var COMPONENT_META = ['component', 'c'];
 	static var ONADD_META = ['onadd', 'add', 'a'];
 	static var ONREMOVE_META = ['onremove', 'onrem', 'rem', 'r'];
 	static var ONEACH_META = ['oneach', 'each', 'e'];
@@ -47,18 +46,23 @@ class MacroBuilder {
 		return null;
 	}
 
-	static function getClsNameID(clsname:String) {
+	static function getClsNameID(prefix:String, suffix:String) {
 		#if !echo_shorten
-			return clsname.replace('.', '_');
+			return (prefix + '_' + suffix).replace('.', '_');
 		#else
-			var hash = haxe.crypto.Md5.encode(clsname.replace('.', '_')).toUpperCase();
-			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'EC' + shortenMap.count());
+			var id = (prefix + '_' + suffix).replace('.', '_');
+			var hash = haxe.crypto.Md5.encode(id).toUpperCase();
+			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'ECHO' + shortenMap.count());
 			return shortenMap.get(hash);
 		#end
 	}
 
 	static function getClsNameSuffixByComponents(components:Array<{ name:String, cls:ComplexType }>) {
-		var suf = components.map(function(c) return c.name + '_' + c.cls.fullname());
+		return getClsNameSuffix(components.map(function(c) return c.cls));
+	}
+
+	static function getClsNameSuffix(types:Array<ComplexType>):String {
+		var suf = types.map(function(type) return type.fullname());
 		suf.sort(function(a, b) {
 			a = a.toLowerCase();
 			b = b.toLowerCase();
@@ -69,11 +73,15 @@ class MacroBuilder {
 		return suf.join('_').replace('.', '_');
 	}
 
+	static public function getViewClsByTypes(types:Array<ComplexType>):ComplexType {
+		return getClsNameID('View', getClsNameSuffix(types)).getType().toComplexType();
+	}
+
 
 	static public function getComponentHolder(componentClsName:String):String {
 		var componentCls = Context.getType(componentClsName).toComplexType();
 
-		var componentHolderClsName = getClsNameID('ComponentHolder_' + componentCls.fullname());
+		var componentHolderClsName = getClsNameID('ComponentHolder', componentCls.fullname());
 		componentHoldersMap.set(componentCls.fullname(), componentHolderClsName);
 
 		try {
@@ -93,7 +101,7 @@ class MacroBuilder {
 	}
 
 
-	static public function buildSystem() {
+	static public function autoBuildSystem() {
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
@@ -217,7 +225,7 @@ class MacroBuilder {
 	}
 
 
-	static public function genericView() {
+	static public function genericBuildView() {
 		switch (Context.getLocalType()) {
 			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
 
@@ -233,7 +241,7 @@ class MacroBuilder {
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var clsname = getClsNameID('View_' + getClsNameSuffixByComponents(components));
+		var clsname = getClsNameID('View', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(clsname).toComplexType();
 		}catch (er:Dynamic) {
@@ -242,7 +250,7 @@ class MacroBuilder {
 				public function new() {}
 			}
 
-			var iteratorTypePath = getIterator(components).tp();
+			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
 
 			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
@@ -265,7 +273,7 @@ class MacroBuilder {
 
 
 	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewdataClsName = getClsNameID('ViewData_' + getClsNameSuffixByComponents(components));
+		var viewdataClsName = getClsNameID('ViewData', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(viewdataClsName).toComplexType();
 		}catch (er:Dynamic) {
@@ -285,9 +293,9 @@ class MacroBuilder {
 	}
 
 
-	static public function getIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+	static public function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
 		var viewdataCls = getViewData(components);
-		var iteratorClsName = getClsNameID('ViewIterator_' + viewdataCls.fullname());
+		var iteratorClsName = getClsNameID('ViewIterator', viewdataCls.fullname());
 		try {
 			return Context.getType(iteratorClsName).toComplexType();
 		}catch (er:Dynamic) {

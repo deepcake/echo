@@ -96,6 +96,13 @@ class Echo {
 		}
 	}
 
+	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
+		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
+		var v = Context.parse(viewCls.fullname(), Context.currentPos());
+		Macro.traceExprs('getView', [ macro $self.viewsMap[$v.__ID] ]);
+		return macro $self.viewsMap[$v.__ID];
+	}
+
 	@:noCompletion public function __addView(id:Int, view:View.ViewBase) {
 		if (!viewsMap.exists(id)) {
 			viewsMap[id] = view;

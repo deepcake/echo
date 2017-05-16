@@ -271,6 +271,29 @@ class TestView extends TestCase {
 		assertEquals(v1, v2);
 	}
 
+	public function test_view_get() {
+		ch.defineView({ a:C1 });
+
+		var v1 = ch.getView(C1);
+		var v2:View<{ a:C1 }> = cast ch.getView(C1);
+
+		assertEquals(v1, v2);
+	}
+
+
+	public function test_prevent_view_duplicates() {
+		ch.defineView({ a:C1, b:C2 });
+		ch.defineView({ a:C1, b:C2 });
+		ch.defineView({ b:C2, a:C1 });
+
+		for (i in 0...10) ch.setComponent(ch.id(), new C1('$i'), new C2('$i'));
+
+		assertEquals(1, ch.views.length);
+		assertEquals(10, ch.entities.length);
+		assertEquals(10, ch.getView(C1, C2).entities.length);
+		assertEquals(10, ch.getView(C2, C1).entities.length);
+	}
+
 }
 
 @:forward(charCodeAt)
