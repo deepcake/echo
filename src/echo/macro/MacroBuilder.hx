@@ -22,12 +22,11 @@ using Lambda;
 class MacroBuilder {
 
 
-	static var EXCLUDE_META = ['skip', 'i'];
+	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
 	static var COMPONENT_META = ['component', 'c'];
-	static var VIEW_META = ['view', 'v'];
-	static var ONADD_META = ['onadd', 'a'];
-	static var ONREMOVE_META = ['onremove', 'onrem', 'r'];
-	static var ONEACH_META = ['oneach', 'e'];
+	static var ONADD_META = ['onadd', 'add', 'a'];
+	static var ONREMOVE_META = ['onremove', 'onrem', 'rem', 'r'];
+	static var ONEACH_META = ['oneach', 'each', 'e'];
 
 
 	static public var componentIndex:Int = 0;
@@ -104,8 +103,6 @@ class MacroBuilder {
 		var deactivateExprs = [];
 		var updateExprs = [];
 
-		var excluding = fields.filter(function(f) return hasMeta(f, VIEW_META)).length == 0;
-
 		fields.iter(function(f) {
 			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
 				var func = switch (f.kind) {
@@ -120,7 +117,7 @@ class MacroBuilder {
 				var viewBody = Context.parse('new echo.View<{$params}>()', Context.currentPos());
 				var viewName = getClsNameSuffixByComponents(components).toLowerCase();
 
-				fields.push(fvar((excluding ? [] : [meta('view')]), null, viewName, viewBody));
+				fields.push(fvar([], null, viewName, viewBody));
 
 				var funcName = f.name;
 				var funcParams = components.map(function(c) {
@@ -132,25 +129,24 @@ class MacroBuilder {
 		});
 
 		var views = fields.map(function(field) {
-			switch(field.kind) {
-				case FVar(ct, _):
+			if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
+			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
 
-					if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
+			switch (field.kind) {
+				case FVar(TPath(p), _):
 
-					for (m in field.meta) for (em in MacroBuilder.EXCLUDE_META) if (m.name == em) return null; // skip by meta
+					if (p.name.toLowerCase() == 'view') return { name: field.name };
 
-					if (excluding) {
-						if (hasMeta(field, EXCLUDE_META)) return null; else return { name: field.name };
-					} else {
-						if (hasMeta(field, VIEW_META)) return { name: field.name }; else return null;
-					}
+				case FVar(_, _.expr => ENew(t, _)):
+
+					if (t.name.toLowerCase() == 'view') return { name: field.name };
 
 				default:
 			}
+
 			return null;
-		} ).filter(function(el) {
-			return el != null;
-		} );
+			
+		} ).filter(function(el) return el != null);
 
 		views.iter(function(el) {
 			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));

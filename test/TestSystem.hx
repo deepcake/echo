@@ -195,8 +195,8 @@ class SA extends System {
 
 class SB extends System {
 	var view1 = new echo.View<{a:CA}>();
-	@view var view2 = new echo.View<{b:CB}>();
-	var view3 = new echo.View<{c:CC}>();
+	var view2 = new echo.View<{b:CB}>();
+	@i var view3 = new echo.View<{c:CC}>();
 }
 
 class SAB extends System {
