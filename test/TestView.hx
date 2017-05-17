@@ -268,16 +268,26 @@ class TestView extends TestCase {
 		var v1 = ch.defineView({ a:C1 });
 		var v2:View<{ a:C1 }> = cast ch.defineView({ a:C1 });
 
+		assertEquals(1, ch.views.length);
 		assertEquals(v1, v2);
 	}
 
+	public function test_view_create() {
+		var v1 = ch.createView({ a:C1 });
+		var v2:View<{ a:C1 }> = cast ch.createView({ a:C1 });
+
+		assertEquals(0, ch.views.length);
+		assertFalse(v1 == v2);
+	}
+
 	public function test_view_get() {
-		ch.defineView({ a:C1 });
+		var v0 = ch.defineView({ a:C1 });
 
 		var v1 = ch.getView(C1);
 		var v2:View<{ a:C1 }> = cast ch.getView(C1);
 
-		assertEquals(v1, v2);
+		assertEquals(v0, v1);
+		assertEquals(v0, v2);
 	}
 
 
