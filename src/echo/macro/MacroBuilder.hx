@@ -140,15 +140,33 @@ class MacroBuilder {
 			if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
 
+			function getComponentsFromAnonTypeParam(t:TypePath) {
+				switch (t.params) {
+					case [ TPType(TAnonymous(fields)) ]:
+
+						return fields.map(function(field) {
+							switch (field.kind) {
+								case FVar(cls, _): return { name: field.name, cls: cls };
+								case x: throw 'Unexp $x';
+							}
+						});
+
+					case x: throw 'Unexp $x';
+				}
+			}
+
 			switch (field.kind) {
-				case FVar(TPath(p), _):
-
-					if (p.name.toLowerCase() == 'view') return { name: field.name };
-
 				case FVar(_, _.expr => ENew(t, _)):
+					if (t.name.toLowerCase() == 'view') {
+						field.kind = FVar(TPath(t), null); // remove new call, just define type
+						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					}
 
-					if (t.name.toLowerCase() == 'view') return { name: field.name };
-
+				case FVar(TPath(t), _):
+					if (t.name.toLowerCase() == 'view') {
+						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					}
+					
 				default:
 			}
 
@@ -156,17 +174,16 @@ class MacroBuilder {
 			
 		} ).filter(function(el) return el != null);
 
-		views.iter(function(el) {
-			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));
-			deactivateExprs.push(Context.parse('echo.removeView(${el.name})', Context.currentPos()));
+
+		// create, remove view
+		views.iter(function(v) {
+			var viewname = v.name;
+			var params = v.components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
+			activateExprs.push(Context.parse('$viewname = cast echo.createView({$params})', Context.currentPos()));
+			deactivateExprs.push(Context.parse('echo.removeView($viewname)', Context.currentPos()));
 		} );
 
-		activateExprs.push(macro super.activate(echo));
-		deactivateExprs.unshift(macro super.deactivate());
-
-		// onadd, onremove
-		var addExprs = [];
-		var remExprs = [];
+		// onadd, onremove signals
 		fields.iter(function(f) {
 			var onaddMeta = getMeta(f, ONADD_META);
 			if (onaddMeta != null) {
@@ -176,8 +193,8 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				addExprs.push(macro this.$viewname.onAdd.add($i{f.name}));
-				remExprs.push(macro this.$viewname.onAdd.remove($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onAdd.add($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onAdd.remove($i{f.name}));
 			}
 			var onremMeta = getMeta(f, ONREMOVE_META);
 			if (onremMeta != null) {
@@ -187,12 +204,17 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				addExprs.push(macro this.$viewname.onRemove.add($i{f.name}));
-				remExprs.push(macro this.$viewname.onRemove.remove($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onRemove.add($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onRemove.remove($i{f.name}));
 			}
 		} );
-		activateExprs = addExprs.concat(activateExprs);
-		deactivateExprs = deactivateExprs.concat(remExprs);
+
+		// add view (onadd, onremove singnals executes at this moment)
+		views.iter(function(v) activateExprs.push(macro echo.addView($i{v.name})));
+
+		// onactivate,  ondeactivate
+		activateExprs.push(macro super.activate(echo)); // after view added
+		deactivateExprs.unshift(macro super.deactivate()); // before view removed
 
 		if (updateExprs.length > 0) {
 			var func = (function() {
