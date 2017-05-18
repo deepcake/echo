@@ -107,35 +107,6 @@ class MacroBuilder {
 
 		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
 
-		var activateExprs = [];
-		var deactivateExprs = [];
-		var updateExprs = [];
-
-		fields.iter(function(f) {
-			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
-				var func = switch (f.kind) {
-					case FFun(x): x;
-					case x: throw "Unexp $x";
-				}
-				var components = func.args.map(function(a) {
-					return { name: a.name, cls: a.type };
-				});
-
-				var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
-				var viewBody = Context.parse('new echo.View<{$params}>()', Context.currentPos());
-				var viewName = getClsNameSuffixByComponents(components).toLowerCase();
-
-				fields.push(fvar([], null, viewName, viewBody));
-
-				var funcName = f.name;
-				var funcParams = components.map(function(c) {
-					return Context.parse('i.${c.name}', Context.currentPos());
-				});
-
-				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcParams})); // TODO inline ?
-			}
-		});
-
 		var views = fields.map(function(field) {
 			if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
@@ -175,12 +146,50 @@ class MacroBuilder {
 		} ).filter(function(el) return el != null);
 
 
-		// create, remove view
+		var activateExprs = [];
+		var deactivateExprs = [];
+		var updateExprs = [];
+
+		fields.iter(function(f) {
+			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
+				var func = switch (f.kind) {
+					case FFun(x): x;
+					case x: throw "Unexp $x";
+				}
+				var components = func.args.map(function(a) {
+					// TODO switch case type
+					return { name: a.name, cls: Context.getType(a.type.fullname()).toComplexType() };
+				});
+
+				var viewClsName = getClsNameID('View', getClsNameSuffixByComponents(components));
+				var view = views.find(function(v) return getClsNameID('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
+				var viewName = viewClsName.toLowerCase();
+
+				if (view == null) {
+					var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
+					var viewType = getView(components);
+
+					fields.push(fvar(viewName, viewType, null));
+					views.push({ name: viewName, components: components });
+				} else {
+					// this view already defined in this system
+					viewName = view.name;
+				}
+
+				var funcName = f.name;
+				var funcArgs = components.map(function(c) {
+					return Context.parse('i.${c.name}', Context.currentPos());
+				});
+
+				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs})); // TODO inline ?
+			}
+		});
+
+		// create view
 		views.iter(function(v) {
-			var viewname = v.name;
-			var params = v.components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
-			activateExprs.push(Context.parse('$viewname = cast echo.createView({$params})', Context.currentPos()));
-			deactivateExprs.push(Context.parse('echo.removeView($viewname)', Context.currentPos()));
+			var viewName = v.name;
+			var params = v.components.map(function(c) return '${c.name}:${c.cls.shortname()}').join(', '); // shortname to avoid wrong EField typing
+			activateExprs.push(Context.parse('$viewName = cast echo.createView({$params})', Context.currentPos()));
 		} );
 
 		// onadd, onremove signals
@@ -263,13 +272,20 @@ class MacroBuilder {
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+		// convert for really full names
+		components = components.map(function(c) return { name: c.name, cls: c.cls.toType().follow().toComplexType() });
+
 		var clsname = getClsNameID('View', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(clsname).toComplexType();
 		}catch (er:Dynamic) {
 
+			viewIndex++;
+
 			var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
-				public function new() {}
+				public function new() { 
+					__id = $v{viewIndex};
+				}
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();

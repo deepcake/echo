@@ -74,14 +74,20 @@ class Echo {
 
 	// View
 
-	macro public function addView(self:Expr, view:ExprOf<View.ViewBase>) {
-		var v = Context.parse(view.typeof().follow().toComplexType().fullname(), Context.currentPos());
-		return macro $self.__addView($v.__ID, $view);
+	public function addView(view:View.ViewBase) {
+		if (!viewsMap.exists(view.__id)) {
+			viewsMap[view.__id] = view;
+			views.push(view);
+			view.activate(this);
+		}
 	}
 
-	macro public function removeView(self:Expr, view:ExprOf<View.ViewBase>) {
-		var v = Context.parse(view.typeof().follow().toComplexType().fullname(), Context.currentPos());
-		return macro $self.__removeView($v.__ID, $view);
+	public function removeView(view:View.ViewBase) {
+		if (viewsMap.exists(view.__id)) {
+			view.deactivate();
+			viewsMap.remove(view.__id);
+			views.remove(view);
+		}
 	}
 
 	macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
@@ -110,28 +116,11 @@ class Echo {
 	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		var v = Context.parse(viewCls.fullname(), Context.currentPos());
-		Macro.traceExprs('getView', [ macro $self.viewsMap[$v.__ID] ]);
 		return macro $self.viewsMap[$v.__ID];
 	}
 
-	@:noCompletion public function __addView(id:Int, view:View.ViewBase) {
-		if (!viewsMap.exists(id)) {
-			viewsMap[id] = view;
-			views.push(view);
-			view.activate(this);
-		}
-	}
-
-	@:noCompletion public function __removeView(id:Int, view:View.ViewBase) {
-		if (viewsMap.exists(id)) {
-			view.deactivate();
-			viewsMap.remove(id);
-			views.remove(view);
-		}
-	}
-
 	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
-		__addView(id, view);
+		addView(view);
 		return viewsMap[id];
 	}
 
