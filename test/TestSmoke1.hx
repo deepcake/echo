@@ -10,7 +10,7 @@ import echo.*;
  * ...
  * @author https://github.com/wimcake
  */
-class TestSmoke extends TestCase {
+class TestSmoke1 extends TestCase {
 
 
 	var ch:Echo;
@@ -52,7 +52,7 @@ class TestSmoke extends TestCase {
 		assertEquals('John say Hello to Vlad', RoomSystem.LOG[14]);
 		assertEquals('Vlad say Privet to Hodor', RoomSystem.LOG[17]);
 
-		trace('\n' + RoomSystem.LOG.join('\n'));
+		//trace('\n' + RoomSystem.LOG.join('\n'));
 	}
 
 }
