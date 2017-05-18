@@ -136,10 +136,10 @@ class TestComponent extends TestCase {
 		assertEquals(null, ch.getComponent(ids[4], String));
 	}
 
-	public function test_pull_entity() {
-		ch.pull(ids[0]);
-		ch.pull(ids[2]);
-		ch.pull(ids[4]);
+	public function test_poll_entity() {
+		ch.poll(ids[0]);
+		ch.poll(ids[2]);
+		ch.poll(ids[4]);
 
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -176,10 +176,10 @@ class TestComponent extends TestCase {
 		assertEquals(null, ch.getComponent(ids[4], String));
 	}
 
-	public function test_pull_and_add_entity() {
-		ch.pull(ids[0]);
-		ch.pull(ids[2]);
-		ch.pull(ids[4]);
+	public function test_poll_and_add_entity() {
+		ch.poll(ids[0]);
+		ch.poll(ids[2]);
+		ch.poll(ids[4]);
 
 		ch.add(ids[0]);
 		ch.add(ids[2]);
@@ -234,9 +234,9 @@ class TestComponent extends TestCase {
 		assertEquals('!', ch.getComponent(ids[0], String));
 	}
 
-	public function test_set_after_pull_entity() {
+	public function test_set_after_poll_entity() {
 		ch.setComponent(ids[0], 'A');
-		ch.pull(ids[0]);
+		ch.poll(ids[0]);
 		ch.setComponent(ids[0], '!');
 
 		assertEquals(4, ch.entities.length);

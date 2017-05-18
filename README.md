@@ -100,18 +100,18 @@ class Render extends System {
 [See web demo](https://wimcake.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
 
 #### Overview
-* `Component` is an instance of `Class<Any>`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
+* `Component` is an instance of `T:Any`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
 * `Entity` is just the `Int` _id_, using as a key in global component maps.
-* `View<T>` is a collection of suitable _ids_.
-* `System` is a container for main logic and a good place to work with views.
+* `View` is a collection of suitable _ids_.
+* `System` is a place to work with views with some features.
 
 #### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - create and add new _id_ to _the workflow_.
   * `.next():Int` - create new _id_ without adding it to _the workflow_.
   * `.add(id:Int)` - add _id_ to _the workflow_.
-  * `.pull(id:Int)` - remove _id_ from _the workflow_ without removing its components.
-  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `pull()`, otherwise use `remove()`.
+  * `.poll(id:Int)` - remove _id_ from _the workflow_ without removing its components.
+  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `poll()`, otherwise use `remove()`.
   * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
   * `.getComponent(id:Int, type:Class<T>):T` - get component from _id_ by type.
   * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.

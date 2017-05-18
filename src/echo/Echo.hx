@@ -154,7 +154,7 @@ class Echo {
 		}
 	}
 
-	public inline function pull(id:Int) {
+	public inline function poll(id:Int) {
 		if (this.has(id)) {
 			for (v in views) v.removeIfMatch(id);
 			entitiesMap.remove(id);
@@ -175,7 +175,7 @@ class Echo {
 
 		return macro {
 			$esafe;
-			$self.pull(_id_);
+			$self.poll(_id_);
 			$b{exprs};
 		}
 	}

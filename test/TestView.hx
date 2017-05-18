@@ -80,7 +80,7 @@ class TestView extends TestCase {
 		assertEquals('IOPRTUWY', ACTUAL);
 	}
 
-	public function test_sort_and_pull_entity() {
+	public function test_sort_and_poll_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -90,8 +90,8 @@ class TestView extends TestCase {
 
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 
-		ch.pull(ids[0]);
-		ch.pull(ids[2]);
+		ch.poll(ids[0]);
+		ch.poll(ids[2]);
 
 		for (va in viewa) ACTUAL += va.a;
 
@@ -128,13 +128,13 @@ class TestView extends TestCase {
 		assertEquals(0, viewa.entities.length);
 	}
 
-	public function test_pull_entity() {
+	public function test_poll_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
 		for (id in ids) ch.setComponent(id, new C1('A'));
 
-		for (id in ids) ch.pull(id);
+		for (id in ids) ch.poll(id);
 
 		assertEquals(0, viewa.entities.length);
 
@@ -224,7 +224,7 @@ class TestView extends TestCase {
 		assertEquals('QWERTY', ACTUAL);
 	}
 
-	public function test_onremove_pull_entity() {
+	public function test_onremove_poll_entity() {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
@@ -239,7 +239,7 @@ class TestView extends TestCase {
 
 		assertEquals('', ACTUAL);
 
-		for (id in ids) ch.pull(id);
+		for (id in ids) ch.poll(id);
 
 		assertEquals('QWERTY', ACTUAL);
 	}
