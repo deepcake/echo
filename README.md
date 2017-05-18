@@ -17,16 +17,16 @@ class Example {
   static function main() {
     echo = new Echo();
     echo.addSystem(new Movement());
-    echo.addSystem(new Render(500, 500));
+    echo.addSystem(new Render());
     
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
-    createRabbit(Std.random(500), Std.random(500), Std.random(10), Std.random(10));
-    createTiger(Std.random(500), Std.random(500), Std.random(15), Std.random(15));
+    createRabbit(100, 100, 0, 0);
+    createTiger(50, 50, 10, 0);
   }
   static function createTree(x:Float, y:Float) {
     echo.setComponent(echo.id(), 
       new Position(x, y), 
-      new Sprite());
+      new Sprite('assets/tree.png'));
   }
   static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
     echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/rabbit.png'));
@@ -80,18 +80,22 @@ class Movement extends System {
 }
 
 class Render extends System {
-  @skip var w:Float;
-  @skip var h:Float;
-  // @skip indicates that var is not View, so macro dont touch it
-  // instead @skip can be used @view, and all vars without @view will be skipped
-  var visuals = new View<{ pos:Position, spr:Sprite }>();
-  public function new(w:Int, h:Int) {
-    this.w = w;
-    this.h = h;
+  var visuals:View<{ pos:Position, spr:Sprite }>;
+  function onVisualAdded(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
+    scene.addChild(sprite); // something like that
+  }
+  function onVisualRemoved(id:Int) {
+    scene.removeChild(sprite);
+  }
+  override public function onactivate() {
+    visuals.onAdd.add(onVisualAdded);
+    visuals.onRemove.add(onVisualRemoved);
   }
   override public function update(dt:Float) {
     for (v in visuals) {
-      // move sprites to position or something
+      v.spr.x = v.pos.x;
+      v.spr.y = v.pos.y;
     }
   }
 }
@@ -124,7 +128,24 @@ class Render extends System {
 * `System` - base class for systems.
   * `.onactivate()`, `.ondeactivate()` - to be overridden. Called at add/remove from _the workflow_.
   * `.update(dt:Float)` - to be overridden. Main logic place.
-  * `@view`, `@skip` - macro tags to check\uncheck variable as a View.
-  
+
+#### Features
+Code from example above can be written using special macro tags:
+```haxe
+class Render extends System {
+  @onadd function onVisualAdded(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
+    scene.addChild(sprite); // something like that
+  }
+  @onremove function onVisualRemoved(id:Int) {
+    scene.removeChild(sprite);
+  }
+  @oneach function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
+    spr.x = pos.x;
+    spr.y = pos.y;
+  }
+}
+```
+
 #### Wip
 Work in progress, with all its concomitant effects
