@@ -94,7 +94,7 @@ class TestSystem extends TestCase {
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
-		assertEquals(2, ch.views.length);
+		assertEquals(1, ch.views.length);
 		assertEquals('AB!#%!', MetaEachSystem2.STATIC_ACTUAL);
 	}
 
@@ -105,7 +105,17 @@ class TestSystem extends TestCase {
 		ch.update(0);
 
 		assertEquals(2, ch.views.length);
-		assertEquals('A#B%!', MetaEachSystem3.STATIC_ACTUAL);
+		assertEquals('A#B%--!', MetaEachSystem3.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach4() {
+		ch.addSystem(new MetaEachSystem4());
+		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('AB!#%!A!B!#!%!', MetaEachSystem4.STATIC_ACTUAL);
 	}
 
 }
@@ -160,7 +170,7 @@ class MetaEachSystem2 extends System {
 
 	@oneach function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
 
-	var viewa = new echo.View<{a:CA}>();
+	var viewab = new echo.View<{a:CA, b:CB}>();
 }
 
 class MetaEachSystem3 extends System {
@@ -169,8 +179,22 @@ class MetaEachSystem3 extends System {
 
 	@oneach function oneach1(a:CA) STATIC_ACTUAL += a.val;
 	@oneach function oneach2(b:CB) STATIC_ACTUAL += b.val;
+	@oneach function oneach3(b:CB) STATIC_ACTUAL += '-';
 
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
+}
+
+class MetaEachSystem4 extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
+
+	override public function update(dt:Float) {
+		for (ab in viewab) STATIC_ACTUAL += ab.a.val + '!' + ab.b.val + '!';
+	}
+
+	var viewab:echo.View<{a:CA, b:CB}>;
 }
 
 
