@@ -127,17 +127,17 @@ class MacroBuilder {
 			}
 
 			switch (field.kind) {
+				case FVar(TPath(t), e) if (e == null):
+					if (t.name.toLowerCase() == 'view') {
+						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					}
+
 				case FVar(_, _.expr => ENew(t, _)):
 					if (t.name.toLowerCase() == 'view') {
 						field.kind = FVar(TPath(t), null); // remove new call, just define type
 						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
 					}
 
-				case FVar(TPath(t), _):
-					if (t.name.toLowerCase() == 'view') {
-						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
-					}
-					
 				default:
 			}
 
@@ -272,9 +272,6 @@ class MacroBuilder {
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		// convert for really full names
-		components = components.map(function(c) return { name: c.name, cls: c.cls.toType().follow().toComplexType() });
-
 		var clsname = getClsNameID('View', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(clsname).toComplexType();

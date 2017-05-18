@@ -1,6 +1,7 @@
 package echo.macro;
 #if macro
-import haxe.macro.Context;
+using haxe.macro.Context;
+using haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
@@ -82,7 +83,7 @@ class Macro {
 
 
 	static public function fullname(ct:ComplexType):String {
-		var t = tp(ct);
+		var t = tp(ct.toType().follow().toComplexType()); // really full name
 		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '');
 	}
 
