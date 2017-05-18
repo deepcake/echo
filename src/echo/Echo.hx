@@ -4,6 +4,7 @@ import echo.macro.MacroBuilder;
 import haxe.macro.Expr;
 using haxe.macro.Context;
 using echo.macro.Macro;
+using Lambda;
 #end
 
 /**
@@ -17,6 +18,7 @@ class Echo {
 
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
+	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
 
 	public var entities(default, null):List<Int>;
 	public var views(default, null):Array<View.ViewBase>;
@@ -72,14 +74,54 @@ class Echo {
 
 	// View
 
-	public function addView(v:View.ViewBase) {
-		v.activate(this);
-		views.push(v);
+	public function addView(view:View.ViewBase) {
+		if (!viewsMap.exists(view.__id)) {
+			viewsMap[view.__id] = view;
+			views.push(view);
+			view.activate(this);
+		}
 	}
 
-	public function removeView(v:View.ViewBase) {
-		v.deactivate();
-		views.remove(v);
+	public function removeView(view:View.ViewBase) {
+		if (viewsMap.exists(view.__id)) {
+			view.deactivate();
+			viewsMap.remove(view.__id);
+			views.remove(view);
+		}
+	}
+
+	macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
+		switch (components.expr) {
+			case EObjectDecl(fields):
+				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
+				var viewCls = MacroBuilder.getView(components);
+				var viewType = viewCls.tp();
+				var v = Context.parse(viewCls.fullname(), Context.currentPos());
+				return macro $self.__defineView($v.__ID, new $viewType());
+			case x: throw 'Unexp $x';
+		}
+	}
+
+	macro public function createView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
+		switch (components.expr) {
+			case EObjectDecl(fields):
+				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
+				var viewCls = MacroBuilder.getView(components);
+				var viewType = viewCls.tp();
+				return macro new $viewType();
+			case x: throw 'Unexp $x';
+		}
+	}
+
+	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
+		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
+		var v = Context.parse(viewCls.fullname(), Context.currentPos());
+		return macro $self.viewsMap[$v.__ID];
+	}
+
+	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
+		addView(view);
+		return viewsMap[id];
 	}
 
 
@@ -112,7 +154,7 @@ class Echo {
 		}
 	}
 
-	public inline function pull(id:Int) {
+	public inline function poll(id:Int) {
 		if (this.has(id)) {
 			for (v in views) v.removeIfMatch(id);
 			entitiesMap.remove(id);
@@ -133,7 +175,7 @@ class Echo {
 
 		return macro {
 			$esafe;
-			$self.pull(_id_);
+			$self.poll(_id_);
 			$b{exprs};
 		}
 	}

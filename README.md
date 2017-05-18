@@ -17,16 +17,16 @@ class Example {
   static function main() {
     echo = new Echo();
     echo.addSystem(new Movement());
-    echo.addSystem(new Render(500, 500));
+    echo.addSystem(new Render());
     
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
-    createRabbit(Std.random(500), Std.random(500), Std.random(10), Std.random(10));
-    createTiger(Std.random(500), Std.random(500), Std.random(15), Std.random(15));
+    createRabbit(100, 100, 0, 0);
+    createTiger(50, 50, 10, 0);
   }
   static function createTree(x:Float, y:Float) {
     echo.setComponent(echo.id(), 
       new Position(x, y), 
-      new Sprite());
+      new Sprite('assets/tree.png'));
   }
   static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
     echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/rabbit.png'));
@@ -80,18 +80,22 @@ class Movement extends System {
 }
 
 class Render extends System {
-  @skip var w:Float;
-  @skip var h:Float;
-  // @skip indicates that var is not View, so macro dont touch it
-  // instead @skip can be used @view, and all vars without @view will be skipped
-  var visuals = new View<{ pos:Position, spr:Sprite }>();
-  public function new(w:Int, h:Int) {
-    this.w = w;
-    this.h = h;
+  var visuals:View<{ pos:Position, spr:Sprite }>;
+  function onVisualAdded(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
+    scene.addChild(sprite); // something like that
+  }
+  function onVisualRemoved(id:Int) {
+    scene.removeChild(sprite);
+  }
+  override public function onactivate() {
+    visuals.onAdd.add(onVisualAdded);
+    visuals.onRemove.add(onVisualRemoved);
   }
   override public function update(dt:Float) {
     for (v in visuals) {
-      // move sprites to position or something
+      v.spr.x = v.pos.x;
+      v.spr.y = v.pos.y;
     }
   }
 }
@@ -100,18 +104,18 @@ class Render extends System {
 [See web demo](https://wimcake.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
 
 #### Overview
-* `Component` is an instance of `Class<Any>`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
+* `Component` is an instance of `T:Any`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
 * `Entity` is just the `Int` _id_, using as a key in global component maps.
-* `View<T>` is a collection of suitable _ids_.
-* `System` is a container for main logic and a good place to work with views.
+* `View` is a collection of suitable _ids_.
+* `System` is a place to work with views with some features.
 
 #### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - create and add new _id_ to _the workflow_.
   * `.next():Int` - create new _id_ without adding it to _the workflow_.
   * `.add(id:Int)` - add _id_ to _the workflow_.
-  * `.pull(id:Int)` - remove _id_ from _the workflow_ without removing its components.
-  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `pull()`, otherwise use `remove()`.
+  * `.poll(id:Int)` - remove _id_ from _the workflow_ without removing its components.
+  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `poll()`, otherwise use `remove()`.
   * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
   * `.getComponent(id:Int, type:Class<T>):T` - get component from _id_ by type.
   * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.
@@ -124,7 +128,24 @@ class Render extends System {
 * `System` - base class for systems.
   * `.onactivate()`, `.ondeactivate()` - to be overridden. Called at add/remove from _the workflow_.
   * `.update(dt:Float)` - to be overridden. Main logic place.
-  * `@view`, `@skip` - macro tags to check\uncheck variable as a View.
-  
+
+#### Features
+Code from example above can be written using special macro tags:
+```haxe
+class Render extends System {
+  @onadd function onVisualAdded(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
+    scene.addChild(sprite); // something like that
+  }
+  @onremove function onVisualRemoved(id:Int) {
+    scene.removeChild(sprite);
+  }
+  @oneach function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
+    spr.x = pos.x;
+    spr.y = pos.y;
+  }
+}
+```
+
 #### Wip
 Work in progress, with all its concomitant effects

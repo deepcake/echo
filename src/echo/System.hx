@@ -5,7 +5,7 @@ package echo;
  * @author https://github.com/wimcake
  */
 #if !macro
-@:autoBuild(echo.macro.MacroBuilder.buildSystem())
+@:autoBuild(echo.macro.MacroBuilder.autoBuildSystem())
 #end
 class System {
 

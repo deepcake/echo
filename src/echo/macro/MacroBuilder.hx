@@ -22,16 +22,16 @@ using Lambda;
 class MacroBuilder {
 
 
-	static var EXCLUDE_META = ['skip', 'i'];
-	static var COMPONENT_META = ['component', 'c'];
-	static var VIEW_META = ['view', 'v'];
-	static var ONADD_META = ['onadd', 'a'];
-	static var ONREMOVE_META = ['onremove', 'onrem', 'r'];
-	static var ONEACH_META = ['oneach', 'e'];
+	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
+	static var ONADD_META = ['onadd', 'add', 'a'];
+	static var ONREMOVE_META = ['onremove', 'onrem', 'rem', 'r'];
+	static var ONEACH_META = ['oneach', 'each', 'e'];
 
 
 	static public var componentIndex:Int = 0;
 	static public var componentHoldersMap:Map<String, String> = new Map();
+
+	static public var viewIndex:Int = 0;
 
 	static var shortenMap:Map<String, String> = new Map();
 
@@ -46,18 +46,23 @@ class MacroBuilder {
 		return null;
 	}
 
-	static function getClsNameID(clsname:String) {
+	static function getClsNameID(prefix:String, suffix:String) {
 		#if !echo_shorten
-			return clsname.replace('.', '_');
+			return (prefix + '_' + suffix).replace('.', '_');
 		#else
-			var hash = haxe.crypto.Md5.encode(clsname.replace('.', '_')).toUpperCase();
-			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'EC' + shortenMap.count());
+			var id = (prefix + '_' + suffix).replace('.', '_');
+			var hash = haxe.crypto.Md5.encode(id).toUpperCase();
+			if (!shortenMap.exists(hash)) shortenMap.set(hash, 'ECHO' + shortenMap.count());
 			return shortenMap.get(hash);
 		#end
 	}
 
 	static function getClsNameSuffixByComponents(components:Array<{ name:String, cls:ComplexType }>) {
-		var suf = components.map(function(c) return c.name + '_' + c.cls.fullname());
+		return getClsNameSuffix(components.map(function(c) return c.cls));
+	}
+
+	static function getClsNameSuffix(types:Array<ComplexType>):String {
+		var suf = types.map(function(type) return type.fullname());
 		suf.sort(function(a, b) {
 			a = a.toLowerCase();
 			b = b.toLowerCase();
@@ -68,11 +73,15 @@ class MacroBuilder {
 		return suf.join('_').replace('.', '_');
 	}
 
+	static public function getViewClsByTypes(types:Array<ComplexType>):ComplexType {
+		return getClsNameID('View', getClsNameSuffix(types)).getType().toComplexType();
+	}
+
 
 	static public function getComponentHolder(componentClsName:String):String {
 		var componentCls = Context.getType(componentClsName).toComplexType();
 
-		var componentHolderClsName = getClsNameID('ComponentHolder_' + componentCls.fullname());
+		var componentHolderClsName = getClsNameID('ComponentHolder', componentCls.fullname());
 		componentHoldersMap.set(componentCls.fullname(), componentHolderClsName);
 
 		try {
@@ -92,17 +101,54 @@ class MacroBuilder {
 	}
 
 
-	static public function buildSystem() {
+	static public function autoBuildSystem() {
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
 		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
 
+		var views = fields.map(function(field) {
+			if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
+			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
+
+			function getComponentsFromAnonTypeParam(t:TypePath) {
+				switch (t.params) {
+					case [ TPType(TAnonymous(fields)) ]:
+
+						return fields.map(function(field) {
+							switch (field.kind) {
+								case FVar(cls, _): return { name: field.name, cls: cls };
+								case x: throw 'Unexp $x';
+							}
+						});
+
+					case x: throw 'Unexp $x';
+				}
+			}
+
+			switch (field.kind) {
+				case FVar(TPath(t), e) if (e == null):
+					if (t.name.toLowerCase() == 'view') {
+						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					}
+
+				case FVar(_, _.expr => ENew(t, _)):
+					if (t.name.toLowerCase() == 'view') {
+						field.kind = FVar(TPath(t), null); // remove new call, just define type
+						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					}
+
+				default:
+			}
+
+			return null;
+			
+		} ).filter(function(el) return el != null);
+
+
 		var activateExprs = [];
 		var deactivateExprs = [];
 		var updateExprs = [];
-
-		var excluding = fields.filter(function(f) return hasMeta(f, VIEW_META)).length == 0;
 
 		fields.iter(function(f) {
 			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
@@ -111,56 +157,53 @@ class MacroBuilder {
 					case x: throw "Unexp $x";
 				}
 				var components = func.args.map(function(a) {
-					return { name: a.name, cls: a.type };
-				});
+					switch (a.type) {
+						case macro:Int, macro:Float: 
+							return null;
+						default: 
+							return { name: a.name, cls: Context.getType(a.type.fullname()).toComplexType() };
+					}
+				}).filter(function(el) return el != null);
 
-				var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
-				var viewBody = Context.parse('new echo.View<{$params}>()', Context.currentPos());
-				var viewName = getClsNameSuffixByComponents(components).toLowerCase();
+				var viewClsName = getClsNameID('View', getClsNameSuffixByComponents(components));
+				var view = views.find(function(v) return getClsNameID('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
+				var viewName = viewClsName.toLowerCase();
 
-				fields.push(fvar((excluding ? [] : [meta('view')]), null, viewName, viewBody));
+				if (view == null) {
+					var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
+					var viewType = getView(components);
+
+					fields.push(fvar(viewName, viewType, null));
+					views.push({ name: viewName, components: components });
+				} else {
+					// this view already defined in this system
+					viewName = view.name;
+				}
 
 				var funcName = f.name;
-				var funcParams = components.map(function(c) {
-					return Context.parse('i.${c.name}', Context.currentPos());
+				var funcArgs = func.args.map(function(a) {
+					switch (a.type) {
+						case macro:Float: 
+							return macro dt;
+						case macro:Int: 
+							return macro i.id;
+						default: 
+							return Context.parse('i.${a.name}', Context.currentPos());
+					}
 				});
 
-				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcParams})); // TODO inline ?
+				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs})); // TODO inline ?
 			}
 		});
 
-		var views = fields.map(function(field) {
-			switch(field.kind) {
-				case FVar(ct, _):
-
-					if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
-
-					for (m in field.meta) for (em in MacroBuilder.EXCLUDE_META) if (m.name == em) return null; // skip by meta
-
-					if (excluding) {
-						if (hasMeta(field, EXCLUDE_META)) return null; else return { name: field.name };
-					} else {
-						if (hasMeta(field, VIEW_META)) return { name: field.name }; else return null;
-					}
-
-				default:
-			}
-			return null;
-		} ).filter(function(el) {
-			return el != null;
+		// create view
+		views.iter(function(v) {
+			var viewName = v.name;
+			var params = v.components.map(function(c) return '${c.name}:${c.cls.shortname()}').join(', '); // shortname to avoid wrong EField typing
+			activateExprs.push(Context.parse('$viewName = cast echo.createView({$params})', Context.currentPos()));
 		} );
 
-		views.iter(function(el) {
-			activateExprs.push(Context.parse('echo.addView(${el.name})', Context.currentPos()));
-			deactivateExprs.push(Context.parse('echo.removeView(${el.name})', Context.currentPos()));
-		} );
-
-		activateExprs.push(macro super.activate(echo));
-		deactivateExprs.unshift(macro super.deactivate());
-
-		// onadd, onremove
-		var addExprs = [];
-		var remExprs = [];
+		// onadd, onremove signals
 		fields.iter(function(f) {
 			var onaddMeta = getMeta(f, ONADD_META);
 			if (onaddMeta != null) {
@@ -170,8 +213,8 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				addExprs.push(macro this.$viewname.onAdd.add($i{f.name}));
-				remExprs.push(macro this.$viewname.onAdd.remove($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onAdd.add($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onAdd.remove($i{f.name}));
 			}
 			var onremMeta = getMeta(f, ONREMOVE_META);
 			if (onremMeta != null) {
@@ -181,12 +224,17 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				addExprs.push(macro this.$viewname.onRemove.add($i{f.name}));
-				remExprs.push(macro this.$viewname.onRemove.remove($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onRemove.add($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onRemove.remove($i{f.name}));
 			}
 		} );
-		activateExprs = addExprs.concat(activateExprs);
-		deactivateExprs = deactivateExprs.concat(remExprs);
+
+		// add view (onadd, onremove singnals executes at this moment)
+		views.iter(function(v) activateExprs.push(macro echo.addView($i{v.name})));
+
+		// onactivate,  ondeactivate
+		activateExprs.push(macro super.activate(echo)); // after view added
+		deactivateExprs.unshift(macro super.deactivate()); // before view removed
 
 		if (updateExprs.length > 0) {
 			var func = (function() {
@@ -219,7 +267,7 @@ class MacroBuilder {
 	}
 
 
-	static public function genericView() {
+	static public function genericBuildView() {
 		switch (Context.getLocalType()) {
 			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
 
@@ -235,16 +283,20 @@ class MacroBuilder {
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var clsname = getClsNameID('View_' + getClsNameSuffixByComponents(components));
+		var clsname = getClsNameID('View', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(clsname).toComplexType();
 		}catch (er:Dynamic) {
 
+			viewIndex++;
+
 			var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
-				public function new() {}
+				public function new() { 
+					__id = $v{viewIndex};
+				}
 			}
 
-			var iteratorTypePath = getIterator(components).tp();
+			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
 
 			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__MAP.exists(id)').join(' && '), Context.currentPos());
@@ -256,6 +308,8 @@ class MacroBuilder {
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 
+			def.fields.push(fvar([], [AStatic, APublic], '__ID', null, macro $v{viewIndex++}));
+
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
@@ -265,7 +319,7 @@ class MacroBuilder {
 
 
 	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewdataClsName = getClsNameID('ViewData_' + getClsNameSuffixByComponents(components));
+		var viewdataClsName = getClsNameID('ViewData', getClsNameSuffixByComponents(components));
 		try {
 			return Context.getType(viewdataClsName).toComplexType();
 		}catch (er:Dynamic) {
@@ -285,9 +339,9 @@ class MacroBuilder {
 	}
 
 
-	static public function getIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+	static public function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
 		var viewdataCls = getViewData(components);
-		var iteratorClsName = getClsNameID('ViewIterator_' + viewdataCls.fullname());
+		var iteratorClsName = getClsNameID('ViewIterator', viewdataCls.fullname());
 		try {
 			return Context.getType(iteratorClsName).toComplexType();
 		}catch (er:Dynamic) {

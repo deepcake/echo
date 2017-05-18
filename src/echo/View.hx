@@ -5,7 +5,7 @@ package echo;
  * @author https://github.com/wimcake
  */
 #if !macro
-@:genericBuild(echo.macro.MacroBuilder.genericView())
+@:genericBuild(echo.macro.MacroBuilder.genericBuildView())
 #end
 class View<T> { }
 
@@ -19,6 +19,7 @@ class ViewBase {
 	var echo:Echo;
 	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
+	@:noCompletion public var __id = -1;
 
 	public var onAdd = new echo.utils.Signal<Int->Void>();
 	public var onRemove = new echo.utils.Signal<Int->Void>();

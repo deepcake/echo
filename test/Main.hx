@@ -16,7 +16,8 @@ class Main {
 		r.add(new TestComponentTypes());
 		r.add(new TestView());
 		r.add(new TestSystem());
-		r.add(new TestSmoke());
+		r.add(new TestSmoke1());
+		r.add(new TestSmoke2());
 		r.add(new TestPerfomance());
 
 		var ret = r.run();
