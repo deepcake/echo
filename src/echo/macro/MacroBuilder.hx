@@ -157,9 +157,13 @@ class MacroBuilder {
 					case x: throw "Unexp $x";
 				}
 				var components = func.args.map(function(a) {
-					// TODO switch case type
-					return { name: a.name, cls: Context.getType(a.type.fullname()).toComplexType() };
-				});
+					switch (a.type) {
+						case macro:Int, macro:Float: 
+							return null;
+						default: 
+							return { name: a.name, cls: Context.getType(a.type.fullname()).toComplexType() };
+					}
+				}).filter(function(el) return el != null);
 
 				var viewClsName = getClsNameID('View', getClsNameSuffixByComponents(components));
 				var view = views.find(function(v) return getClsNameID('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
@@ -177,8 +181,15 @@ class MacroBuilder {
 				}
 
 				var funcName = f.name;
-				var funcArgs = components.map(function(c) {
-					return Context.parse('i.${c.name}', Context.currentPos());
+				var funcArgs = func.args.map(function(a) {
+					switch (a.type) {
+						case macro:Float: 
+							return macro dt;
+						case macro:Int: 
+							return macro i.id;
+						default: 
+							return Context.parse('i.${a.name}', Context.currentPos());
+					}
 				});
 
 				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs})); // TODO inline ?

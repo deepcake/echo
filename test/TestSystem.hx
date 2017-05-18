@@ -118,6 +118,15 @@ class TestSystem extends TestCase {
 		assertEquals('AB!#%!A!B!#!%!', MetaEachSystem4.STATIC_ACTUAL);
 	}
 
+	public function test_meta_oneach_delta() {
+		ch.addSystem(new MetaEachSystemDelta());
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0.9);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('A_0.9A_0.9_' + ch.last(), MetaEachSystemDelta.STATIC_ACTUAL);
+	}
+
 }
 
 class MetaAddRemSystem extends System {
@@ -195,6 +204,14 @@ class MetaEachSystem4 extends System {
 	}
 
 	var viewab:echo.View<{a:CA, b:CB}>;
+}
+
+class MetaEachSystemDelta extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach1(dt:Float, a:CA) STATIC_ACTUAL += a.val + '_$dt';
+	@oneach function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
 }
 
 
