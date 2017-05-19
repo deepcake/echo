@@ -99,6 +99,10 @@ class Macro {
 		}
 	}
 
+	static public function expr(cls:ComplexType):Expr {
+		return Context.parse(fullname(cls), Context.currentPos());
+	}
+
 	static public function identName(e:Expr) {
 		return switch(e.expr) {
 			case EConst(CIdent(name)): name;

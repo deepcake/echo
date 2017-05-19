@@ -95,8 +95,7 @@ class Echo {
 			case EObjectDecl(fields):
 				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
 				var viewCls = MacroBuilder.getView(components);
-				var v = Context.parse(viewCls.fullname(), Context.currentPos());
-				return macro $self.__defineView($v.__ID, $v.new);
+				return macro $self.__defineView($v{ MacroBuilder.viewIdsMap[viewCls.fullname()] }, ${ viewCls.expr() }.new);
 			case x: throw 'Unexp $x';
 		}
 	}
@@ -108,8 +107,7 @@ class Echo {
 
 	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-		var v = Context.parse(viewCls.fullname(), Context.currentPos());
-		return macro $self.viewsMap[$v.__ID];
+		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.fullname()] }];
 	}
 
 
@@ -176,7 +174,6 @@ class Echo {
 		var exprs = [
 			for (c in components) {
 				var h = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType().fullname());
-				//if (h == null) continue; // TODO define ?
 				var n = Context.parse(h, Context.currentPos());
 				macro $n.__MAP[_id_] = $c;
 			}

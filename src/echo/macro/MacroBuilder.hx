@@ -32,6 +32,7 @@ class MacroBuilder {
 	static public var componentHoldersMap:Map<String, String> = new Map();
 
 	static public var viewIndex:Int = 0;
+	static public var viewIdsMap:Map<String, Int> = new Map();
 
 	static var shortenMap:Map<String, String> = new Map();
 
@@ -286,6 +287,7 @@ class MacroBuilder {
 		}catch (er:Dynamic) {
 
 			viewIndex++;
+			viewIdsMap[clsname] = viewIndex;
 
 			var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
 				public function new() { 
@@ -304,8 +306,6 @@ class MacroBuilder {
 
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls.fullname())}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
-
-			def.fields.push(fvar([], [AStatic, APublic], '__ID', null, macro $v{viewIndex++}));
 
 			traceTypeDefenition(def);
 
