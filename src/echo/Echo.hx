@@ -102,26 +102,15 @@ class Echo {
 		}
 	}
 
-	macro public function createView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
-		switch (components.expr) {
-			case EObjectDecl(fields):
-				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
-				var viewCls = MacroBuilder.getView(components);
-				var viewType = viewCls.tp();
-				return macro new $viewType();
-			case x: throw 'Unexp $x';
-		}
+	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
+		addView(view);
+		return viewsMap[id];
 	}
 
 	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		var v = Context.parse(viewCls.fullname(), Context.currentPos());
 		return macro $self.viewsMap[$v.__ID];
-	}
-
-	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
-		addView(view);
-		return viewsMap[id];
 	}
 
 

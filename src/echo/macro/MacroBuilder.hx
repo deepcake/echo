@@ -74,7 +74,8 @@ class MacroBuilder {
 	}
 
 	static public function getViewClsByTypes(types:Array<ComplexType>):ComplexType {
-		return getClsNameID('View', getClsNameSuffix(types)).getType().toComplexType();
+		var type = getClsNameID('View', getClsNameSuffix(types)).getType();
+		return type != null ? type.toComplexType() : null;
 	}
 
 
@@ -170,10 +171,8 @@ class MacroBuilder {
 				var viewName = viewClsName.toLowerCase();
 
 				if (view == null) {
-					var params = components.map(function(c) return '${c.name}:${c.cls.fullname()}').join(', ');
-					var viewType = getView(components);
-
-					fields.push(fvar(viewName, viewType, null));
+					var viewCls = getView(components);
+					fields.push(fvar(viewName, viewCls, null));
 					views.push({ name: viewName, components: components });
 				} else {
 					// this view already defined in this system
@@ -196,11 +195,11 @@ class MacroBuilder {
 			}
 		});
 
-		// create view
+		// define view
 		views.iter(function(v) {
 			var viewName = v.name;
 			var params = v.components.map(function(c) return '${c.name}:${c.cls.shortname()}').join(', '); // shortname to avoid wrong EField typing
-			activateExprs.push(Context.parse('$viewName = cast echo.createView({$params})', Context.currentPos()));
+			activateExprs.push(Context.parse('$viewName = cast echo.defineView({$params})', Context.currentPos()));
 		} );
 
 		// onadd, onremove signals
@@ -214,6 +213,7 @@ class MacroBuilder {
 					case x: throw 'Unexp $x';
 				}
 				activateExprs.push(macro $i{viewname}.onAdd.add($i{f.name}));
+				activateExprs.push(macro for (i in $i{viewname}.entities) $i{f.name}(i));
 				deactivateExprs.push(macro $i{viewname}.onAdd.remove($i{f.name}));
 			}
 			var onremMeta = getMeta(f, ONREMOVE_META);
@@ -228,9 +228,6 @@ class MacroBuilder {
 				deactivateExprs.push(macro $i{viewname}.onRemove.remove($i{f.name}));
 			}
 		} );
-
-		// add view (onadd, onremove singnals executes at this moment)
-		views.iter(function(v) activateExprs.push(macro echo.addView($i{v.name})));
 
 		// onactivate,  ondeactivate
 		activateExprs.push(macro super.activate(echo)); // after view added
