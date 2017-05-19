@@ -151,14 +151,10 @@ class Echo {
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
-			for (n in echo.macro.MacroBuilder.componentHoldersMap) {
-				var n = Context.parse(n, Context.currentPos());
-				macro $n.__MAP.remove(_id_);
+			for (hCls in echo.macro.MacroBuilder.componentHoldersMap) {
+				macro ${ hCls.expr() }.__MAP.remove(_id_);
 			}
 		];
-
-		Macro.traceExprs('remove', exprs);
-
 		return macro {
 			$esafe;
 			$self.poll(_id_);
@@ -173,14 +169,10 @@ class Echo {
 		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
 			for (c in components) {
-				var h = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType().fullname());
-				var n = Context.parse(h, Context.currentPos());
-				macro $n.__MAP[_id_] = $c;
+				var hCls = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
+				macro ${ hCls.expr() }.__MAP[_id_] = $c;
 			}
 		];
-
-		Macro.traceExprs('setComponent', exprs);
-
 		return macro {
 			$esafe;
 			$b{exprs};
@@ -190,23 +182,19 @@ class Echo {
 
 	macro inline public function removeComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>) {
 		var esafe = macro var _id_ = $id;
-		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
-		//if (h == null) return macro null;
-		var n = Context.parse(h, Context.currentPos());
+		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro {
 			$esafe;
-			if ($n.__MAP.exists(_id_)) {
-				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.testcomponent($n.__ID)) _v_.removeIfMatch(_id_);
-				$n.__MAP.remove(_id_);
+			if (${ hCls.expr() }.__MAP.exists(_id_)) {
+				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.testcomponent(${ hCls.expr() }.__ID)) _v_.removeIfMatch(_id_);
+				${ hCls.expr() }.__MAP.remove(_id_);
 			}
 		}
 	}
 
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-		var h = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType().fullname());
-		//if (h == null) return macro null;
-		var n = Context.parse(h, Context.currentPos());
-		return macro $n.__MAP.get($id);
+		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		return macro ${ hCls.expr() }.__MAP.get($id);
 	}
 
 }

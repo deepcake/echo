@@ -92,6 +92,16 @@ class TestComponentTypes extends TestCase {
 		assertEquals(1337, ch.getComponent(id, Int));
 	}
 
+	public function test_type_param() {
+		var view = new View<{ c:Array<Int> }>();
+		ch.addView(view);
+
+		ch.setComponent(id, [1, 2, 3]);
+
+		assertEquals(1, view.entities.length);
+		assertEquals([1, 2, 3].toString(), ch.getComponent(id, TypeParamComponent).toString());
+	}
+
 }
 
 class SimpleComponent {
@@ -117,3 +127,5 @@ enum EnumComponent {
 	var EAOne = 1;
 	var EATwo = 2;
 }
+
+typedef TypeParamComponent = Array<Int>; // only way ?

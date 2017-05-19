@@ -2,6 +2,7 @@ package echo.macro;
 #if macro
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
+using Lambda;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
@@ -59,6 +60,15 @@ class Macro {
 		}
 	}
 
+	static public function tpath(?pack:Array<String>, name:String, ?params:Array<TypeParam>, ?sub:String):TypePath {
+		return {
+			pack: pack != null ? pack : [],
+			name: name,
+			params: params != null ? params : [],
+			sub: sub
+		}
+	}
+
 
 	static public inline function traceFields(clsname:String, fields:Array<Field>) {
 		#if echo_verbose
@@ -66,12 +76,6 @@ class Macro {
 			var ret = '$clsname\n';
 			for (f in fields) ret += pr.printField(f) + '\n';
 			trace(ret);
-		#end
-	}
-
-	static public inline function traceExprs(name:String, exprs:Array<Expr>) {
-		#if echo_verbose
-			trace('$name:\n' + new Printer().printExprs(exprs, '\n'));
 		#end
 	}
 
@@ -84,7 +88,18 @@ class Macro {
 
 	static public function fullname(ct:ComplexType):String {
 		var t = tp(ct.toType().follow().toComplexType()); // really full name
-		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '');
+
+		function paramfullname(p:TypeParam):String {
+			switch (p) {
+				case TPType(cls):
+					return fullname(cls);
+				case x: throw 'Unexp $x';
+			}
+		}
+		var params = '';
+		if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramfullname).join(', ') + '>';
+
+		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
 	}
 
 	static public function shortname(ct:ComplexType):String {
