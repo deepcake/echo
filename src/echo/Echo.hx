@@ -95,15 +95,14 @@ class Echo {
 			case EObjectDecl(fields):
 				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
 				var viewCls = MacroBuilder.getView(components);
-				var viewType = viewCls.tp();
 				var v = Context.parse(viewCls.fullname(), Context.currentPos());
-				return macro $self.__defineView($v.__ID, new $viewType());
+				return macro $self.__defineView($v.__ID, $v.new);
 			case x: throw 'Unexp $x';
 		}
 	}
 
-	@:noCompletion public function __defineView(id:Int, view:View.ViewBase):View.ViewBase {
-		addView(view);
+	@:noCompletion public function __defineView(id:Int, constructor:Void->View.ViewBase):View.ViewBase {
+		if (!viewsMap.exists(id)) addView(constructor());
 		return viewsMap[id];
 	}
 
