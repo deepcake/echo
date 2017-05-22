@@ -85,25 +85,9 @@ class MacroBuilder {
 	}
 
 
-	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
-		var componentHolderClsName = getClsName('ComponentHolder', componentCls.fullname());
-		try {
-			return Context.getType(componentHolderClsName).toComplexType();
-		}catch (er:Dynamic) {
-
-			var def = macro class $componentHolderClsName {
-				static public var __ID:Int = $v{componentIndex++};
-				static public var __MAP:Map<Int, $componentCls> = new Map();
-			}
-
-			traceTypeDefenition(def);
-
-			Context.defineType(def);
-
-			componentHoldersMap[componentCls.fullname()] = Context.getType(componentHolderClsName).toComplexType();
-
-			return componentHoldersMap[componentCls.fullname()];
-		}
+	static public function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.fullComplexType()));
+		return TPath(tpath(['echo'], 'View', [TPType(TAnonymous(viewClsParams))]));
 	}
 
 
@@ -114,7 +98,6 @@ class MacroBuilder {
 		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
 
 		var views = fields.map(function(field) {
-			if (field.access != null) if (field.access.indexOf(AStatic) > -1) return null; // only non-static
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
 
 			function getComponentsFromAnonTypeParam(t:TypePath) {
@@ -123,7 +106,7 @@ class MacroBuilder {
 
 						return fields.map(function(field) {
 							switch (field.kind) {
-								case FVar(cls, _): return { name: field.name, cls: cls };
+								case FVar(cls, _): return { name: field.name, cls: cls.fullComplexType() };
 								case x: throw 'Unexp $x';
 							}
 						});
@@ -167,7 +150,7 @@ class MacroBuilder {
 						case macro:Int, macro:Float: 
 							return null;
 						default: 
-							return { name: a.name, cls: Context.getType(a.type.fullname()).toComplexType() };
+							return { name: a.name, cls: a.type.fullComplexType() };
 					}
 				}).filter(function(el) return el != null);
 
@@ -176,7 +159,7 @@ class MacroBuilder {
 				var viewName = viewClsName.toLowerCase();
 
 				if (view == null) {
-					var viewCls = getView(components);
+					var viewCls = getViewGenericComplexType(components);
 					fields.push(fvar(viewName, viewCls, null));
 					views.push({ name: viewName, components: components });
 				} else {
@@ -202,17 +185,11 @@ class MacroBuilder {
 
 		// define view
 		views.iter(function(v) {
-			var viewName = v.name;
-			var params = v.components.map(function(c) return '${c.name}:${c.cls.shortname()}').join(', '); // shortname to avoid wrong EField typing
-			activateExprs.push(Context.parse('$viewName = cast echo.defineView({$params})', Context.currentPos()));
-			/*var viewCls = getView(v.components);
+			var viewCls = getViewGenericComplexType(v.components);
 			var viewType = viewCls.tp();
 			var viewId = viewIdsMap[viewCls.fullname()];
-			var expr = macro {
-				if (!echo.viewMap.exists($v{ viewId })) echo.addView(new $viewType());
-				$i{ viewName } = cast echo.viewMap[$v{ viewId }];
-			}
-			activateExprs.push(expr);*/
+			activateExprs.push(macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()));
+			activateExprs.push(macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]);
 		} );
 
 		// onadd, onremove signals
@@ -294,6 +271,7 @@ class MacroBuilder {
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
 		var clsname = getClsName('View', getClsNameSuffixByComponents(components));
+		
 		try {
 			return Context.getType(clsname).toComplexType();
 		}catch (er:Dynamic) {
@@ -323,27 +301,6 @@ class MacroBuilder {
 
 			Context.defineType(def);
 			return Context.getType(clsname).toComplexType();
-		}
-	}
-
-
-	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewdataClsName = getClsName('ViewData', getClsNameSuffixByComponents(components));
-		try {
-			return Context.getType(viewdataClsName).toComplexType();
-		}catch (er:Dynamic) {
-
-			var def:TypeDefinition = macro class $viewdataClsName {
-				inline public function new() { }
-				public var id:Int;
-			}
-
-			for (c in components) def.fields.push(fvar([APublic], c.name, c.cls));
-
-			traceTypeDefenition(def);
-
-			Context.defineType(def);
-			return Context.getType(viewdataClsName).toComplexType();
 		}
 	}
 
@@ -380,6 +337,49 @@ class MacroBuilder {
 
 			Context.defineType(def);
 			return Context.getType(iteratorClsName).toComplexType();
+		}
+	}
+
+
+	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+		var viewdataClsName = getClsName('ViewData', getClsNameSuffixByComponents(components));
+		try {
+			return Context.getType(viewdataClsName).toComplexType();
+		}catch (er:Dynamic) {
+
+			var def:TypeDefinition = macro class $viewdataClsName {
+				inline public function new() { }
+				public var id:Int;
+			}
+
+			for (c in components) def.fields.push(fvar([APublic], c.name, c.cls));
+
+			traceTypeDefenition(def);
+
+			Context.defineType(def);
+			return Context.getType(viewdataClsName).toComplexType();
+		}
+	}
+
+
+	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
+		var componentHolderClsName = getClsName('ComponentHolder', componentCls.fullname());
+		try {
+			return Context.getType(componentHolderClsName).toComplexType();
+		}catch (er:Dynamic) {
+
+			var def = macro class $componentHolderClsName {
+				static public var __ID:Int = $v{componentIndex++};
+				static public var __MAP:Map<Int, $componentCls> = new Map();
+			}
+
+			traceTypeDefenition(def);
+
+			Context.defineType(def);
+
+			componentHoldersMap[componentCls.fullname()] = Context.getType(componentHolderClsName).toComplexType();
+
+			return componentHoldersMap[componentCls.fullname()];
 		}
 	}
 

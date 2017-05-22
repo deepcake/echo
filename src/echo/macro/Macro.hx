@@ -85,6 +85,9 @@ class Macro {
 		#end
 	}
 
+	static public function fullComplexType(cls:ComplexType) {
+		return cls.toType().follow().toComplexType();
+	}
 
 	static public function fullname(ct:ComplexType):String {
 		var t = tp(ct.toType().follow().toComplexType()); // really full name
