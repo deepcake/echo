@@ -261,10 +261,16 @@ class MacroBuilder {
 				var components = p.fields.map(
 					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
 				);
-
 				return getView(components).toType();
 
-			case x: throw 'Expected: TInst(_.get() => cls, [TAnonymous(_.get() => p)]); Actual: $x';
+			case TInst(_.get() => cls, [TType(_.get() => { type:TAnonymous(_.get() => p) }, [])]):
+
+				var components = p.fields.map(
+					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
+				);
+				return getView(components).toType();
+
+			case x: throw 'Unexp $x';
 		}
 	}
 

@@ -102,6 +102,17 @@ class TestComponentTypes extends TestCase {
 		assertEquals([1, 2, 3].toString(), ch.getComponent(id, TypeParamComponent).toString());
 	}
 
+	public function test_anon() {
+		var view = new View<AnonymousView>();
+		ch.addView(view);
+
+		ch.setComponent(id, new SimpleComponent('A'), EOne);
+
+		assertEquals(1, view.entities.length);
+		assertEquals('A', ch.getComponent(id, SimpleComponent).val);
+		assertEquals(EOne, ch.getComponent(id, EnumComponent));
+	}
+
 }
 
 class SimpleComponent {
@@ -129,3 +140,5 @@ enum EnumComponent {
 }
 
 typedef TypeParamComponent = Array<Int>; // only way ?
+
+typedef AnonymousView = { var a:SimpleComponent; var b:EnumComponent; }
