@@ -21,9 +21,12 @@ class ViewBase {
 
 	@:noCompletion public var __id = -1;
 
-	public var onAdded = new echo.utils.Signal<Int->Void>();
-	public var onRemoved = new echo.utils.Signal<Int->Void>();
+	/** Signal that dispatched when this view collects a new id (entity) */
+	public var onAdded(default, null) = new echo.utils.Signal<Int->Void>();
+	/** Signal that dispatched when an id (entity) no more matched and will be removed */
+	public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
+	/** List of matched ids (entities) */
 	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 
 
