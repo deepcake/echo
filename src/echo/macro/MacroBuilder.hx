@@ -25,14 +25,22 @@ class MacroBuilder {
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
 	static var ONADD_META = ['onadd', 'add', 'a'];
 	static var ONREMOVE_META = ['onremove', 'onrem', 'rem', 'r'];
-	static var ONEACH_META = ['oneach', 'each', 'e'];
+	static var ONEACH_META = ['oneach', 'foreach', 'each', 'e'];
 
 
 	static public var componentIndex:Int = 0;
-	static public var componentHoldersMap:Map<String, ComplexType> = new Map();
+	static public var componentCache:Map<String, ComplexType> = new Map();
 
 	static public var viewIndex:Int = 0;
 	static public var viewIdsMap:Map<String, Int> = new Map();
+	static public var viewCache:Map<String, ComplexType> = new Map();
+
+	static public var viewIterCache:Map<String, ComplexType> = new Map();
+
+	static public var viewDataCache:Map<String, ComplexType> = new Map();
+
+
+	static var reportRegistered = false;
 
 	static var shortenMap:Map<String, String> = new Map();
 
@@ -45,6 +53,20 @@ class MacroBuilder {
 	static function getMeta(field:Field, metas:Array<String>) {
 		for (m in field.meta) for (meta in metas) if (m.name == meta) return m;
 		return null;
+	}
+
+	static function report() {
+		#if echo_verbose
+			if (!reportRegistered) {
+				Context.onGenerate(function(types) {
+					trace('COMPONENTS [${componentCache.count()}]:');
+					componentCache.iter(function(v) trace(v));
+					trace('VIEWS [${viewCache.count()}]:');
+					viewCache.iter(function(v) trace(v));
+				});
+				reportRegistered = true;
+			}
+		#end
 	}
 
 
@@ -257,35 +279,28 @@ class MacroBuilder {
 	static public function genericBuildView() {
 		switch (Context.getLocalType()) {
 			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
-
-				var components = p.fields.map(
-					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
-				);
+				var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
 				return getView(components).toType();
 
 			case TInst(_.get() => cls, [TType(_.get() => { type:TAnonymous(_.get() => p) }, [])]):
-
-				var components = p.fields.map(
-					function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) }
-				);
+				var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
 				return getView(components).toType();
 
-			case x: throw 'Unexp $x';
+			case x: throw 'Unexpected $x! Require TAnonymous(_) or TType(TAnonymous(_))';
 		}
 	}
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var clsname = getClsName('View', getClsNameSuffixByComponents(components));
-		
-		try {
-			return Context.getType(clsname).toComplexType();
-		}catch (er:Dynamic) {
+		report();
+		var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
+		var viewCls = viewCache.get(viewClsName);
+		if (viewCls == null) {
 
 			viewIndex++;
-			viewIdsMap[clsname] = viewIndex;
+			viewIdsMap[viewClsName] = viewIndex;
 
-			var def:TypeDefinition = macro class $clsname extends echo.View.ViewBase {
+			var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
 				public function new() { 
 					__id = $v{viewIndex};
 				}
@@ -306,28 +321,30 @@ class MacroBuilder {
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-			return Context.getType(clsname).toComplexType();
+
+			viewCls = Context.getType(viewClsName).toComplexType();
+			viewCache.set(viewClsName, viewCls);
 		}
+		return viewCls;
 	}
 
 
 	static public function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewdataCls = getViewData(components);
-		var iteratorClsName = getClsName('ViewIterator', viewdataCls.fullname());
-		try {
-			return Context.getType(iteratorClsName).toComplexType();
-		}catch (er:Dynamic) {
+		var viewDataCls = getViewData(components);
+		var viewIterClsName = getClsName('ViewIterator', viewDataCls.fullname());
+		var viewIterCls = viewIterCache.get(viewIterClsName);
+		if (viewIterCls == null) {
 
-			var viewdataTypePath = viewdataCls.tp();
+			var viewDataType = viewDataCls.tp();
 
-			var def = macro class $iteratorClsName {
+			var def = macro class $viewIterClsName {
 				var i:Int;
 				var list:Array<Int>;
-				var vd:$viewdataCls;
+				var vd:$viewDataCls;
 				public inline function new(list:Array<Int>) {
 					this.i = -1;
 					this.list = list;
-					this.vd = new $viewdataTypePath(); // TODO opt js ( Object ? )
+					this.vd = new $viewDataType(); // TODO opt js ( Object ? )
 				}
 				public inline function hasNext():Bool return ++i < list.length;
 				//public inline function next():$dataViewCls return vd;
@@ -337,23 +354,25 @@ class MacroBuilder {
 			nextExprs.push(macro this.vd.id = this.list[i]);
 			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).fullname()}.__MAP.get(this.vd.id)', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
-			def.fields.push(ffun([APublic, AInline], 'next', null, viewdataCls, macro $b{nextExprs}));
+			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
 
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-			return Context.getType(iteratorClsName).toComplexType();
+
+			viewIterCls = Context.getType(viewIterClsName).toComplexType();
+			viewIterCache.set(viewIterClsName, viewIterCls);
 		}
+		return viewIterCls;
 	}
 
 
 	static public function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewdataClsName = getClsName('ViewData', getClsNameSuffixByComponents(components));
-		try {
-			return Context.getType(viewdataClsName).toComplexType();
-		}catch (er:Dynamic) {
+		var viewDataClsName = getClsName('ViewData', getClsNameSuffixByComponents(components));
+		var viewDataCls = viewDataCache.get(viewDataClsName);
+		if (viewDataCls == null) {
 
-			var def:TypeDefinition = macro class $viewdataClsName {
+			var def:TypeDefinition = macro class $viewDataClsName {
 				inline public function new() { }
 				public var id:Int;
 			}
@@ -363,16 +382,18 @@ class MacroBuilder {
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
-			return Context.getType(viewdataClsName).toComplexType();
+
+			viewDataCls = Context.getType(viewDataClsName).toComplexType();
+			viewDataCache.set(viewDataClsName, viewDataCls);
 		}
+		return viewDataCls;
 	}
 
 
 	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
 		var componentHolderClsName = getClsName('ComponentHolder', componentCls.fullname());
-		try {
-			return Context.getType(componentHolderClsName).toComplexType();
-		}catch (er:Dynamic) {
+		var componentHolderCls = componentCache.get(componentCls.fullname());
+		if (componentHolderCls == null) {
 
 			var def = macro class $componentHolderClsName {
 				static public var __ID:Int = $v{componentIndex++};
@@ -383,10 +404,10 @@ class MacroBuilder {
 
 			Context.defineType(def);
 
-			componentHoldersMap[componentCls.fullname()] = Context.getType(componentHolderClsName).toComplexType();
-
-			return componentHoldersMap[componentCls.fullname()];
+			componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
+			componentCache[componentCls.fullname()] = componentHolderCls;
 		}
+		return componentHolderCls;
 	}
 
 }

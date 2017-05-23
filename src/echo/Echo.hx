@@ -151,7 +151,7 @@ class Echo {
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
-			for (hCls in echo.macro.MacroBuilder.componentHoldersMap) {
+			for (hCls in echo.macro.MacroBuilder.componentCache) {
 				macro ${ hCls.expr() }.__MAP.remove(_id_);
 			}
 		];
