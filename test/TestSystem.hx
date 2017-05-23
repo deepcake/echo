@@ -26,8 +26,9 @@ class TestSystem extends TestCase {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
 		ch.addSystem(new SAB());
+		ch.addSystem(new SystemAnonymous());
 
-		assertEquals(3, ch.systems.length);
+		assertEquals(4, ch.systems.length);
 		assertEquals(3, ch.views.length);
 	}
 
@@ -174,6 +175,9 @@ class TestSystem extends TestCase {
 		assertEquals('M', MetaEachSystemTypeParam.STATIC_ACTUAL);
 	}
 
+
+
+
 }
 
 class MetaAddRemSystem extends System {
@@ -313,6 +317,13 @@ class SAB extends System {
 	var viewab = new echo.View<{a:CA, b:CB}>();
 	var viewa = new echo.View<{a:CA}>();
 	var viewb = new echo.View<{b:CB}>();
+}
+
+typedef AnonymousA = { var a:CA; };
+typedef AnonymousAB = { > AnonymousA, var b:CB; };
+class SystemAnonymous extends System {
+	var view1:echo.View<AnonymousA>;
+	var view2:echo.View<AnonymousAB>;
 }
 
 class CA {

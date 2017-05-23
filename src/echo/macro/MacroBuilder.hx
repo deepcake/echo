@@ -89,7 +89,7 @@ class MacroBuilder {
 	}
 
 	static function getClsNameSuffix(types:Array<ComplexType>):String {
-		var suf = types.map(function(type) return type.fullname());
+		var suf = types.map(function(type) return type.followName());
 		suf.sort(function(a, b) {
 			a = a.toLowerCase();
 			b = b.toLowerCase();
@@ -108,7 +108,7 @@ class MacroBuilder {
 
 
 	static public function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.fullComplexType()));
+		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.followComplexType()));
 		return TPath(tpath(['echo'], 'View', [TPType(TAnonymous(viewClsParams))]));
 	}
 
@@ -128,10 +128,19 @@ class MacroBuilder {
 
 						return fields.map(function(field) {
 							switch (field.kind) {
-								case FVar(cls, _): return { name: field.name, cls: cls.fullComplexType() };
+								case FVar(cls, _): return { name: field.name, cls: cls.followComplexType() };
 								case x: throw 'Unexp $x';
 							}
 						});
+
+					case [ TPType(a = TPath(_)) ]:
+
+						switch (a.toType().follow()) {
+							case TAnonymous(_.get() => p):
+								return p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
+
+							case x: throw 'Unexp $x';
+						}
 
 					case x: throw 'Unexp $x';
 				}
@@ -172,7 +181,7 @@ class MacroBuilder {
 						case macro:Int, macro:Float: 
 							return null;
 						default: 
-							return { name: a.name, cls: a.type.fullComplexType() };
+							return { name: a.name, cls: a.type.followComplexType() };
 					}
 				}).filter(function(el) return el != null);
 
@@ -209,7 +218,7 @@ class MacroBuilder {
 		views.iter(function(v) {
 			var viewCls = getViewGenericComplexType(v.components);
 			var viewType = viewCls.tp();
-			var viewId = viewIdsMap[viewCls.fullname()];
+			var viewId = viewIdsMap[viewCls.followName()];
 			activateExprs.push(macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()));
 			activateExprs.push(macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]);
 		} );
@@ -270,7 +279,7 @@ class MacroBuilder {
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
 
-		traceFields(cls.fullname(), fields);
+		traceFields(cls.followName(), fields);
 
 		return fields;
 	}
@@ -309,13 +318,13 @@ class MacroBuilder {
 			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
 
-			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).fullname()}.__MAP.exists(id)').join(' && '), Context.currentPos());
+			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
 
 			// testcomponent
 			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
 
-			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls).fullname()}.__ID => true').join(', ') + ']', Context.currentPos());
+			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 
 			traceTypeDefenition(def);
@@ -331,7 +340,7 @@ class MacroBuilder {
 
 	static public function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
 		var viewDataCls = getViewData(components);
-		var viewIterClsName = getClsName('ViewIterator', viewDataCls.fullname());
+		var viewIterClsName = getClsName('ViewIterator', viewDataCls.followName());
 		var viewIterCls = viewIterCache.get(viewIterClsName);
 		if (viewIterCls == null) {
 
@@ -352,7 +361,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.list[i]);
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).fullname()}.__MAP.get(this.vd.id)', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP.get(this.vd.id)', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
 
@@ -391,8 +400,8 @@ class MacroBuilder {
 
 
 	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
-		var componentHolderClsName = getClsName('ComponentHolder', componentCls.fullname());
-		var componentHolderCls = componentCache.get(componentCls.fullname());
+		var componentHolderClsName = getClsName('ComponentHolder', componentCls.followName());
+		var componentHolderCls = componentCache.get(componentCls.followName());
 		if (componentHolderCls == null) {
 
 			var def = macro class $componentHolderClsName {
@@ -405,7 +414,7 @@ class MacroBuilder {
 			Context.defineType(def);
 
 			componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
-			componentCache[componentCls.fullname()] = componentHolderCls;
+			componentCache[componentCls.followName()] = componentHolderCls;
 		}
 		return componentHolderCls;
 	}

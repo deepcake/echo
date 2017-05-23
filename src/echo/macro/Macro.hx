@@ -85,29 +85,24 @@ class Macro {
 		#end
 	}
 
-	static public function fullComplexType(cls:ComplexType) {
+	static public function followComplexType(cls:ComplexType) {
 		return cls.toType().follow().toComplexType();
 	}
 
-	static public function fullname(ct:ComplexType):String {
-		var t = tp(ct.toType().follow().toComplexType()); // really full name
+	static public function followName(cls:ComplexType):String {
+		var t = tp(followComplexType(cls));
 
-		function paramfullname(p:TypeParam):String {
+		function paramFollowName(p:TypeParam):String {
 			switch (p) {
 				case TPType(cls):
-					return fullname(cls);
+					return followName(cls);
 				case x: throw 'Unexp $x';
 			}
 		}
 		var params = '';
-		if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramfullname).join(', ') + '>';
+		if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramFollowName).join(', ') + '>';
 
 		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
-	}
-
-	static public function shortname(ct:ComplexType):String {
-		var t = tp(ct);
-		return t.sub != null ? t.sub : t.name;
 	}
 
 	static public function tp(t:ComplexType):TypePath {
@@ -118,7 +113,7 @@ class Macro {
 	}
 
 	static public function expr(cls:ComplexType):Expr {
-		return Context.parse(fullname(cls), Context.currentPos());
+		return Context.parse(followName(cls), Context.currentPos());
 	}
 
 	static public function identName(e:Expr) {
