@@ -197,7 +197,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onAdd.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
 
@@ -208,7 +208,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {
@@ -228,7 +228,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {
@@ -248,7 +248,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {

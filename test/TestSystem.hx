@@ -32,6 +32,15 @@ class TestSystem extends TestCase {
 		assertEquals(3, ch.views.length);
 	}
 
+	public function test_build_c_order() {
+		ch.addSystem(new SystemABC());
+		ch.addSystem(new SystemCBA());
+		ch.addSystem(new SystemAnonymousCBA());
+
+		assertEquals(3, ch.systems.length);
+		assertEquals(1, ch.views.length);
+	}
+
 	public function test_lifecycle() {
 		var ss = new SomeSystem();
 		ch.addSystem(ss);
@@ -156,7 +165,7 @@ class TestSystem extends TestCase {
 	public function test_view_reuse2() {
 		ASystem.STATIC_ACTUAL = '';
 		ch.addView(new echo.View<{ a:CA }>());
-		ch.getView(CA).onAdd.add(function(id) ASystem.STATIC_ACTUAL += '!');
+		ch.getView(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
 		ch.addSystem(new ASystemReuse());
 
 		ch.setComponent(ch.id(), new CA(''));
@@ -324,6 +333,19 @@ typedef AnonymousAB = { > AnonymousA, var b:CB; };
 class SystemAnonymous extends System {
 	var view1:echo.View<AnonymousA>;
 	var view2:echo.View<AnonymousAB>;
+}
+
+class SystemABC extends System {
+	var viewabc:echo.View<{a:CA, b:CB, c:CC}>;
+}
+
+class SystemCBA extends System {
+	var viewabc:echo.View<{c:CC, b:CB, a:CA}>;
+}
+
+typedef AnonymousCBA = {c:CC, b:CB, a:CA};
+class SystemAnonymousCBA extends System {
+	var viewabc:echo.View<AnonymousCBA>;
 }
 
 class CA {

@@ -23,9 +23,9 @@ class MacroBuilder {
 
 
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
-	static var ONADD_META = ['onadd', 'add', 'a'];
-	static var ONREMOVE_META = ['onremove', 'onrem', 'rem', 'r'];
-	static var ONEACH_META = ['oneach', 'foreach', 'each', 'e'];
+	static var ONADD_META = ['onadded', 'onadd', 'add', 'a'];
+	static var ONREMOVE_META = ['onremoved', 'onremove', 'onrem', 'rem', 'r'];
+	static var ONEACH_META = ['oneach', 'foreach', 'each', 'e', 'update', 'upd', 'u'];
 
 
 	static public var componentIndex:Int = 0;
@@ -59,6 +59,7 @@ class MacroBuilder {
 		#if echo_verbose
 			if (!reportRegistered) {
 				Context.onGenerate(function(types) {
+					trace('ECHO REPORT');
 					trace('COMPONENTS [${componentCache.count()}]:');
 					componentCache.iter(function(v) trace(v));
 					trace('VIEWS [${viewCache.count()}]:');
@@ -72,6 +73,14 @@ class MacroBuilder {
 
 	static function safename(str:String) {
 		return str.replace('.', '_').replace('<', '').replace('>', '');
+	}
+
+	static function compareStrings(a:String, b:String):Int {
+		a = a.toLowerCase();
+		b = b.toLowerCase();
+		if (a < b) return -1;
+		if (a > b) return 1;
+		return 0;
 	}
 
 	static function getClsName(prefix:String, suffix:String) {
@@ -90,13 +99,7 @@ class MacroBuilder {
 
 	static function getClsNameSuffix(types:Array<ComplexType>):String {
 		var suf = types.map(function(type) return type.followName());
-		suf.sort(function(a, b) {
-			a = a.toLowerCase();
-			b = b.toLowerCase();
-			if (a < b) return -1;
-			if (a > b) return 1;
-			return 0;
-		});
+		suf.sort(compareStrings);
 		return safename(suf.join('_'));
 	}
 
@@ -191,7 +194,7 @@ class MacroBuilder {
 
 				if (view == null) {
 					var viewCls = getViewGenericComplexType(components);
-					fields.push(fvar(viewName, viewCls, null));
+					fields.push(fvar(viewName, viewCls));
 					views.push({ name: viewName, components: components });
 				} else {
 					// this view already defined in this system
@@ -233,9 +236,9 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				activateExprs.push(macro $i{viewname}.onAdd.add($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onAdded.add($i{f.name}));
 				activateExprs.push(macro for (i in $i{viewname}.entities) $i{f.name}(i));
-				deactivateExprs.push(macro $i{viewname}.onAdd.remove($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onAdded.remove($i{f.name}));
 			}
 			var onremMeta = getMeta(f, ONREMOVE_META);
 			if (onremMeta != null) {
@@ -245,8 +248,8 @@ class MacroBuilder {
 					case []: views[0].name;
 					case x: throw 'Unexp $x';
 				}
-				activateExprs.push(macro $i{viewname}.onRemove.add($i{f.name}));
-				deactivateExprs.push(macro $i{viewname}.onRemove.remove($i{f.name}));
+				activateExprs.push(macro $i{viewname}.onRemoved.add($i{f.name}));
+				deactivateExprs.push(macro $i{viewname}.onRemoved.remove($i{f.name}));
 			}
 		} );
 

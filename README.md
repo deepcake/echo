@@ -89,8 +89,8 @@ class Render extends System {
     scene.removeChild(sprite);
   }
   override public function onactivate() {
-    visuals.onAdd.add(onVisualAdded);
-    visuals.onRemove.add(onVisualRemoved);
+    visuals.onAdded.add(onVisualAdded);
+    visuals.onRemoved.add(onVisualRemoved);
   }
   override public function update(dt:Float) {
     for (v in visuals) {
@@ -122,7 +122,7 @@ class Render extends System {
   * `.addSystem`, `.removeSystem(system:System)` - add/remove system from _the workflow_.
   * `.addView`, `.removeView` - add/remove view from _the workflow_. In most cases we will not call that functions directly, macro will do it for us.
 * `View<T>` - generic class for views.
-  * `.onAdd`, `.onRemove:Signal<Int->Void>` - signals, called at add/remove an suitable _id_ to _the workflow_. Actualy, signals is dispatch before id is removed (or after id is added), so it possible to access to components of dispatched id.
+  * `.onAdded`, `.onRemoved:Signal<Int->Void>` - signals, called at add/remove an suitable _id_ to _the workflow_. Actualy, signals is dispatch before id is removed (or after id is added), so it possible to access to components of dispatched id.
   * `.entities:Array<Int>` - array of _ids_ into this view. Can be sorted.
   * `.iterator():Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` with minimal overhead.
 * `System` - base class for systems.
