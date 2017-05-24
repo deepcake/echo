@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["entity", "component", "system"],
   "description": "Super lightweight Entity Component System framework for Haxe",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "classPath": "src/",
-  "releasenote": "Alpha 4",
+  "releasenote": "Alpha 5",
   "contributors": ["wimcake"]
 }
