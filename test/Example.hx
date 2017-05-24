@@ -110,9 +110,9 @@ class Sprite {
 // Systems
 
 class Movement extends System {
-	@skip var w:Float;
-	@skip var h:Float;
-	var bodies = new View<{ pos:Position, vel:Velocity }>();
+	var w:Float;
+	var h:Float;
+	var bodies:View<{ pos:Position, vel:Velocity }>;
 	public function new(w:Float, h:Float) {
 		this.w = w;
 		this.h = h;
@@ -134,7 +134,7 @@ class Render extends System {
 	var world:Array<Array<Element>>;
 	var w = 0;
 	var h = 0;
-	@view var visuals = new View<{ pos:Position, spr:Sprite }>();
+	var visuals:View<{ pos:Position, spr:Sprite }>;
 	public function new(w:Int, h:Int, canvas:Element) {
 		this.canvas = canvas;
 		this.w = w;

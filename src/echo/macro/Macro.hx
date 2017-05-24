@@ -2,6 +2,7 @@ package echo.macro;
 #if macro
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
+using Lambda;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
@@ -59,6 +60,15 @@ class Macro {
 		}
 	}
 
+	static public function tpath(?pack:Array<String>, name:String, ?params:Array<TypeParam>, ?sub:String):TypePath {
+		return {
+			pack: pack != null ? pack : [],
+			name: name,
+			params: params != null ? params : [],
+			sub: sub
+		}
+	}
+
 
 	static public inline function traceFields(clsname:String, fields:Array<Field>) {
 		#if echo_verbose
@@ -69,27 +79,30 @@ class Macro {
 		#end
 	}
 
-	static public inline function traceExprs(name:String, exprs:Array<Expr>) {
-		#if echo_verbose
-			trace('$name:\n' + new Printer().printExprs(exprs, '\n'));
-		#end
-	}
-
 	static public inline function traceTypeDefenition(def:TypeDefinition) {
 		#if echo_verbose
 			trace(new Printer().printTypeDefinition(def));
 		#end
 	}
 
-
-	static public function fullname(ct:ComplexType):String {
-		var t = tp(ct.toType().follow().toComplexType()); // really full name
-		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '');
+	static public function followComplexType(cls:ComplexType) {
+		return cls.toType().follow().toComplexType();
 	}
 
-	static public function shortname(ct:ComplexType):String {
-		var t = tp(ct);
-		return t.sub != null ? t.sub : t.name;
+	static public function followName(cls:ComplexType):String {
+		var t = tp(followComplexType(cls));
+
+		function paramFollowName(p:TypeParam):String {
+			switch (p) {
+				case TPType(cls):
+					return followName(cls);
+				case x: throw 'Unexp $x';
+			}
+		}
+		var params = '';
+		if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramFollowName).join(', ') + '>';
+
+		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
 	}
 
 	static public function tp(t:ComplexType):TypePath {
@@ -97,6 +110,10 @@ class Macro {
 			case TPath(p): p;
 			case x: throw 'Unexpected $x';
 		}
+	}
+
+	static public function expr(cls:ComplexType):Expr {
+		return Context.parse(followName(cls), Context.currentPos());
 	}
 
 	static public function identName(e:Expr) {

@@ -21,9 +21,12 @@ class ViewBase {
 
 	@:noCompletion public var __id = -1;
 
-	public var onAdd = new echo.utils.Signal<Int->Void>();
-	public var onRemove = new echo.utils.Signal<Int->Void>();
+	/** Signal that dispatched when this view collects a new id (entity) */
+	public var onAdded(default, null) = new echo.utils.Signal<Int->Void>();
+	/** Signal that dispatched when an id (entity) no more matched and will be removed */
+	public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
+	/** List of matched ids (entities) */
 	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 
 
@@ -56,11 +59,11 @@ class ViewBase {
 	inline function add(id:Int) {
 		entitiesMap.set(id, id);
 		entities.push(id);
-		onAdd.dispatch(id);
+		onAdded.dispatch(id);
 	}
 
 	inline function remove(id:Int) {
-		onRemove.dispatch(id);
+		onRemoved.dispatch(id);
 		entities.remove(id);
 		entitiesMap.remove(id);
 	}

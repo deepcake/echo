@@ -26,9 +26,19 @@ class TestSystem extends TestCase {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
 		ch.addSystem(new SAB());
+		ch.addSystem(new SystemAnonymous());
+
+		assertEquals(4, ch.systems.length);
+		assertEquals(3, ch.views.length);
+	}
+
+	public function test_build_c_order() {
+		ch.addSystem(new SystemABC());
+		ch.addSystem(new SystemCBA());
+		ch.addSystem(new SystemAnonymousCBA());
 
 		assertEquals(3, ch.systems.length);
-		assertEquals(3, ch.views.length);
+		assertEquals(1, ch.views.length);
 	}
 
 	public function test_lifecycle() {
@@ -54,7 +64,7 @@ class TestSystem extends TestCase {
 		assertEquals(2, ch.views.length);
 	}
 
-	public function test_meta_onadd_onrem() {
+	public function test_meta_onadd_onrem_added_before_entity() {
 		ch.addSystem(new MetaAddRemSystem());
 		var id = ch.id();
 
@@ -64,6 +74,19 @@ class TestSystem extends TestCase {
 
 		ch.removeComponent(id, CA);
 		ch.removeComponent(id, CB);
+
+		assertEquals('A!B!!A!B', MetaAddRemSystem.STATIC_ACTUAL);
+	}
+
+	public function test_meta_onadd_onrem_added_after_entity() {
+		var id = ch.id();
+		ch.setComponent(id, new CA(), new CB());
+
+		ch.addSystem(new MetaAddRemSystem());
+
+		assertEquals('A!B!', MetaAddRemSystem.STATIC_ACTUAL);
+
+		ch.remove(id);
 
 		assertEquals('A!B!!A!B', MetaAddRemSystem.STATIC_ACTUAL);
 	}
@@ -126,6 +149,43 @@ class TestSystem extends TestCase {
 		assertEquals(1, ch.views.length);
 		assertEquals('A_0.9A_0.9_' + ch.last(), MetaEachSystemDelta.STATIC_ACTUAL);
 	}
+
+	public function test_view_reuse1() {
+		ASystem.STATIC_ACTUAL = '';
+		ch.addSystem(new ASystem());
+		ch.addSystem(new ASystemReuse());
+
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('AR', ASystem.STATIC_ACTUAL);
+	}
+
+	public function test_view_reuse2() {
+		ASystem.STATIC_ACTUAL = '';
+		ch.addView(new echo.View<{ a:CA }>());
+		ch.getView(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
+		ch.addSystem(new ASystemReuse());
+
+		ch.setComponent(ch.id(), new CA(''));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('!R', ASystem.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach_type_param() {
+		ch.addSystem(new MetaEachSystemTypeParam());
+		ch.setComponent(ch.id(), [ 'M' ]);
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('M', MetaEachSystemTypeParam.STATIC_ACTUAL);
+	}
+
+
+
 
 }
 
@@ -214,6 +274,28 @@ class MetaEachSystemDelta extends System {
 	@oneach function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
 }
 
+class MetaEachSystemTypeParam extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@oneach function oneach(a:Array<String>) STATIC_ACTUAL += a[0];
+}
+
+
+class ASystem extends System {
+	static public var STATIC_ACTUAL = '';
+	var view:echo.View<{ a:CA }>;
+	@a function addA(id:Int) {
+		ASystem.STATIC_ACTUAL += 'A';
+	}
+}
+class ASystemReuse extends System {
+	var view:echo.View<{ a:CA }>;
+	@a function addA(id:Int) {
+		ASystem.STATIC_ACTUAL += 'R';
+	}
+}
+
 
 class SomeSystem extends System {
 	static public var STATIC_ACTUAL = '';
@@ -235,7 +317,7 @@ class SA extends System {
 }
 
 class SB extends System {
-	var view1 = new echo.View<{a:CA}>();
+	@i var view1 = new echo.View<{a:CA}>();
 	var view2 = new echo.View<{b:CB}>();
 	@i var view3 = new echo.View<{c:CC}>();
 }
@@ -244,6 +326,26 @@ class SAB extends System {
 	var viewab = new echo.View<{a:CA, b:CB}>();
 	var viewa = new echo.View<{a:CA}>();
 	var viewb = new echo.View<{b:CB}>();
+}
+
+typedef AnonymousA = { var a:CA; };
+typedef AnonymousAB = { > AnonymousA, var b:CB; };
+class SystemAnonymous extends System {
+	var view1:echo.View<AnonymousA>;
+	var view2:echo.View<AnonymousAB>;
+}
+
+class SystemABC extends System {
+	var viewabc:echo.View<{a:CA, b:CB, c:CC}>;
+}
+
+class SystemCBA extends System {
+	var viewabc:echo.View<{c:CC, b:CB, a:CA}>;
+}
+
+typedef AnonymousCBA = {c:CC, b:CB, a:CA};
+class SystemAnonymousCBA extends System {
+	var viewabc:echo.View<AnonymousCBA>;
 }
 
 class CA {

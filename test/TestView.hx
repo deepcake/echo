@@ -197,7 +197,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onAdd.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
 
@@ -208,7 +208,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {
@@ -228,7 +228,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {
@@ -248,7 +248,7 @@ class TestView extends TestCase {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
-		view.onRemove.add(function(i) ACTUAL += ch.getComponent(i, C1));
+		view.onRemoved.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		var ids = [];
 		for (i in 'QWERTY'.split('')) {
@@ -272,14 +272,6 @@ class TestView extends TestCase {
 		assertEquals(v1, v2);
 	}
 
-	public function test_view_create() {
-		var v1 = ch.createView({ a:C1 });
-		var v2:View<{ a:C1 }> = cast ch.createView({ a:C1 });
-
-		assertEquals(0, ch.views.length);
-		assertFalse(v1 == v2);
-	}
-
 	public function test_view_get() {
 		var v0 = ch.defineView({ a:C1 });
 
@@ -288,6 +280,14 @@ class TestView extends TestCase {
 
 		assertEquals(v0, v1);
 		assertEquals(v0, v2);
+	}
+
+	public function test_view_get_null() {
+		var v1 = ch.getView(C1);
+		var v2:View<{ a:C1 }> = cast ch.getView(C1);
+
+		assertEquals(null, v1);
+		assertEquals(null, v2);
 	}
 
 
