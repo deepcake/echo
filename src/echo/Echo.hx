@@ -38,9 +38,8 @@ class Echo {
 		var ret = 'Echo:' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]' + '\n'; // TODO add version or something
 		#if debug
 			for (v in views) {
-				ret += '\t' + Type.getClassName(Type.getClass(v)) + ' [ ${views.length} ]' + '\n';
+				ret += '\t' + Type.getClassName(Type.getClass(v)) + ' [ ${v.entities.length} ]' + '\n';
 			}
-			ret += '\n';
 			for (s in systems) {
 				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms' + '\n';
 			}
