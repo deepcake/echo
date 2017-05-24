@@ -35,10 +35,14 @@ class Echo {
 		var updateStats:Map<System, Float> = new Map();
 	#end
 	inline public function stats():String {
-		var ret = 'Echo' + ' [${entities.length}]' + '\n'; // TODO add version or something
+		var ret = 'Echo:' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]' + '\n'; // TODO add version or something
 		#if debug
+			for (v in views) {
+				ret += '\t' + Type.getClassName(Type.getClass(v)) + ' [ ${views.length} ]' + '\n';
+			}
+			ret += '\n';
 			for (s in systems) {
-				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms\n';
+				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms' + '\n';
 			}
 		#end
 		return ret;
