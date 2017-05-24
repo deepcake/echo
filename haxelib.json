@@ -1,0 +1,11 @@
+{
+  "name": "echo",
+  "url" : "https://github.com/wimcake/echo",
+  "license": "MIT",
+  "tags": ["entity", "component", "system"],
+  "description": "Super lightweight Entity Component System framework for Haxe",
+  "version": "1.0.0-alpha.4",
+  "classPath": "src/",
+  "releasenote": "Alpha 4",
+  "contributors": ["wimcake"]
+}
