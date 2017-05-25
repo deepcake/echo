@@ -130,7 +130,7 @@ class Render extends System {
   * `@onadded`, `@add`, `@a` - meta that adds a function to the `onAdd` view signal.
   * `@onremoved`, `@rem`, `@r` - meta that adds a function to the `onRemove` view signal.
     ```haxe
-    var view_a_b:View<{ a:A, b:B }>;
+    var view_ab:View<{ a:A, b:B }>;
     @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
     ```
       converts to:
@@ -157,9 +157,9 @@ class Render extends System {
     ```
       converts to:
     ```haxe
-    var view_a_b:View<{ a:A, b:B }>;
+    var view_ab:View<{ a:A, b:B }>;
     override function update(dt:Float) {
-      for (v in view_a_b) update_ab(v.a, v.b);
+      for (v in view_ab) update_ab(v.a, v.b);
     }
     ```
 
