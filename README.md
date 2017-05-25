@@ -98,10 +98,10 @@ class Render extends System {
 [See web demo](https://wimcake.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
 
 #### Api
- `Component` is an instance of `T:Any`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
- `Entity` is just the `Int` _id_, using as a key in global component maps.
- `View` is a collection of suitable _ids_.
- `System` is a place to work with views with some features.
+* `Component` is an instance of `T:Any`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
+* `Entity` is just the `Int` _id_, using as a key in global component maps.
+* `View` is a collection of suitable _ids_.
+* `System` is a place to work with views with some features.
 
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - creates and adds a new _id_ to _the workflow_.
@@ -118,8 +118,7 @@ class Render extends System {
   * `.onAdded`, `.onRemoved:Signal<Int->Void>` - signals, called on a suitable _id_ is added/removed to _the workflow_. Actualy, signals is dispatch before id is removed (or after id is added), so it always possible to access to components of dispatched id.
   * `.entities:Array<Int>` - array of _ids_ into this view. Can be sorted.
   * `.iterator():Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` with minimal overhead.
-* `System`
-  All views that defined in the system (without `@skip` meta) will be added to the workflow.
+* `System` - all views that defined in the system (without `@skip` meta) will be added to the workflow.
   * `.onactivate()`, `.ondeactivate()` - to be overridden. Called on added/removed from _the workflow_.
   * `.update(dt:Float)` - to be overridden.
   * `@skip`, `@ignore` - saves the view from adding to _the workflow_.
@@ -133,7 +132,7 @@ class Render extends System {
   var view_a_b:View<{ a:A, b:B }>;
   @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
   ```
-  =>
+    converts to:
   ```haxe
   override function onactivate() {
     view_ab.onAdded.add(onadd_ab);
@@ -142,7 +141,7 @@ class Render extends System {
     view_ab.onAdded.remove(onadd_ab);
   }
   ```
-  It also possible to pass a view name or index (starts from `0`) to the onadded/onremoved meta, if system contains more then one view
+    It also possible to pass a view name or index (starts from `0`) to the onadded/onremoved meta, if system contains more then one view:
   ```haxe
   var view_a:View<{ a:A }>; // index 0
   var view_b:View<{ b:B }>; // index 1
@@ -155,7 +154,7 @@ class Render extends System {
   // Int and Float types are reserved for delta time and id
   // @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
   ```
-  =>
+    converts to:
   ```haxe
   var view_a_b:View<{ a:A, b:B }>;
   override function update(dt:Float) {
