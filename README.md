@@ -123,45 +123,45 @@ class Render extends System {
   * `.onactivate()`, `.ondeactivate()` - to be overridden. Called on added/removed from _the workflow_.
   * `.update(dt:Float)` - to be overridden.
   * `@skip`, `@ignore` - saves the view from adding to _the workflow_.
-  ```haxe
-  @skip var view = new View<{ a:A }>();
-  // nothing :-)
-  ```
+    ```haxe
+    @skip var view = new View<{ a:A }>();
+    // nothing :-)
+    ```
   * `@onadded`, `@add`, `@a` - meta that adds a function to the `onAdd` view signal.
   * `@onremoved`, `@rem`, `@r` - meta that adds a function to the `onRemove` view signal.
-  ```haxe
-  var view_a_b:View<{ a:A, b:B }>;
-  @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
-  ```
-    converts to:
-  ```haxe
-  override function onactivate() {
-    view_ab.onAdded.add(onadd_ab);
-  }
-  override function ondeactivate() {
-    view_ab.onAdded.remove(onadd_ab);
-  }
-  ```
-    It also possible to pass a view name or index (starts from `0`) to the onadded/onremoved meta, if system contains more then one view:
-  ```haxe
-  var view_a:View<{ a:A }>; // index 0
-  var view_b:View<{ b:B }>; // index 1
-  @onadded("view_a") function onadd_a(id:Int) trace(echo.getComponent(id, A));
-  @onadded(1) function onadd_b(id:Int) trace(echo.getComponent(id, B));
-  ```
+    ```haxe
+    var view_a_b:View<{ a:A, b:B }>;
+    @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
+    ```
+      converts to:
+    ```haxe
+    override function onactivate() {
+      view_ab.onAdded.add(onadd_ab);
+    }
+    override function ondeactivate() {
+      view_ab.onAdded.remove(onadd_ab);
+    }
+    ```
+      It also possible to pass a view name or index (starts from `0`) to the onadded/onremoved meta, if system contains more then one view:
+    ```haxe
+    var view_a:View<{ a:A }>; // index 0
+    var view_b:View<{ b:B }>; // index 1
+    @onadded("view_a") function onadd_a(id:Int) trace(echo.getComponent(id, A));
+    @onadded(1) function onadd_b(id:Int) trace(echo.getComponent(id, B));
+    ```
   * `@update`, `@upd`, `@u` - meta that calls a function for each view's entity. If a suitable view will be not found, new one will be defined.
-  ```haxe
-  @update function update_ab(a:A, b:B) trace(a, b);
-  // Int and Float types are reserved for delta time and id
-  // @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
-  ```
-    converts to:
-  ```haxe
-  var view_a_b:View<{ a:A, b:B }>;
-  override function update(dt:Float) {
-    for (v in view_a_b) update_ab(v.a, v.b);
-  }
-  ```
+    ```haxe
+    @update function update_ab(a:A, b:B) trace(a, b);
+    // Int and Float types are reserved for delta time and id
+    // @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
+    ```
+      converts to:
+    ```haxe
+    var view_a_b:View<{ a:A, b:B }>;
+    override function update(dt:Float) {
+      for (v in view_a_b) update_ab(v.a, v.b);
+    }
+    ```
 
 So code from the example above can be written with meta like this:
 ```haxe
