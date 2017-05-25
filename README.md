@@ -97,12 +97,13 @@ class Render extends System {
 
 [See web demo](https://wimcake.github.io/echo/web/) (source at [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
 
-#### Api
+#### Overview
 * `Component` is an instance of `T:Any`. For each class `T`, used as a component, will be generated a global `Map<Int, T>` component map.
 * `Entity` is just the `Int` _id_, using as a key in global component maps.
 * `View` is a collection of suitable _ids_.
 * `System` is a place to work with views with some features.
 
+#### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - creates and adds a new _id_ to _the workflow_.
   * `.next():Int` - creates a new _id_ without adding it to _the workflow_.
