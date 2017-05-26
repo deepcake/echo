@@ -13,12 +13,12 @@ class System {
 	var echo:Echo;
 
 
-	@:allow(echo.Echo) function activate(echo:Echo) {
+	@:noCompletion public function activate(echo:Echo) {
 		this.echo = echo;
 		onactivate();
 	}
 
-	@:allow(echo.Echo) function deactivate() {
+	@:noCompletion public function deactivate() {
 		ondeactivate();
 		this.echo = null;
 	}
