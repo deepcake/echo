@@ -22,10 +22,10 @@ class Echo {
 
 	/** List of added ids (entities) */
 	public var entities(default, null):List<Int> = new List();
-	/** Array of added views */
-	public var views(default, null):Array<View.ViewBase> = [];
-	/** Array of added systems */
-	public var systems(default, null):Array<System> = [];
+	/** List of added views */
+	public var views(default, null):List<View.ViewBase> = new List();
+	/** List of added systems */
+	public var systems(default, null):List<System> = new List();
 
 
 	public function new() { }
@@ -67,7 +67,7 @@ class Echo {
 
 	public function addSystem(s:System) {
 		s.activate(this);
-		systems.push(s);
+		systems.add(s);
 	}
 
 	public function removeSystem(s:System) {
@@ -81,7 +81,7 @@ class Echo {
 	public function addView(view:View.ViewBase) {
 		if (!viewsMap.exists(view.__id)) {
 			viewsMap[view.__id] = view;
-			views.push(view);
+			views.add(view);
 			view.activate(this);
 		}
 	}
@@ -112,6 +112,11 @@ class Echo {
 	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.followName()] }];
+	}
+
+	macro public function hasView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
+		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
+		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[viewCls.followName()] });
 	}
 
 
