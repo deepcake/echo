@@ -165,7 +165,7 @@ class TestSystem extends TestCase {
 	public function test_view_reuse2() {
 		ASystem.STATIC_ACTUAL = '';
 		ch.addView(new echo.View<{ a:CA }>());
-		ch.getView(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
+		ch.getViewByTypes(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
 		ch.addSystem(new ASystemReuse());
 
 		ch.setComponent(ch.id(), new CA(''));

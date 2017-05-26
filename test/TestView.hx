@@ -264,47 +264,60 @@ class TestView extends TestCase {
 		assertEquals('QWERTY', ACTUAL);
 	}
 
-	public function test_view_define() {
-		var v1 = ch.defineView({ a:C1 });
-		var v2:View<{ a:C1 }> = cast ch.defineView({ a:C1 });
+	public function test_view_get_by_types() {
+		var v0 = new View1();
+		ch.addView(v0);
 
-		assertEquals(1, ch.views.length);
-		assertEquals(v1, v2);
+		var v1:View1 = cast ch.getViewByTypes(C1);
+		var v2:View<{ a:C1 }> = cast ch.getViewByTypes(C1);
+
+		assertEquals(v0, v1);
+		assertEquals(v0, v2);
 	}
 
-	public function test_view_get() {
-		var v0 = ch.defineView({ a:C1 });
+	public function test_view_get_by_class() {
+		var v0 = new View1();
+		ch.addView(v0);
 
-		var v1 = ch.getView(C1);
-		var v2:View<{ a:C1 }> = cast ch.getView(C1);
+		var v1:View1 = cast ch.getView(View1);
+		var v2:View<{ a:C1 }> = cast ch.getView(View1);
 
 		assertEquals(v0, v1);
 		assertEquals(v0, v2);
 	}
 
 	public function test_view_get_null() {
-		var v1 = ch.getView(C1);
-		var v2:View<{ a:C1 }> = cast ch.getView(C1);
+		var v1 = ch.getViewByTypes(C1);
+		var v2:View<{ a:C1 }> = cast ch.getViewByTypes(C1);
+		var v3:View1 = cast ch.getView(View1);
+		var v4:View<{ a:C1 }> = cast ch.getView(View1);
 
 		assertEquals(null, v1);
 		assertEquals(null, v2);
+		assertEquals(null, v3);
+		assertEquals(null, v4);
 	}
 
 
 	public function test_prevent_view_duplicates() {
-		ch.defineView({ a:C1, b:C2 });
-		ch.defineView({ a:C1, b:C2 });
-		ch.defineView({ b:C2, a:C1 });
+		ch.addView(new View12());
+		ch.addView(new View12());
+		ch.addView(new View21());
 
 		for (i in 0...10) ch.setComponent(ch.id(), new C1('$i'), new C2('$i'));
 
 		assertEquals(1, ch.views.length);
 		assertEquals(10, ch.entities.length);
-		assertEquals(10, ch.getView(C1, C2).entities.length);
-		assertEquals(10, ch.getView(C2, C1).entities.length);
+		assertEquals(10, ch.getViewByTypes(C1, C2).entities.length);
+		assertEquals(10, ch.getViewByTypes(C2, C1).entities.length);
 	}
 
 }
+
+typedef View1 = View<{ a:C1 }>; // only way ?
+
+typedef View12 = View<{ a:C1, b:C2 }>;
+typedef View21 = View<{ b:C2, a:C1 }>;
 
 @:forward(charCodeAt)
 abstract C1(String) {

@@ -39,6 +39,9 @@ class MacroBuilder {
 
 	static public var viewDataCache:Map<String, ComplexType> = new Map();
 
+	static public var systemIndex:Int = 0;
+	static public var systemIdsMap:Map<String, Int> = new Map();
+
 
 	static var reportRegistered = false;
 
@@ -119,6 +122,8 @@ class MacroBuilder {
 	static public function autoBuildSystem() {
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
+
+		systemIdsMap[cls.followName()] = ++systemIndex;
 
 		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
 
@@ -309,13 +314,10 @@ class MacroBuilder {
 		var viewCls = viewCache.get(viewClsName);
 		if (viewCls == null) {
 
-			viewIndex++;
-			viewIdsMap[viewClsName] = viewIndex;
+			viewIdsMap[viewClsName] = ++viewIndex;
 
 			var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
-				public function new() { 
-					__id = $v{viewIndex};
-				}
+				public function new() { }
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();

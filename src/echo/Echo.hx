@@ -19,6 +19,7 @@ class Echo {
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
+	@:noCompletion public var systemsMap:Map<Int, System> = new Map();
 
 	/** List of added ids (entities) */
 	public var entities(default, null):List<Int> = new List();
@@ -70,36 +71,72 @@ class Echo {
 
 	// System
 
-	public function addSystem(s:System) {
-		s.activate(this);
-		systems.add(s);
+	macro public function addSystem(self:Expr, s:ExprOf<System>) {
+		var cls = s.typeof().follow().toComplexType();
+		var safe = macro var _s_ = $s;
+		return macro {
+			if (!$self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] })) {
+				$safe;
+				$self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }] = _s_;
+				$self.systems.add(_s_);
+				_s_.activate($self);
+			}
+		}
 	}
 
-	public function removeSystem(s:System) {
-		s.deactivate();
-		systems.remove(s);
+	macro public function removeSystem(self:Expr, s:ExprOf<System>) {
+		var cls = s.typeof().follow().toComplexType();
+		var safe = macro var _s_ = $s;
+		return macro {
+			if ($self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] })) {
+				$safe;
+				_s_.deactivate();
+				$self.systemsMap.remove($v{ MacroBuilder.systemIdsMap[cls.followName()] });
+				$self.systems.remove(_s_);
+			}
+		}
+	}
+
+	macro public function hasSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
+		var cls = type.identName().getType().follow().toComplexType();
+		return macro $self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] });
+	}
+
+	macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<System> {
+		var cls = type.identName().getType().follow().toComplexType();
+		return macro $self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }];
 	}
 
 
 	// View
 
-	public function addView(view:View.ViewBase) {
-		if (!viewsMap.exists(view.__id)) {
-			viewsMap[view.__id] = view;
-			views.add(view);
-			view.activate(this);
+	macro public function addView(self:Expr, v:ExprOf<View.ViewBase>) {
+		var cls = v.typeof().follow().toComplexType();
+		var safe = macro var _v_ = $v;
+		return macro {
+			if (!$self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] })) {
+				$safe;
+				$self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }] = _v_;
+				$self.views.add(_v_);
+				_v_.activate($self);
+			}
 		}
 	}
 
-	public function removeView(view:View.ViewBase) {
-		if (viewsMap.exists(view.__id)) {
-			view.deactivate();
-			viewsMap.remove(view.__id);
-			views.remove(view);
+	macro public function removeView(self:Expr, v:ExprOf<View.ViewBase>) {
+		var cls = v.typeof().follow().toComplexType();
+		var safe = macro var _v_ = $v;
+		return macro {
+			if ($self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] })) {
+				$safe;
+				_v_.deactivate();
+				$self.viewsMap.remove($v{ MacroBuilder.viewIdsMap[cls.followName()] });
+				$self.views.remove(_v_);
+			}
 		}
 	}
 
-	macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
+	/*macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
 		switch (components.expr) {
 			case EObjectDecl(fields):
 				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
@@ -112,14 +149,24 @@ class Echo {
 	@:noCompletion public function __defineView(id:Int, constructor:Void->View.ViewBase):View.ViewBase {
 		if (!viewsMap.exists(id)) addView(constructor());
 		return viewsMap[id];
+	}*/
+
+	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<View.ViewBase> {
+		var cls = type.identName().getType().follow().toComplexType();
+		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }];
 	}
 
-	macro public function getView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
+	macro public function hasView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
+		var cls = type.identName().getType().follow().toComplexType();
+		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] });
+	}
+
+	macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.followName()] }];
 	}
 
-	macro public function hasView(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
+	macro public function hasViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[viewCls.followName()] });
 	}

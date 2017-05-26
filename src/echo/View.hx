@@ -30,12 +30,12 @@ class ViewBase {
 	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
 
 
-	@:allow(echo.Echo) function activate(echo:Echo) {
+	@:noCompletion public function activate(echo:Echo) {
 		this.echo = echo;
 		for (e in echo.entities) addIfMatch(e);
 	}
 
-	@:allow(echo.Echo) function deactivate() {
+	@:noCompletion public function deactivate() {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
 		this.echo = null;
 	}
