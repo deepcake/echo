@@ -20,23 +20,27 @@ class TestSmoke2 extends TestCase {
 
 	override public function setup() {
 		ch = new Echo();
+		ch.addSystem(new SmokeSystem());
+		for (i in 'xy'.split('')) ch.setComponent(ch.id(), new Name(i));
 	}
 
-	public function test1() {
-		ch.addSystem(new Smoke2System());
-
-		for (i in 'xy'.split('')) ch.setComponent(ch.id(), new Name(i));
-
+	public function test_workflow1() {
 		ch.update(0);
 
 		for (i in ch.entities) ch.remove(i);
 
-		assertEquals('!x!yAxAyBxBy;x!y!', Smoke2System.OUT);
+		assertEquals('!x!yAxAyBxBy;x!y!', SmokeSystem.OUT);
 	}
+
+	public function test_stats() {
+		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.stats());
+		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', '$ch');
+	}
+
 
 }
 
-class Smoke2System extends System {
+class SmokeSystem extends System {
 
 	static public var OUT = '';
 	public function new() OUT = '';

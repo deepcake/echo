@@ -35,17 +35,22 @@ class Echo {
 		var updateStats:Map<System, Float> = new Map();
 	#end
 	inline public function stats():String {
-		var ret = 'Echo:' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]' + '\n'; // TODO add version or something
+		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
 		#if debug
-			for (v in views) {
-				ret += '\t' + Type.getClassName(Type.getClass(v)) + ' [ ${v.entities.length} ]' + '\n';
-			}
 			for (s in systems) {
-				ret += '\t' + Type.getClassName(Type.getClass(s)) + ' : ' + updateStats.get(s) + ' ms' + '\n';
+				ret += '\n\t( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s) + ' ms';
+			}
+			for (v in views) {
+				ret += '\n\t{ ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
 			}
 		#end
 		return ret;
 	}
+
+	inline public function toString():String {
+		return stats();
+	}
+
 
 	/**
 	 *  @param dt - delta time
