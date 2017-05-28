@@ -193,13 +193,25 @@ class TestView extends TestCase {
 	}
 
 
-	public function test_onadd() {
+	public function test_onadd_add_component() {
 		var view = new echo.View<{a:C1}>();
 		ch.addView(view);
 
 		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
 		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+
+		assertEquals('QWERTY', ACTUAL);
+	}
+
+	public function test_onadd_add_view() {
+		var view = new echo.View<{a:C1}>();
+
+		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
+
+		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+
+		ch.addView(view);
 
 		assertEquals('QWERTY', ACTUAL);
 	}
@@ -297,6 +309,29 @@ class TestView extends TestCase {
 		assertEquals(null, v3);
 		assertEquals(null, v4);
 	}
+
+	public function test_view_has_by_types() {
+		ch.addView(new View1());
+
+		assertTrue(ch.hasViewByTypes(C1));
+		assertFalse(ch.hasViewByTypes(C2));
+	}
+
+	public function test_view_has_by_class() {
+		ch.addView(new View1());
+
+		assertTrue(ch.hasView(View1));
+		assertFalse(ch.hasView(View12));
+	}
+
+	/*public function test_view_remove() {
+		ch.addView(new View1());
+
+		ch.removeView(ch.getView(View1));
+
+		assertEquals(0, ch.views.length);
+		assertEquals(null, ch.getView(View1));
+	}*/
 
 
 	public function test_prevent_view_duplicates() {

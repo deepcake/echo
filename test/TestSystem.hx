@@ -185,8 +185,40 @@ class TestSystem extends TestCase {
 	}
 
 
+	public function test_system_get() {
+		var s0 = new SA();
+		ch.addSystem(s0);
+
+		assertEquals(s0, cast ch.getSystem(SA));
+	}
+
+	public function test_system_get_null() {
+		assertEquals(null, ch.getSystem(SA));
+	}
+
+	public function test_system_has() {
+		ch.addSystem(new SA());
+
+		assertTrue(ch.hasSystem(SA));
+		assertFalse(ch.hasSystem(SB));
+	}
+
+	/*public function test_system_remove() {
+		ch.addSystem(new SA());
+
+		ch.removeSystem(ch.getSystem(SA));
+
+		assertEquals(0, ch.systems.length);
+		assertEquals(null, ch.getSystem(SA));
+	}*/
 
 
+	public function test_prevent_system_duplicates() {
+		ch.addSystem(new SA());
+		ch.addSystem(new SA());
+
+		assertEquals(1, ch.systems.length);
+	}
 }
 
 class MetaAddRemSystem extends System {
