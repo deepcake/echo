@@ -116,21 +116,6 @@ class Echo {
 		}
 	}
 
-	/*macro public function defineView(self:Expr, components:Expr):ExprOf<View.ViewBase> {
-		switch (components.expr) {
-			case EObjectDecl(fields):
-				var components = fields.map(function(field) return { name: field.field, cls: field.expr.identName().getType().follow().toComplexType() });
-				var viewCls = MacroBuilder.getView(components);
-				return macro $self.__defineView($v{ MacroBuilder.viewIdsMap[viewCls.followName()] }, ${ viewCls.expr() }.new);
-			case x: throw 'Unexp $x';
-		}
-	}
-
-	@:noCompletion public function __defineView(id:Int, constructor:Void->View.ViewBase):View.ViewBase {
-		if (!viewsMap.exists(id)) addView(constructor());
-		return viewsMap[id];
-	}*/
-
 	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
 		var cls = type.identName().getType().follow().toComplexType();
 		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }];
@@ -183,7 +168,7 @@ class Echo {
 	}
 
 	/**
-	 *  If the id (entity) is added to the workflow then return true, otherwise return false
+	 *  Return true if the id (entity) is added to the workflow, otherwise false returned
 	 *  @param id - the id (entity)
 	 *  @return Bool
 	 */
@@ -259,7 +244,7 @@ class Echo {
 	/**
 	 *  Removes a component from the id (entity) by its type
 	 *  @param id - the id (entity)
-	 *  @param type - component type to be removed
+	 *  @param type - component type
 	 */
 	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>) {
 		var esafe = macro var _id_ = $id;
@@ -276,12 +261,23 @@ class Echo {
 	/**
 	 *  Gets a component from the id (entity) by its type
 	 *  @param id - the id (entity)
-	 *  @param type - component type to be got
+	 *  @param type - component type
 	 *  @return T
 	 */
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro ${ hCls.expr() }.__MAP.get($id);
+	}
+
+	/**
+	 *  Return true if the id (entity) has a component with this type, otherwise flase returned
+	 *  @param id - the id (entity)
+	 *  @param type - component type
+	 *  @return Bool
+	 */
+	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
+		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		return macro ${ hCls.expr() }.__MAP.exists($id);
 	}
 
 }
