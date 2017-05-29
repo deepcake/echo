@@ -132,9 +132,8 @@ class Render extends System {
     ```haxe
     var view_ab:View<{ a:A, b:B }>;
     @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
-    ```
-      converts to:
-    ```haxe
+    
+    // converts to:
     override function onactivate() {
       view_ab.onAdded.add(onadd_ab);
     }
@@ -154,9 +153,8 @@ class Render extends System {
     @update function update_ab(a:A, b:B) trace(a, b);
     // Int and Float types are reserved for delta time and id
     // @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
-    ```
-      converts to:
-    ```haxe
+    
+    // converts to:
     var view_ab:View<{ a:A, b:B }>;
     override function update(dt:Float) {
       for (v in view_ab) update_ab(v.a, v.b);
@@ -166,15 +164,15 @@ class Render extends System {
 So code from the example above can be written with meta like this:
 ```haxe
 class Render extends System {
-  @onadd function onVisualAdded(id:Int) {
+  @onadded function onVisualAdded(id:Int) {
     var sprite = echo.getComponent(id, Sprite);
     scene.addChild(sprite);
   }
-  @onremove function onVisualRemoved(id:Int) {
+  @onremoved function onVisualRemoved(id:Int) {
     var sprite = echo.getComponent(id, Sprite);
     scene.removeChild(sprite);
   }
-  @oneach function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
+  @update function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
