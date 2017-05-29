@@ -324,14 +324,22 @@ class TestView extends TestCase {
 		assertFalse(ch.hasView(View12));
 	}
 
-	/*public function test_view_remove() {
+	public function test_view_remove() {
 		ch.addView(new View1());
 
 		ch.removeView(ch.getView(View1));
 
 		assertEquals(0, ch.views.length);
 		assertEquals(null, ch.getView(View1));
-	}*/
+	}
+
+	public function test_view_remove_neg() {
+		var v = new View1();
+		ch.removeView(v);
+
+		assertEquals(0, ch.views.length);
+		assertEquals(null, ch.getView(View1));
+	}
 
 
 	public function test_prevent_view_duplicates() {

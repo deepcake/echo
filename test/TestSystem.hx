@@ -25,7 +25,7 @@ class TestSystem extends TestCase {
 	public function test_build() {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
-		ch.addSystem(new SAB());
+		ch.addSystem(new SAB('AB'));
 		ch.addSystem(new SystemAnonymous());
 
 		assertEquals(4, ch.systems.length);
@@ -203,14 +203,23 @@ class TestSystem extends TestCase {
 		assertFalse(ch.hasSystem(SB));
 	}
 
-	/*public function test_system_remove() {
+	public function test_system_remove() {
 		ch.addSystem(new SA());
 
 		ch.removeSystem(ch.getSystem(SA));
 
 		assertEquals(0, ch.systems.length);
 		assertEquals(null, ch.getSystem(SA));
-	}*/
+	}
+
+	public function test_system_remove_neg() {
+		var s = new SA();
+
+		ch.removeSystem(s);
+
+		assertEquals(0, ch.systems.length);
+		assertEquals(null, ch.getSystem(SA));
+	}
 
 
 	public function test_prevent_system_duplicates() {
@@ -355,6 +364,10 @@ class SB extends System {
 }
 
 class SAB extends System {
+	var v:String;
+	public function new(v:String) {
+		this.v = v;
+	}
 	var viewab = new echo.View<{a:CA, b:CB}>();
 	var viewa = new echo.View<{a:CA}>();
 	var viewb = new echo.View<{b:CB}>();

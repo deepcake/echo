@@ -71,29 +71,19 @@ class Echo {
 
 	// System
 
-	macro public function addSystem(self:Expr, s:ExprOf<System>) {
-		var cls = s.typeof().follow().toComplexType();
-		var safe = macro var _s_ = $s;
-		return macro {
-			if (!$self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] })) {
-				$safe;
-				$self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }] = _s_;
-				$self.systems.add(_s_);
-				_s_.activate($self);
-			}
+	public function addSystem(s:System) {
+		if (!systemsMap.exists(s.__id)) {
+			systemsMap[s.__id] = s;
+			systems.add(s);
+			s.activate(this);
 		}
 	}
 
-	macro public function removeSystem(self:Expr, s:ExprOf<System>) {
-		var cls = s.typeof().follow().toComplexType();
-		var safe = macro var _s_ = $s;
-		return macro {
-			if ($self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] })) {
-				$safe;
-				_s_.deactivate();
-				$self.systemsMap.remove($v{ MacroBuilder.systemIdsMap[cls.followName()] });
-				$self.systems.remove(_s_);
-			}
+	public function removeSystem(s:System) {
+		if (systemsMap.exists(s.__id)) {
+			s.deactivate();
+			systemsMap.remove(s.__id);
+			systems.remove(s);
 		}
 	}
 
@@ -110,29 +100,19 @@ class Echo {
 
 	// View
 
-	macro public function addView(self:Expr, v:ExprOf<View.ViewBase>) {
-		var cls = v.typeof().follow().toComplexType();
-		var safe = macro var _v_ = $v;
-		return macro {
-			if (!$self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] })) {
-				$safe;
-				$self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }] = _v_;
-				$self.views.add(_v_);
-				_v_.activate($self);
-			}
+	public function addView(v:View.ViewBase) {
+		if (!viewsMap.exists(v.__id)) {
+			viewsMap[v.__id] = v;
+			views.add(v);
+			v.activate(this);
 		}
 	}
 
-	macro public function removeView(self:Expr, v:ExprOf<View.ViewBase>) {
-		var cls = v.typeof().follow().toComplexType();
-		var safe = macro var _v_ = $v;
-		return macro {
-			if ($self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] })) {
-				$safe;
-				_v_.deactivate();
-				$self.viewsMap.remove($v{ MacroBuilder.viewIdsMap[cls.followName()] });
-				$self.views.remove(_v_);
-			}
+	public function removeView(v:View.ViewBase) {
+		if (viewsMap.exists(v.__id)) {
+			v.deactivate();
+			viewsMap.remove(v.__id);
+			views.remove(v);
 		}
 	}
 

@@ -125,7 +125,24 @@ class MacroBuilder {
 
 		systemIdsMap[cls.followName()] = ++systemIndex;
 
-		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
+		var fnew = fields.find(function(f) return f.name == 'new');
+		if (fnew == null) {
+			fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ systemIndex }));
+		} else {
+			switch (fnew.kind) {
+				case FFun(func):
+					var fnewexprs = [ macro __id = $v{ systemIndex } ];
+
+					switch (func.expr.expr) {
+						case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
+						case e: fnewexprs.push(func.expr);
+					}
+
+					func.expr = macro $b{fnewexprs};
+
+				default:
+			}
+		}
 
 		var views = fields.map(function(field) {
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
@@ -317,7 +334,7 @@ class MacroBuilder {
 			viewIdsMap[viewClsName] = ++viewIndex;
 
 			var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
-				public function new() { }
+				public function new() { __id = $v{ viewIndex }; }
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();

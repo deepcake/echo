@@ -12,6 +12,8 @@ class System {
 
 	var echo:Echo;
 
+	@:noCompletion public var __id = -1;
+
 
 	@:noCompletion public function activate(echo:Echo) {
 		this.echo = echo;
