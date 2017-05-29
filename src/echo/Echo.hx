@@ -92,7 +92,7 @@ class Echo {
 		return macro $self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] });
 	}
 
-	macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<System> {
+	macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<System>> {
 		var cls = type.identName().getType().follow().toComplexType();
 		return macro $self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }];
 	}
@@ -131,7 +131,7 @@ class Echo {
 		return viewsMap[id];
 	}*/
 
-	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<View.ViewBase> {
+	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
 		var cls = type.identName().getType().follow().toComplexType();
 		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }];
 	}
@@ -141,7 +141,7 @@ class Echo {
 		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] });
 	}
 
-	macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<View.ViewBase> {
+	macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
 		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.followName()] }];
 	}
