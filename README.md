@@ -3,7 +3,7 @@
 
 Super lightweight Entity Component System framework for Haxe. 
 Focused to be simple and perfomant.
-Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx) and [ESKIMO](https://github.com/PDeveloper/eskimo).
+Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and more classic [Ash-Haxe](https://github.com/nadako/Ash-Haxe) (check out it for understanding basic principles of ECS).
 
 #### Example
 ```haxe
@@ -13,7 +13,7 @@ import echo.View;
 
 class Example {
   static var echo:Echo;
-  
+
   static function main() {
     echo = new Echo();
     echo.addSystem(new Movement());
@@ -21,42 +21,39 @@ class Example {
     
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
     createRabbit(100, 100, 0, 0);
-    createTiger(50, 50, 10, 0);
   }
+
   static function createTree(x:Float, y:Float) {
     echo.setComponent(echo.id(), 
       new Position(x, y), 
       new Sprite('assets/tree.png'));
   }
   static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
-    echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/rabbit.png'));
-  }
-  static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
-    echo.setComponent(createDynamic(echo.id(), x, y, vx, vy), new Sprite('assets/tiger.png'));
+    var id = echo.id();
+    addDynamic(id, x, y, vx, vy);
+    echo.setComponent(id, new Sprite('assets/rabbit.png'));
+    echo.setComponent(id, new Ears());
   }
   // sort of entity decorator
-  static function createDynamic(id:Int, x:Float, y:Float, vx:Float, vy:Float):Int {
+  static function addDynamic(id:Int, x:Float, y:Float, vx:Float, vy:Float) {
     var pos = new Position(x, y);
     var vel = new Velocity(vx, vy);
     echo.setComponent(id, pos, vel);
-    return id;
-  }
-}
-
-// Utils
-class Vec2 {
-  public var x:Float;
-  public var y:Float;
-  public function new(?x:Float, ?y:Float) {
-    this.x = x != null ? x : .0;
-    this.y = y != null ? y : .0;
   }
 }
 
 // Components
+class Sprite {
+  // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
+}
+
+class Vec2 {
+  // some vector 2d implementation
+  // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
+}
+
 @:forward(x, y)
 abstract Velocity(Vec2) { 
-  // abstracts can be used to create different ComponentClasses from the same BaseClass without overhead
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 @:forward(x, y)
@@ -64,13 +61,9 @@ abstract Position(Vec2) {
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
-class Sprite {
-  // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
-}
-
 // Systems
 class Movement extends System {
-  var bodies = new View<{ pos:Position, vel:Velocity }>();
+  var bodies:View<{ pos:Position, vel:Velocity }>;
   override public function update(dt:Float) {
     for (body in bodies) {
       body.pos.x += body.vel.x * dt;
@@ -83,9 +76,10 @@ class Render extends System {
   var visuals:View<{ pos:Position, spr:Sprite }>;
   function onVisualAdded(id:Int) {
     var sprite = echo.getComponent(id, Sprite);
-    scene.addChild(sprite); // something like that
+    scene.addChild(sprite);
   }
   function onVisualRemoved(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
     scene.removeChild(sprite);
   }
   override public function onactivate() {
@@ -111,41 +105,82 @@ class Render extends System {
 
 #### Api
 * `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
-  * `.id():Int` - create and add new _id_ to _the workflow_.
-  * `.next():Int` - create new _id_ without adding it to _the workflow_.
-  * `.add(id:Int)` - add _id_ to _the workflow_.
-  * `.poll(id:Int)` - remove _id_ from _the workflow_ without removing its components.
-  * `.remove(id:Int)` - remove _id_ from _the workflow_ and remove all it components. If we expect to use _id_ with all its components after removing from _the workflow_ - use `poll()`, otherwise use `remove()`.
-  * `.setComponent(id:Int, ...args:Any)` - add/set components to the _id_, one or many at once.
-  * `.getComponent(id:Int, type:Class<T>):T` - get component from _id_ by type.
-  * `.removeComponent(id:Int, type:Class<Any>)` - remove component from _id_ by type.
-  * `.addSystem`, `.removeSystem(system:System)` - add/remove system from _the workflow_.
-  * `.addView`, `.removeView` - add/remove view from _the workflow_. In most cases we will not call that functions directly, macro will do it for us.
+  * `.id():Int` - creates and adds a new _id_ to _the workflow_.
+  * `.next():Int` - creates a new _id_ without adding it to _the workflow_.
+  * `.add(id:Int)` - adds _id_ to _the workflow_.
+  * `.poll(id:Int)` - removes _id_ from _the workflow_ without removing its components.
+  * `.remove(id:Int)` - removes _id_ from _the workflow_ and removes all it components. If expected to use _id_ with all its components after removing from _the workflow_ - must be used `#poll()`, otherwise `#remove()`.
+  * `.setComponent(id:Int, ...args:Any)` - adds/sets components to the _id_, one or many at once.
+  * `.getComponent(id:Int, type:Class<T>):T` - gets component of the _id_ by type.
+  * `.removeComponent(id:Int, type:Class<Any>)` - removes component from _id_ by type.
+  * `.addSystem`, `.removeSystem(system:System)` - adds/removes system from _the workflow_.
+  * `.addView`, `.removeView` - adds/removes view from _the workflow_. In most cases that will not called directly, macro will do it.
 * `View<T>` - generic class for views.
-  * `.onAdded`, `.onRemoved:Signal<Int->Void>` - signals, called at add/remove an suitable _id_ to _the workflow_. Actualy, signals is dispatch before id is removed (or after id is added), so it possible to access to components of dispatched id.
+  * `.onAdded`, `.onRemoved:Signal<Int->Void>` - signals, called on a suitable _id_ is added/removed to _the workflow_. Actualy, signals is dispatch before id is removed (or after id is added), so it always possible to access to components of dispatched id.
   * `.entities:Array<Int>` - array of _ids_ into this view. Can be sorted.
   * `.iterator():Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` with minimal overhead.
-* `System` - base class for systems.
-  * `.onactivate()`, `.ondeactivate()` - to be overridden. Called at add/remove from _the workflow_.
-  * `.update(dt:Float)` - to be overridden. Main logic place.
+* `System` - all views that defined in the system (without `@skip` meta) will be added to the workflow.
+  * `.onactivate()`, `.ondeactivate()` - to be overridden. Called on added/removed from _the workflow_.
+  * `.update(dt:Float)` - to be overridden.
+  * `@skip`, `@ignore` - saves the view from adding to _the workflow_.
+    ```haxe
+    @skip var view = new View<{ a:A }>();
+    // nothing :-)
+    ```
+  * `@onadded`, `@add`, `@a` - meta that adds a function to the `onAdd` view signal.
+  * `@onremoved`, `@rem`, `@r` - meta that adds a function to the `onRemove` view signal.
+    ```haxe
+    var view_ab:View<{ a:A, b:B }>;
+    @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
+    
+    // converts to:
+    override function onactivate() {
+      view_ab.onAdded.add(onadd_ab);
+    }
+    override function ondeactivate() {
+      view_ab.onAdded.remove(onadd_ab);
+    }
+    ```
+      It also possible to pass a view name or index (starts from `0`) to the onadded/onremoved meta, if system contains more then one view:
+    ```haxe
+    var view_a:View<{ a:A }>; // index 0
+    var view_b:View<{ b:B }>; // index 1
+    @onadded("view_a") function onadd_a(id:Int) trace(echo.getComponent(id, A));
+    @onadded(1) function onadd_b(id:Int) trace(echo.getComponent(id, B));
+    ```
+  * `@update`, `@upd`, `@u` - meta that calls a function for each view's entity. If a suitable view will be not found, new one will be defined.
+    ```haxe
+    @update function update_ab(a:A, b:B) trace(a, b);
+    // Int and Float types are reserved for delta time and id
+    // @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
+    
+    // converts to:
+    var view_ab:View<{ a:A, b:B }>;
+    override function update(dt:Float) {
+      for (v in view_ab) update_ab(v.a, v.b);
+    }
+    ```
 
-#### Features
-Code from example above can be written using special macro tags:
+So code from the example above can be written with meta like this:
 ```haxe
 class Render extends System {
-  @onadd function onVisualAdded(id:Int) {
+  @onadded function onVisualAdded(id:Int) {
     var sprite = echo.getComponent(id, Sprite);
-    scene.addChild(sprite); // something like that
+    scene.addChild(sprite);
   }
-  @onremove function onVisualRemoved(id:Int) {
+  @onremoved function onVisualRemoved(id:Int) {
+    var sprite = echo.getComponent(id, Sprite);
     scene.removeChild(sprite);
   }
-  @oneach function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
+  @update function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
 }
 ```
+
+#### Install
+```haxelib git echo https://github.com/wimcake/echo.git```
 
 #### Wip
 Work in progress, with all its concomitant effects

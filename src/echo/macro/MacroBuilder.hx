@@ -39,6 +39,9 @@ class MacroBuilder {
 
 	static public var viewDataCache:Map<String, ComplexType> = new Map();
 
+	static public var systemIndex:Int = 0;
+	static public var systemIdsMap:Map<String, Int> = new Map();
+
 
 	static var reportRegistered = false;
 
@@ -120,7 +123,26 @@ class MacroBuilder {
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
-		if (fields.filter(function(f) return f.name == 'new').length == 0) fields.push(ffun([APublic], 'new', null, null, null));
+		systemIdsMap[cls.followName()] = ++systemIndex;
+
+		var fnew = fields.find(function(f) return f.name == 'new');
+		if (fnew == null) {
+			fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ systemIndex }));
+		} else {
+			switch (fnew.kind) {
+				case FFun(func):
+					var fnewexprs = [ macro __id = $v{ systemIndex } ];
+
+					switch (func.expr.expr) {
+						case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
+						case e: fnewexprs.push(func.expr);
+					}
+
+					func.expr = macro $b{fnewexprs};
+
+				default:
+			}
+		}
 
 		var views = fields.map(function(field) {
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
@@ -309,13 +331,10 @@ class MacroBuilder {
 		var viewCls = viewCache.get(viewClsName);
 		if (viewCls == null) {
 
-			viewIndex++;
-			viewIdsMap[viewClsName] = viewIndex;
+			viewIdsMap[viewClsName] = ++viewIndex;
 
 			var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
-				public function new() { 
-					__id = $v{viewIndex};
-				}
+				public function new() { __id = $v{ viewIndex }; }
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();

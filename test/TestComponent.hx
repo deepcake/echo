@@ -44,6 +44,11 @@ class TestComponent extends TestCase {
 		assertEquals('01234', act);
 	}
 
+	public function test_has() {
+		assertTrue(ch.hasComponent(ids[0], String));
+		assertFalse(ch.hasComponent(ids[0], Int));
+	}
+
 	public function test_set() {
 		ch.setComponent(ids[0], 'A');
 		ch.setComponent(ids[2], 'A');

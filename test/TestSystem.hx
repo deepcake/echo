@@ -25,7 +25,7 @@ class TestSystem extends TestCase {
 	public function test_build() {
 		ch.addSystem(new SA());
 		ch.addSystem(new SB());
-		ch.addSystem(new SAB());
+		ch.addSystem(new SAB('AB'));
 		ch.addSystem(new SystemAnonymous());
 
 		assertEquals(4, ch.systems.length);
@@ -165,7 +165,7 @@ class TestSystem extends TestCase {
 	public function test_view_reuse2() {
 		ASystem.STATIC_ACTUAL = '';
 		ch.addView(new echo.View<{ a:CA }>());
-		ch.getView(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
+		ch.getViewByTypes(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
 		ch.addSystem(new ASystemReuse());
 
 		ch.setComponent(ch.id(), new CA(''));
@@ -185,8 +185,49 @@ class TestSystem extends TestCase {
 	}
 
 
+	public function test_system_get() {
+		var s0 = new SA();
+		ch.addSystem(s0);
+
+		assertEquals(s0, cast ch.getSystem(SA));
+	}
+
+	public function test_system_get_null() {
+		assertEquals(null, ch.getSystem(SA));
+	}
+
+	public function test_system_has() {
+		ch.addSystem(new SA());
+
+		assertTrue(ch.hasSystem(SA));
+		assertFalse(ch.hasSystem(SB));
+	}
+
+	public function test_system_remove() {
+		ch.addSystem(new SA());
+
+		ch.removeSystem(ch.getSystem(SA));
+
+		assertEquals(0, ch.systems.length);
+		assertEquals(null, ch.getSystem(SA));
+	}
+
+	public function test_system_remove_neg() {
+		var s = new SA();
+
+		ch.removeSystem(s);
+
+		assertEquals(0, ch.systems.length);
+		assertEquals(null, ch.getSystem(SA));
+	}
 
 
+	public function test_prevent_system_duplicates() {
+		ch.addSystem(new SA());
+		ch.addSystem(new SA());
+
+		assertEquals(1, ch.systems.length);
+	}
 }
 
 class MetaAddRemSystem extends System {
@@ -323,6 +364,10 @@ class SB extends System {
 }
 
 class SAB extends System {
+	var v:String;
+	public function new(v:String) {
+		this.v = v;
+	}
 	var viewab = new echo.View<{a:CA, b:CB}>();
 	var viewa = new echo.View<{a:CA}>();
 	var viewb = new echo.View<{b:CB}>();
