@@ -17,58 +17,65 @@ class Example {
 	static var h = 30;
 
 	static function main() {
-		var canvas = Browser.document.createElement('code'); // monospace text
-		canvas.style.color = '#007F0E';
-
-		Browser.document.body.appendChild(canvas);
-
-
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
-		echo.addSystem(new Render(w, h, canvas));
+		echo.addSystem(new Render(w, h));
 
 
-		for (i in 0...1000) createGrass(Std.random(w), Std.random(h));
-		for (i in 0...100) createTree(Std.random(w), Std.random(h));
+		for (y in 0...h) for (x in 0...w) {
+			if (Math.random() > .5) {
+				grass(x, y); 
+			} else {
+				if (Math.random() > .5) tree(x, y); else flower(x, y);
+			}
+		}
+
 		for (i in 0...10) {
 			var d = Math.random() * Math.PI * 2;
-			createRabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
+			rabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
 		}
 
 		var d = Math.random() * Math.PI * 2;
-		createTiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
+		tiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
 
 
 		Browser.window.setInterval(function() echo.update(.100), 100);
 	}
 
 
-	static function createGrass(x:Float, y:Float) {
+	static function grass(x:Float, y:Float) {
+		var codes = [ '&#x1F33E', '&#x1F33F' ];
 		echo.setComponent(echo.id(),
 			new Position(x, y),
-			new Sprite('&#x1F33E;'));
+			new Sprite(codes[Std.random(codes.length)]));
 	}
 
-	static function createTree(x:Float, y:Float) {
+	static function tree(x:Float, y:Float) {
+		var codes = [ '&#x1F332', '&#x1F333' ];
 		echo.setComponent(echo.id(),
 			new Position(x, y),
-			new Sprite('&#x1F333;')); //1F332
+			new Sprite(codes[Std.random(codes.length)]));
 	}
 
-	static function createDynamic(x:Float, y:Float, vx:Float, vy:Float):Int {
-		var id = echo.id();
+	static function flower(x:Float, y:Float) {
+		var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
+		echo.setComponent(echo.id(),
+			new Position(x, y),
+			new Sprite(codes[Std.random(codes.length)]));
+	}
+
+	static function rabbit(x:Float, y:Float, vx:Float, vy:Float) {
 		var pos = new Position(x, y);
 		var vel = new Velocity(vx, vy);
-		echo.setComponent(id, pos, vel);
-		return id;
+		var spr = new Sprite('&#x1F407;');
+		echo.setComponent(echo.id(), pos, vel, spr);
 	}
 
-	static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
-		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F407;'));
-	}
-
-	static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
-		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F405;'));
+	static function tiger(x:Float, y:Float, vx:Float, vy:Float) {
+		var pos = new Position(x, y);
+		var vel = new Velocity(vx, vy);
+		var spr = new Sprite('&#x1F405;');
+		echo.setComponent(echo.id(), pos, vel, spr);
 	}
 
 }
@@ -85,11 +92,13 @@ class Vec2 {
 	}
 }
 
+typedef World = Array<Array<Element>>;
+
 
 // Components
 
 @:forward(x, y)
-abstract Velocity(Vec2) { // abstracts can be used to create different ComponentClasses from the same BaseClass without overhead
+abstract Velocity(Vec2) {
 	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
@@ -98,11 +107,11 @@ abstract Position(Vec2) {
 	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
-class Sprite {
-	// in this case it just a char
-	public var value:String;
-	public function new(value:String) {
-		this.value = value;
+abstract Sprite(Element) from Element to Element {
+	inline public function new(value:String) {
+		this = Browser.document.createSpanElement();
+		this.style.position = 'absolute';
+		this.innerHTML = value;
 	}
 }
 
@@ -130,33 +139,28 @@ class Movement extends System {
 }
 
 class Render extends System {
-	var canvas:Element;
-	var world:Array<Array<Element>>;
-	var w = 0;
-	var h = 0;
-	var visuals:View<{ pos:Position, spr:Sprite }>;
-	public function new(w:Int, h:Int, canvas:Element) {
-		this.canvas = canvas;
-		this.w = w;
-		this.h = h;
+	var world:World;
+	public function new(w:Int, h:Int) {
+		var canvas = Browser.document.createElement('code'); // monospace text
+
 		world = [];
 		for (y in 0...h) {
 			world[y] = [];
 			for (x in 0...w) {
-				world[y][x] = Browser.document.createSpanElement();
-				canvas.appendChild(world[y][x]);
+				var span = Browser.document.createSpanElement();
+				span.style.position = 'fixed';
+				span.style.left = '${x * 16}px';
+				span.style.top = '${y * 16}px';
+				world[y][x] = span;
+				canvas.appendChild(span);
 			}
 			canvas.appendChild(Browser.document.createBRElement());
 		}
+
+		Browser.document.body.appendChild(canvas);
 	}
-	override public function update(dt:Float) {
-		for (y in 0...h) {
-			for (x in 0...w) {
-				world[y][x].innerHTML = '&#x1F33F;';
-			}
-		}
-		for (v in visuals) {
-			world[Std.int(v.pos.y)][Std.int(v.pos.x)].innerHTML = v.spr.value;
-		}
+
+	@update function updateVisual(dt:Float, pos:Position, spr:Sprite) {
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
 }

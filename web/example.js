@@ -11,101 +11,130 @@ var ComponentHolder_$Example_$Sprite = function() { };
 var ComponentHolder_$Example_$Velocity = function() { };
 var Example = function() { };
 Example.main = function() {
-	var canvas = window.document.createElement("code");
-	canvas.style.color = "#007F0E";
-	window.document.body.appendChild(canvas);
 	Example.echo = new echo_Echo();
 	Example.echo.addSystem(new Movement(Example.w,Example.h));
-	Example.echo.addSystem(new Render(Example.w,Example.h,canvas));
-	var _g = 0;
-	while(_g < 1000) {
-		_g++;
-		Example.createGrass(Std.random(Example.w),Std.random(Example.h));
-	}
+	Example.echo.addSystem(new Render(Example.w,Example.h));
 	var _g1 = 0;
-	while(_g1 < 100) {
-		_g1++;
-		Example.createTree(Std.random(Example.w),Std.random(Example.h));
+	var _g = Example.h;
+	while(_g1 < _g) {
+		var y = _g1++;
+		var _g3 = 0;
+		var _g2 = Example.w;
+		while(_g3 < _g2) {
+			var x = _g3++;
+			if(Math.random() > .5) {
+				Example.grass(x,y);
+			} else if(Math.random() > .5) {
+				Example.tree(x,y);
+			} else {
+				Example.flower(x,y);
+			}
+		}
 	}
-	var _g2 = 0;
-	while(_g2 < 10) {
-		_g2++;
+	var _g4 = 0;
+	while(_g4 < 10) {
+		++_g4;
 		var d = Math.random() * Math.PI * 2;
-		Example.createRabbit(Std.random(Example.w),Std.random(Example.h),Math.cos(d) * 2,Math.sin(d) * 2);
+		Example.rabbit(Std.random(Example.w),Std.random(Example.h),Math.cos(d) * 2,Math.sin(d) * 2);
 	}
 	var d1 = Math.random() * Math.PI * 2;
-	Example.createTiger(Std.random(Example.w),Std.random(Example.h),Math.cos(d1) * 6,Math.sin(d1) * 6);
+	Example.tiger(Std.random(Example.w),Std.random(Example.h),Math.cos(d1) * 6,Math.sin(d1) * 6);
 	window.setInterval(function() {
 		Example.echo.update(.100);
 	},100);
 };
-Example.createGrass = function(x,y) {
+Example.grass = function(x,y) {
+	var codes = ["&#x1F33E","&#x1F33F"];
 	var _id_ = Example.echo.id();
 	ComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F33E;");
+	var this1 = ComponentHolder_$Example_$Sprite.__MAP;
+	var value = codes[Std.random(codes.length)];
+	var this2 = window.document.createElement("span");
+	this2.style.position = "absolute";
+	this2.innerHTML = value;
+	this1.h[_id_] = this2;
 	if(Example.echo.entitiesMap.exists(_id_)) {
-		var _g = 0;
-		var _g1 = Example.echo.views;
-		while(_g < _g1.length) {
-			var _v_ = _g1[_g];
-			++_g;
-			_v_.addIfMatch(_id_);
+		var _g_head = Example.echo.views.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.addIfMatch(_id_);
 		}
 	}
 };
-Example.createTree = function(x,y) {
+Example.tree = function(x,y) {
+	var codes = ["&#x1F332","&#x1F333"];
 	var _id_ = Example.echo.id();
 	ComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
-	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F333;");
+	var this1 = ComponentHolder_$Example_$Sprite.__MAP;
+	var value = codes[Std.random(codes.length)];
+	var this2 = window.document.createElement("span");
+	this2.style.position = "absolute";
+	this2.innerHTML = value;
+	this1.h[_id_] = this2;
 	if(Example.echo.entitiesMap.exists(_id_)) {
-		var _g = 0;
-		var _g1 = Example.echo.views;
-		while(_g < _g1.length) {
-			var _v_ = _g1[_g];
-			++_g;
-			_v_.addIfMatch(_id_);
+		var _g_head = Example.echo.views.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.addIfMatch(_id_);
 		}
 	}
 };
-Example.createDynamic = function(x,y,vx,vy) {
-	var id = Example.echo.id();
-	var this1 = new Vec2(vx,vy);
-	ComponentHolder_$Example_$Position.__MAP.h[id] = new Vec2(x,y);
-	ComponentHolder_$Example_$Velocity.__MAP.h[id] = this1;
-	if(Example.echo.entitiesMap.exists(id)) {
-		var _g = 0;
-		var _g1 = Example.echo.views;
-		while(_g < _g1.length) {
-			var _v_ = _g1[_g];
-			++_g;
-			_v_.addIfMatch(id);
-		}
-	}
-	return id;
-};
-Example.createRabbit = function(x,y,vx,vy) {
-	var _id_ = Example.createDynamic(x,y,vx,vy);
-	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F407;");
+Example.flower = function(x,y) {
+	var codes = ["&#x1F337","&#x1F339","&#x1F33B"];
+	var _id_ = Example.echo.id();
+	ComponentHolder_$Example_$Position.__MAP.h[_id_] = new Vec2(x,y);
+	var this1 = ComponentHolder_$Example_$Sprite.__MAP;
+	var value = codes[Std.random(codes.length)];
+	var this2 = window.document.createElement("span");
+	this2.style.position = "absolute";
+	this2.innerHTML = value;
+	this1.h[_id_] = this2;
 	if(Example.echo.entitiesMap.exists(_id_)) {
-		var _g = 0;
-		var _g1 = Example.echo.views;
-		while(_g < _g1.length) {
-			var _v_ = _g1[_g];
-			++_g;
-			_v_.addIfMatch(_id_);
+		var _g_head = Example.echo.views.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.addIfMatch(_id_);
 		}
 	}
 };
-Example.createTiger = function(x,y,vx,vy) {
-	var _id_ = Example.createDynamic(x,y,vx,vy);
-	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = new Sprite("&#x1F405;");
+Example.rabbit = function(x,y,vx,vy) {
+	var this1 = new Vec2(x,y);
+	var this2 = new Vec2(vx,vy);
+	var this3 = window.document.createElement("span");
+	this3.style.position = "absolute";
+	this3.innerHTML = "&#x1F407;";
+	var _id_ = Example.echo.id();
+	ComponentHolder_$Example_$Position.__MAP.h[_id_] = this1;
+	ComponentHolder_$Example_$Velocity.__MAP.h[_id_] = this2;
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = this3;
 	if(Example.echo.entitiesMap.exists(_id_)) {
-		var _g = 0;
-		var _g1 = Example.echo.views;
-		while(_g < _g1.length) {
-			var _v_ = _g1[_g];
-			++_g;
-			_v_.addIfMatch(_id_);
+		var _g_head = Example.echo.views.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.addIfMatch(_id_);
+		}
+	}
+};
+Example.tiger = function(x,y,vx,vy) {
+	var this1 = new Vec2(x,y);
+	var this2 = new Vec2(vx,vy);
+	var this3 = window.document.createElement("span");
+	this3.style.position = "absolute";
+	this3.innerHTML = "&#x1F405;";
+	var _id_ = Example.echo.id();
+	ComponentHolder_$Example_$Position.__MAP.h[_id_] = this1;
+	ComponentHolder_$Example_$Velocity.__MAP.h[_id_] = this2;
+	ComponentHolder_$Example_$Sprite.__MAP.h[_id_] = this3;
+	if(Example.echo.entitiesMap.exists(_id_)) {
+		var _g_head = Example.echo.views.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.addIfMatch(_id_);
 		}
 	}
 };
@@ -113,10 +142,9 @@ var Vec2 = function(x,y) {
 	this.x = x != null ? x : .0;
 	this.y = y != null ? y : .0;
 };
-var Sprite = function(value) {
-	this.value = value;
+var echo_System = function() {
+	this.__id = -1;
 };
-var echo_System = function() { };
 echo_System.prototype = {
 	activate: function(echo1) {
 		this.echo = echo1;
@@ -125,7 +153,8 @@ echo_System.prototype = {
 	}
 };
 var Movement = function(w,h) {
-	this.bodies = new View_$pos_$Example_$Position_$vel_$Example_$Velocity();
+	echo_System.call(this);
+	this.__id = 1;
 	this.w = w;
 	this.h = h;
 };
@@ -136,7 +165,7 @@ Movement.prototype = $extend(echo_System.prototype,{
 		var _g_i;
 		var list = this.bodies.entities;
 		_g_i = -1;
-		_g_vd = new ViewData_$pos_$Example_$Position_$vel_$Example_$Velocity();
+		_g_vd = new ViewData_$Example_$Position_$Example_$Velocity();
 		while(++_g_i < list.length) {
 			_g_vd.id = list[_g_i];
 			_g_vd.pos = ComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
@@ -158,17 +187,17 @@ Movement.prototype = $extend(echo_System.prototype,{
 		}
 	}
 	,activate: function(echo1) {
-		echo1.addView(this.bodies);
+		if(!echo1.viewsMap.h.hasOwnProperty(1)) {
+			echo1.addView(new View_$Example_$Position_$Example_$Velocity());
+		}
+		this.bodies = echo1.viewsMap.h[1];
 		echo_System.prototype.activate.call(this,echo1);
 	}
 });
-var Render = function(w,h,canvas) {
-	this.visuals = new View_$pos_$Example_$Position_$spr_$Example_$Sprite();
-	this.h = 0;
-	this.w = 0;
-	this.canvas = canvas;
-	this.w = w;
-	this.h = h;
+var Render = function(w,h) {
+	echo_System.call(this);
+	this.__id = 2;
+	var canvas = window.document.createElement("code");
 	this.world = [];
 	var _g1 = 0;
 	var _g = h;
@@ -179,37 +208,40 @@ var Render = function(w,h,canvas) {
 		var _g2 = w;
 		while(_g3 < _g2) {
 			var x = _g3++;
-			this.world[y][x] = window.document.createElement("span");
-			canvas.appendChild(this.world[y][x]);
+			var span = window.document.createElement("span");
+			span.style.position = "fixed";
+			span.style.left = "" + x * 16 + "px";
+			span.style.top = "" + y * 16 + "px";
+			this.world[y][x] = span;
+			canvas.appendChild(span);
 		}
 		canvas.appendChild(window.document.createElement("br"));
 	}
+	window.document.body.appendChild(canvas);
 };
 Render.__super__ = echo_System;
 Render.prototype = $extend(echo_System.prototype,{
-	update: function(dt) {
-		var _g1 = 0;
-		var _g = this.h;
-		while(_g1 < _g) {
-			var y = _g1++;
-			var _g3 = 0;
-			var _g2 = this.w;
-			while(_g3 < _g2) this.world[y][_g3++].innerHTML = "&#x1F33F;";
-		}
+	updateVisual: function(dt,pos,spr) {
+		this.world[pos.y | 0][pos.x | 0].appendChild(spr);
+	}
+	,update: function(dt) {
 		var _g_vd;
 		var _g_i;
-		var list = this.visuals.entities;
+		var list = this.view_example_position_example_sprite.entities;
 		_g_i = -1;
-		_g_vd = new ViewData_$pos_$Example_$Position_$spr_$Example_$Sprite();
+		_g_vd = new ViewData_$Example_$Position_$Example_$Sprite();
 		while(++_g_i < list.length) {
 			_g_vd.id = list[_g_i];
 			_g_vd.pos = ComponentHolder_$Example_$Position.__MAP.get(_g_vd.id);
 			_g_vd.spr = ComponentHolder_$Example_$Sprite.__MAP.get(_g_vd.id);
-			this.world[_g_vd.pos.y | 0][_g_vd.pos.x | 0].innerHTML = _g_vd.spr.value;
+			this.updateVisual(dt,_g_vd.pos,_g_vd.spr);
 		}
 	}
 	,activate: function(echo1) {
-		echo1.addView(this.visuals);
+		if(!echo1.viewsMap.h.hasOwnProperty(2)) {
+			echo1.addView(new View_$Example_$Position_$Example_$Sprite());
+		}
+		this.view_example_position_example_sprite = echo1.viewsMap.h[2];
 		echo_System.prototype.activate.call(this,echo1);
 	}
 });
@@ -240,13 +272,14 @@ Std.random = function(x) {
 		return Math.floor(Math.random() * x);
 	}
 };
-var ViewData_$pos_$Example_$Position_$spr_$Example_$Sprite = function() {
+var ViewData_$Example_$Position_$Example_$Sprite = function() {
 };
-var ViewData_$pos_$Example_$Position_$vel_$Example_$Velocity = function() {
+var ViewData_$Example_$Position_$Example_$Velocity = function() {
 };
 var echo_ViewBase = function() {
 	this.entities = [];
-	this.onAdd = [];
+	this.onAdded = [];
+	this.__id = -1;
 	this.entitiesMap = new haxe_ds_IntMap();
 };
 echo_ViewBase.prototype = {
@@ -267,25 +300,26 @@ echo_ViewBase.prototype = {
 			this.entitiesMap.set(id,id);
 			this.entities.push(id);
 			var i = 0;
-			var l = this.onAdd.length;
+			var l = this.onAdded.length;
 			while(i < l) {
-				var listener = this.onAdd[i];
+				var listener = this.onAdded[i];
 				if(listener != null) {
 					listener(id);
 					++i;
 				} else {
-					this.onAdd.splice(i,1);
+					this.onAdded.splice(i,1);
 					--l;
 				}
 			}
 		}
 	}
 };
-var View_$pos_$Example_$Position_$spr_$Example_$Sprite = function() {
+var View_$Example_$Position_$Example_$Sprite = function() {
 	echo_ViewBase.call(this);
+	this.__id = 2;
 };
-View_$pos_$Example_$Position_$spr_$Example_$Sprite.__super__ = echo_ViewBase;
-View_$pos_$Example_$Position_$spr_$Example_$Sprite.prototype = $extend(echo_ViewBase.prototype,{
+View_$Example_$Position_$Example_$Sprite.__super__ = echo_ViewBase;
+View_$Example_$Position_$Example_$Sprite.prototype = $extend(echo_ViewBase.prototype,{
 	test: function(id) {
 		if(ComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
 			return ComponentHolder_$Example_$Sprite.__MAP.h.hasOwnProperty(id);
@@ -294,11 +328,12 @@ View_$pos_$Example_$Position_$spr_$Example_$Sprite.prototype = $extend(echo_View
 		}
 	}
 });
-var View_$pos_$Example_$Position_$vel_$Example_$Velocity = function() {
+var View_$Example_$Position_$Example_$Velocity = function() {
 	echo_ViewBase.call(this);
+	this.__id = 1;
 };
-View_$pos_$Example_$Position_$vel_$Example_$Velocity.__super__ = echo_ViewBase;
-View_$pos_$Example_$Position_$vel_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
+View_$Example_$Position_$Example_$Velocity.__super__ = echo_ViewBase;
+View_$Example_$Position_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
 	test: function(id) {
 		if(ComponentHolder_$Example_$Position.__MAP.h.hasOwnProperty(id)) {
 			return ComponentHolder_$Example_$Velocity.__MAP.h.hasOwnProperty(id);
@@ -308,31 +343,38 @@ View_$pos_$Example_$Position_$vel_$Example_$Velocity.prototype = $extend(echo_Vi
 	}
 });
 var echo_Echo = function() {
-	this.entitiesMap = new haxe_ds_IntMap();
+	this.systems = new List();
+	this.views = new List();
 	this.entities = new List();
-	this.views = [];
-	this.systems = [];
+	this.systemsMap = new haxe_ds_IntMap();
+	this.viewsMap = new haxe_ds_IntMap();
+	this.entitiesMap = new haxe_ds_IntMap();
 };
 echo_Echo.prototype = {
 	update: function(dt) {
-		var _g = 0;
-		var _g1 = this.systems;
-		while(_g < _g1.length) {
-			var s = _g1[_g];
-			++_g;
-			s.update(dt);
+		var _g_head = this.systems.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			val.update(dt);
 		}
 	}
 	,addSystem: function(s) {
-		s.activate(this);
-		this.systems.push(s);
+		if(!this.systemsMap.h.hasOwnProperty(s.__id)) {
+			this.systemsMap.h[s.__id] = s;
+			this.systems.add(s);
+			s.activate(this);
+		}
 	}
 	,addView: function(v) {
-		v.activate(this);
-		this.views.push(v);
+		if(!this.viewsMap.h.hasOwnProperty(v.__id)) {
+			this.viewsMap.h[v.__id] = v;
+			this.views.add(v);
+			v.activate(this);
+		}
 	}
 	,id: function() {
-		var id = ++echo_Echo.__SEQUENCE;
+		var id = ++echo_Echo.__IDSEQUENCE;
 		this.entitiesMap.h[id] = id;
 		this.entities.add(id);
 		return id;
@@ -359,8 +401,7 @@ ComponentHolder_$Example_$Sprite.__MAP = new haxe_ds_IntMap();
 ComponentHolder_$Example_$Velocity.__MAP = new haxe_ds_IntMap();
 Example.w = 60;
 Example.h = 30;
-Movement.__meta__ = { fields : { w : { skip : null}, h : { skip : null}}};
-Render.__meta__ = { fields : { visuals : { view : null}}};
-echo_Echo.__SEQUENCE = 0;
+Render.__meta__ = { fields : { updateVisual : { update : null}}};
+echo_Echo.__IDSEQUENCE = 0;
 Example.main();
 })();
