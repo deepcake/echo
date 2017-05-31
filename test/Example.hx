@@ -13,33 +13,45 @@ import js.html.Element;
 class Example {
 
 	static var echo:Echo;
-	static var w = 60;
-	static var h = 30;
+	static var w = 80;
+	static var h = 20;
 
 	static function main() {
+		var canvas = Browser.document.createElement('code'); // monospace text
+		var stat = Browser.document.createPreElement();
+		Browser.document.body.appendChild(canvas);
+		Browser.document.body.appendChild(Browser.document.createBRElement());
+		Browser.document.body.appendChild(stat);
+
+
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
-		echo.addSystem(new Render(w, h));
+		echo.addSystem(new Render(w, h, canvas));
 
-
+		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
 			if (Math.random() > .5) {
 				grass(x, y); 
 			} else {
-				if (Math.random() > .5) tree(x, y); else flower(x, y);
+				if (Math.random() > .2) tree(x, y); else flower(x, y);
 			}
 		}
 
+		// some rabbits
 		for (i in 0...10) {
 			var d = Math.random() * Math.PI * 2;
 			rabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
 		}
 
+		// tiger!
 		var d = Math.random() * Math.PI * 2;
 		tiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
 
 
-		Browser.window.setInterval(function() echo.update(.100), 100);
+		Browser.window.setInterval(function() {
+			echo.update(.100);
+			stat.innerHTML = echo.toString();
+		}, 100);
 	}
 
 
@@ -92,8 +104,6 @@ class Vec2 {
 	}
 }
 
-typedef World = Array<Array<Element>>;
-
 
 // Components
 
@@ -139,10 +149,8 @@ class Movement extends System {
 }
 
 class Render extends System {
-	var world:World;
-	public function new(w:Int, h:Int) {
-		var canvas = Browser.document.createElement('code'); // monospace text
-
+	var world:Array<Array<Element>>;
+	public function new(w:Int, h:Int, canvas:Element) {
 		world = [];
 		for (y in 0...h) {
 			world[y] = [];
@@ -156,11 +164,17 @@ class Render extends System {
 			}
 			canvas.appendChild(Browser.document.createBRElement());
 		}
-
-		Browser.document.body.appendChild(canvas);
 	}
 
-	@update function updateVisual(dt:Float, pos:Position, spr:Sprite) {
+	// all visuals
+	// not required updates, just add sprite to the canvas
+	var visuals:View<{ pos:Position, spr:Sprite }>;
+	@onadded function appendVisual(id:Int) {
+		world[Std.int(echo.getComponent(id, Position).y)][Std.int(echo.getComponent(id, Position).x)].appendChild(echo.getComponent(id, Sprite)); // TODO ugly, need more macro
+	}
+
+	// dynamic visuals only (with Velocity component)
+	@update function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
 }
