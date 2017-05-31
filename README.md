@@ -94,6 +94,7 @@ class Movement extends System {
 ```
 
 [Live Example](https://wimcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
+
 [Live Demo](https://wimcake.github.io/chickens/bin/web/) of using Echo with Luxe and Nape (source [https://github.com/wimcake/chickens](https://github.com/wimcake/chickens))
 
 #### Overview
@@ -104,16 +105,16 @@ class Movement extends System {
 
 #### Api
 * `Echo` - something like called "Engine" in other frameworks. Entry point. _The workflow_.
-  * `.id():Int` - creates and adds a new _id_ to _the workflow_.
+  * `.id():Int` - creates a new _id_ and adds it to _the workflow_.
   * `.next():Int` - creates a new _id_ without adding it to _the workflow_.
-  * `.add(id:Int)` - adds _id_ to _the workflow_.
-  * `.poll(id:Int)` - removes _id_ from _the workflow_ without removing its components.
-  * `.remove(id:Int)` - removes _id_ from _the workflow_ and removes all it components. If expected to use _id_ with all its components after removing from _the workflow_ - must be used `.poll()`, otherwise `.remove()`.
-  * `.setComponent(id:Int, ...args:Any)` - adds/sets components to the _id_, one or many at once. If the _id_ already has component with same type, it will be replaced.
-  * `.getComponent(id:Int, type:Class<T>):T` - gets component of the _id_ by type.
-  * `.removeComponent(id:Int, type:Class<Any>)` - removes component from _id_ by type.
-  * `.addSystem(s:System)`, `.removeSystem(s:System)` - adds/removes system from _the workflow_.
-  * `.addView(v:View)`, `.removeView(v:View)` - adds/removes view from _the workflow_. In most cases that will not called directly, macro will do it.
+  * `.add(id:Int)` - adds the _id_ to _the workflow_.
+  * `.poll(id:Int)` - removes the _id_ from _the workflow_ without removing its components.
+  * `.remove(id:Int)` - removes the _id_ from _the workflow_ and removes all it components. If expected to use _id_ with all its components after removing from _the workflow_ - must be used `.poll()`, otherwise `.remove()`.
+  * `.setComponent(id:Int, ...args:Any)` - adds/sets a components to the _id_, one or many at once. If the _id_ already has component with same type, it will be replaced.
+  * `.getComponent(id:Int, type:Class<T>):T` - gets a component of the _id_ by type.
+  * `.removeComponent(id:Int, type:Class<Any>)` - removes a component from the _id_ by type.
+  * `.addSystem(s:System)`, `.removeSystem(s:System)` - adds/removes a system to _the workflow_.
+  * `.addView(v:View)`, `.removeView(v:View)` - adds/removes a view to _the workflow_. In most cases that will not called directly, macro will do it.
 * `View<T>` - generic class for views.
   * `.new()`
     ```haxe
@@ -160,7 +161,7 @@ class Movement extends System {
     ```
       To update function can be passed an optional args - `Float` for delta time and `Int` for id:
     ```haxe
-    @update function update_ab(a:A, b:B, delta:Float, id:Int) trace(a, b);
+    @update function update_ab(a:A, b:B, dt:Float, id:Int) trace(a, b);
     ```
 
 So Render system from the example above can be written with meta like this:
