@@ -32,12 +32,12 @@ class Echo {
 	public function new() { }
 
 
-	#if debug
+	#if echo_debug
 		var updateStats:Map<System, Float> = new Map();
 	#end
-	inline public function stats():String {
+	inline public function toString():String {
 		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
-		#if debug
+		#if echo_debug
 			for (s in systems) {
 				ret += '\n\t( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s) + ' ms';
 			}
@@ -48,21 +48,17 @@ class Echo {
 		return ret;
 	}
 
-	inline public function toString():String {
-		return stats();
-	}
-
 
 	/**
 	 *  @param dt - delta time
 	 */
 	public function update(dt:Float) {
 		for (s in systems) {
-			#if debug
+			#if echo_debug
 				var stamp = haxe.Timer.stamp();
 			#end
 			s.update(dt);
-			#if debug
+			#if echo_debug
 				updateStats.set(s, Std.int((haxe.Timer.stamp() - stamp) * 1000));
 			#end
 		}
@@ -140,7 +136,7 @@ class Echo {
 	// Entity
 
 	/**
-	 *  Gets new id (entity) and adds it to the workflow, and return it
+	 *  Creates new id (entity) and adds it to the workflow, and return it
 	 *  Equals to call `next()` and then `add()`
 	 *  @return Int
 	 */
@@ -152,7 +148,7 @@ class Echo {
 	}
 
 	/**
-	 *  Gets new id (entity) without adding it ot the workflow (so it will not be collected by views)
+	 *  Creates new id (entity) without adding it ot the workflow (so it will not be collected by views)
 	 *  @return Int
 	 */
 	public inline function next():Int {
