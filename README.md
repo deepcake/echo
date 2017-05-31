@@ -93,17 +93,17 @@ class Movement extends System {
 }
 ```
 
-[Live Short Example](https://wimcake.github.io/echo/web/) (source [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
-[Live Demo](https://wimcake.github.io/chickens/bin/web/) (source [https://github.com/wimcake/chickens](https://github.com/wimcake/chickens))
+[Live Example](https://wimcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
+[Live Demo](https://wimcake.github.io/chickens/bin/web/) of using Echo with Luxe and Nape (source [https://github.com/wimcake/chickens](https://github.com/wimcake/chickens))
 
 #### Overview
 * `Component` is an instance of `T:Any` class. For each `T` class, used as a component, will be generated a global `Map<Int, T>` component map.
-* `Entity` is just the `Int` _id_, using as a key in global component maps.
-* `View` is a collection of suitable _ids_.
-* `System` is a place to work with views with some features.
+* `Entity` in this case is just the `Int` _id_, used as a key in global component maps. Combinations of components, stored with same key, is checked by views.
+* `View` is a collection of all suitable _ids_ that was added to _the workflow_. Its a data for systems;
+* `System` finally is a place for main logic. Do some work with its data (views);
 
 #### Api
-* `Echo` - something like called `Engine` in other frameworks. Entry point. _The workflow_.
+* `Echo` - something like called "Engine" in other frameworks. Entry point. _The workflow_.
   * `.id():Int` - creates and adds a new _id_ to _the workflow_.
   * `.next():Int` - creates a new _id_ without adding it to _the workflow_.
   * `.add(id:Int)` - adds _id_ to _the workflow_.
@@ -114,7 +114,7 @@ class Movement extends System {
   * `.removeComponent(id:Int, type:Class<Any>)` - removes component from _id_ by type.
   * `.addSystem(s:System)`, `.removeSystem(s:System)` - adds/removes system from _the workflow_.
   * `.addView(v:View)`, `.removeView(v:View)` - adds/removes view from _the workflow_. In most cases that will not called directly, macro will do it.
-* `View<T>` - generic class for views. 
+* `View<T>` - generic class for views.
   * `.new()`
     ```haxe
     new View<{ a:A, b:B }>()
@@ -178,6 +178,10 @@ class Render extends System {
   }
 }
 ```
+
+There is also exists a few additional compiler flags:
+ * `-D echo_verbose` - traces to console all generated classes (for debug purposes)
+ * `-D echo_debug` - collecting some more info for `toString()` method (note, that it uses reflection, so remove it in release build)
 
 #### Install
 ```haxelib git echo https://github.com/wimcake/echo.git```
