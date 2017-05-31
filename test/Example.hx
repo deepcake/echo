@@ -5,6 +5,7 @@ import echo.System;
 import echo.View;
 import js.Browser;
 import js.html.Element;
+using Lambda;
 
 /**
  * ...
@@ -12,9 +13,11 @@ import js.html.Element;
  */
 class Example {
 
+	static public var RABBITS_POPULATION = 15;
+
 	static var echo:Echo;
-	static var w = 80;
-	static var h = 20;
+	static var w = 50;
+	static var h = 25;
 
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
@@ -26,6 +29,7 @@ class Example {
 
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
+		echo.addSystem(new Interaction());
 		echo.addSystem(new Render(w, h, canvas));
 
 		// fill world by plants
@@ -38,14 +42,10 @@ class Example {
 		}
 
 		// some rabbits
-		for (i in 0...10) {
-			var d = Math.random() * Math.PI * 2;
-			rabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
-		}
+		for (i in 0...RABBITS_POPULATION) rabbit(Std.random(w), Std.random(h));
 
 		// tiger!
-		var d = Math.random() * Math.PI * 2;
-		tiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
+		tiger(Std.random(w), Std.random(h));
 
 
 		Browser.window.setInterval(function() {
@@ -76,18 +76,24 @@ class Example {
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
-	static function rabbit(x:Float, y:Float, vx:Float, vy:Float) {
+	static public function rabbit(x:Float, y:Float) {
 		var pos = new Position(x, y);
-		var vel = new Velocity(vx, vy);
+		var vel = randomVelocity(1);
 		var spr = new Sprite('&#x1F407;');
-		echo.setComponent(echo.id(), pos, vel, spr);
+		echo.setComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
 	}
 
-	static function tiger(x:Float, y:Float, vx:Float, vy:Float) {
+	static public function tiger(x:Float, y:Float) {
 		var pos = new Position(x, y);
-		var vel = new Velocity(vx, vy);
+		var vel = randomVelocity(10);
 		var spr = new Sprite('&#x1F405;');
-		echo.setComponent(echo.id(), pos, vel, spr);
+		spr.style.fontSize = '200%';
+		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+	}
+
+	static public function randomVelocity(speed:Float) {
+		var d = Math.random() * Math.PI * 2;
+		return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
 	}
 
 }
@@ -117,12 +123,18 @@ abstract Position(Vec2) {
 	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
+@:forward(remove, style)
 abstract Sprite(Element) from Element to Element {
 	inline public function new(value:String) {
 		this = Browser.document.createSpanElement();
 		this.style.position = 'absolute';
 		this.innerHTML = value;
 	}
+}
+
+enum Animal {
+	Rabbit;
+	Tiger;
 }
 
 
@@ -172,9 +184,31 @@ class Render extends System {
 	@onadded function appendVisual(id:Int) {
 		world[Std.int(echo.getComponent(id, Position).y)][Std.int(echo.getComponent(id, Position).x)].appendChild(echo.getComponent(id, Sprite)); // TODO ugly, need more macro
 	}
+	@onremoved function removeVisual(id:Int) {
+		echo.getComponent(id, Sprite).remove();
+	}
 
 	// dynamic visuals only (with Velocity component)
 	@update function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
+}
+
+// some dummy interaction
+class Interaction extends System {
+	var animals:View<{ a:Animal, pos:Position }>;
+	override public function update(dt:Float) {
+		var del = [];
+		for (a1 in animals) for (a2 in animals) {
+			if (a1 != a2 && samecell(a1.pos, a2.pos)) {
+				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) del.push(a2.id);
+				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
+					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) Example.rabbit(a1.pos.x, a1.pos.y);
+				}
+			}
+		}
+
+		for (id in del) echo.remove(id);
+	}
+	function samecell(pos1:Position, pos2:Position) return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
 }
