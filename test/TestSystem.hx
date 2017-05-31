@@ -269,7 +269,7 @@ class MetaEachSystem1 extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach(a:CA, b:CB) STATIC_ACTUAL += a.val + b.val;
+	@update function oneach(a:CA, b:CB) STATIC_ACTUAL += a.val + b.val;
 
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
 }
@@ -278,7 +278,7 @@ class MetaEachSystem2 extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
+	@update function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
 
 	var viewab = new echo.View<{a:CA, b:CB}>();
 }
@@ -287,9 +287,9 @@ class MetaEachSystem3 extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach1(a:CA) STATIC_ACTUAL += a.val;
-	@oneach function oneach2(b:CB) STATIC_ACTUAL += b.val;
-	@oneach function oneach3(b:CB) STATIC_ACTUAL += '-';
+	@update function oneach1(a:CA) STATIC_ACTUAL += a.val;
+	@update function oneach2(b:CB) STATIC_ACTUAL += b.val;
+	@update function oneach3(b:CB) STATIC_ACTUAL += '-';
 
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
 }
@@ -298,7 +298,7 @@ class MetaEachSystem4 extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
+	@update function oneach(b:CB, a:CA) STATIC_ACTUAL += a.val + b.val + '!';
 
 	override public function update(dt:Float) {
 		for (ab in viewab) STATIC_ACTUAL += ab.a.val + '!' + ab.b.val + '!';
@@ -311,15 +311,15 @@ class MetaEachSystemDelta extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach1(dt:Float, a:CA) STATIC_ACTUAL += a.val + '_$dt';
-	@oneach function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
+	@update function oneach1(dt:Float, a:CA) STATIC_ACTUAL += a.val + '_$dt';
+	@update function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
 }
 
 class MetaEachSystemTypeParam extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
-	@oneach function oneach(a:Array<String>) STATIC_ACTUAL += a[0];
+	@update function oneach(a:Array<String>) STATIC_ACTUAL += a[0];
 }
 
 

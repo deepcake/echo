@@ -33,7 +33,7 @@ class TestSmoke2 extends TestCase {
 	}
 
 	public function test_stats() {
-		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.stats());
+		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.toString());
 		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', '$ch');
 	}
 
@@ -45,11 +45,11 @@ class SmokeSystem extends System {
 	static public var OUT = '';
 	public function new() OUT = '';
 
-	@e function action1(name:Name) {
+	@u function action1(name:Name) {
 		OUT += 'A' + name.val;
 	}
 
-	@e function action2(name:Name) {
+	@u function action2(name:Name) {
 		OUT += 'B' + name.val;
 	}
 
