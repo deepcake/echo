@@ -33,16 +33,19 @@ class Echo {
 
 
 	#if echo_debug
-		var updateStats:Map<System, Float> = new Map();
+		var updateStats:Map<Int, Float> = new Map();
+		var timestamp = haxe.Timer.stamp();
 	#end
 	inline public function toString():String {
 		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
 		#if echo_debug
+			ret += '\n  since last update : ' + updateStats.get(-10) + ' ms';
+			ret += '\n  echo total update : ' + updateStats.get(-100) + ' ms';
 			for (s in systems) {
-				ret += '\n\t( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s) + ' ms';
+				ret += '\n    ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
 			}
 			for (v in views) {
-				ret += '\n\t{ ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
+				ret += '\n  { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
 			}
 		#end
 		return ret;
@@ -53,15 +56,23 @@ class Echo {
 	 *  @param dt - delta time
 	 */
 	public function update(dt:Float) {
+		#if echo_debug
+			updateStats.set(-10, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
+			var updateTimestamp = haxe.Timer.stamp();
+		#end
 		for (s in systems) {
 			#if echo_debug
-				var stamp = haxe.Timer.stamp();
+				timestamp = haxe.Timer.stamp();
 			#end
 			s.update(dt);
 			#if echo_debug
-				updateStats.set(s, Std.int((haxe.Timer.stamp() - stamp) * 1000));
+				updateStats.set(s.__id, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
 			#end
 		}
+		#if echo_debug
+			timestamp = haxe.Timer.stamp();
+			updateStats.set(-100, Std.int((timestamp - updateTimestamp) * 1000));
+		#end
 	}
 
 

@@ -57,19 +57,21 @@ Example.main = function() {
 		Example.echo.update(.100);
 		var _this = Example.echo;
 		var ret = "Echo" + (" ( " + _this.systems.length + " )") + (" { " + _this.views.length + " }") + (" [ " + _this.entities.length + " ]");
+		ret += "\n  since last update : " + _this.updateStats.get(-10) + " ms";
+		ret += "\n  echo total update : " + _this.updateStats.get(-100) + " ms";
 		var _g_head = _this.systems.h;
 		while(_g_head != null) {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var s = val;
-			ret += "\n\t( " + Type.getClassName(s == null ? null : js_Boot.getClass(s)) + " ) : " + _this.updateStats.get(s) + " ms";
+			ret += "\n    ( " + Type.getClassName(s == null ? null : js_Boot.getClass(s)) + " ) : " + _this.updateStats.get(s.__id) + " ms";
 		}
 		var _g_head1 = _this.views.h;
 		while(_g_head1 != null) {
 			var val1 = _g_head1.item;
 			_g_head1 = _g_head1.next;
 			var v = val1;
-			ret += "\n\t{ " + Type.getClassName(v == null ? null : js_Boot.getClass(v)) + (" } [ " + v.entities.length + " ]");
+			ret += "\n  { " + Type.getClassName(v == null ? null : js_Boot.getClass(v)) + (" } [ " + v.entities.length + " ]");
 		}
 		stat.innerHTML = ret;
 	},100);
@@ -688,7 +690,8 @@ View_$Example_$Position_$Example_$Velocity.prototype = $extend(echo_ViewBase.pro
 	,__class__: View_$Example_$Position_$Example_$Velocity
 });
 var echo_Echo = function() {
-	this.updateStats = new haxe_ds_ObjectMap();
+	this.timestamp = new Date().getTime() / 1000;
+	this.updateStats = new haxe_ds_IntMap();
 	this.systems = new List();
 	this.views = new List();
 	this.entities = new List();
@@ -699,15 +702,24 @@ var echo_Echo = function() {
 echo_Echo.__name__ = ["echo","Echo"];
 echo_Echo.prototype = {
 	update: function(dt) {
+		var this1 = this.updateStats;
+		var value = (new Date().getTime() / 1000 - this.timestamp) * 1000 | 0;
+		this1.h[-10] = value;
+		var updateTimestamp = new Date().getTime() / 1000;
 		var _g_head = this.systems.h;
 		while(_g_head != null) {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var s = val;
-			var stamp = new Date().getTime() / 1000;
+			this.timestamp = new Date().getTime() / 1000;
 			s.update(dt);
-			this.updateStats.set(s,(new Date().getTime() / 1000 - stamp) * 1000 | 0);
+			var this2 = this.updateStats;
+			var key = s.__id;
+			var value1 = (new Date().getTime() / 1000 - this.timestamp) * 1000 | 0;
+			this2.h[key] = value1;
 		}
+		this.timestamp = new Date().getTime() / 1000;
+		this.updateStats.h[-100] = (this.timestamp - updateTimestamp) * 1000 | 0;
 	}
 	,addSystem: function(s) {
 		if(!this.systemsMap.h.hasOwnProperty(s.__id)) {
@@ -759,34 +771,6 @@ haxe_ds_IntMap.prototype = {
 		return true;
 	}
 	,__class__: haxe_ds_IntMap
-};
-var haxe_ds_ObjectMap = function() {
-	this.h = { __keys__ : { }};
-};
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
-haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.prototype = {
-	set: function(key,value) {
-		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
-		this.h[id] = value;
-		this.h.__keys__[id] = key;
-	}
-	,get: function(key) {
-		return this.h[key.__id__];
-	}
-	,exists: function(key) {
-		return this.h.__keys__[key.__id__] != null;
-	}
-	,remove: function(key) {
-		var id = key.__id__;
-		if(this.h.__keys__[id] == null) {
-			return false;
-		}
-		delete(this.h[id]);
-		delete(this.h.__keys__[id]);
-		return true;
-	}
-	,__class__: haxe_ds_ObjectMap
 };
 var js_Boot = function() { };
 js_Boot.__name__ = ["js","Boot"];
@@ -915,7 +899,6 @@ Example.MAX_WIDTH = 60;
 Example.MAX_HEIGHT = 40;
 Render.__meta__ = { fields : { appendVisual : { onadded : null}, removeVisual : { onremoved : null}, updateDynamicVisual : { update : null}}};
 echo_Echo.__IDSEQUENCE = 0;
-haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = ({ }).toString;
 Example.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
