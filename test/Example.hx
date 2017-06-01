@@ -14,23 +14,27 @@ using Lambda;
 class Example {
 
 	static public var RABBITS_POPULATION = 15;
+	static public var MAX_WIDTH = 60;
+	static public var MAX_HEIGHT = 40;
 
 	static var echo:Echo;
-	static var w = 50;
-	static var h = 25;
 
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
 		var stat = Browser.document.createPreElement();
 		Browser.document.body.appendChild(canvas);
-		Browser.document.body.appendChild(Browser.document.createBRElement());
 		Browser.document.body.appendChild(stat);
+
+		// mobile friendly (i guess)
+		var size = Std.parseInt(Browser.window.getComputedStyle(Browser.document.body).fontSize);
+		var w = Browser.window.innerWidth / size > MAX_WIDTH ? MAX_WIDTH : Math.floor(Browser.window.innerWidth / size);
+		var h = Browser.window.innerHeight / size > MAX_HEIGHT ? MAX_HEIGHT : Math.floor(Browser.window.innerHeight / size);
 
 
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
 		echo.addSystem(new Interaction());
-		echo.addSystem(new Render(w, h, canvas));
+		echo.addSystem(new Render(w, h, size, canvas));
 
 		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
@@ -162,15 +166,15 @@ class Movement extends System {
 
 class Render extends System {
 	var world:Array<Array<Element>>;
-	public function new(w:Int, h:Int, canvas:Element) {
+	public function new(w:Int, h:Int, size:Int, canvas:Element) {
 		world = [];
 		for (y in 0...h) {
 			world[y] = [];
 			for (x in 0...w) {
 				var span = Browser.document.createSpanElement();
-				span.style.position = 'fixed';
-				span.style.left = '${x * 16}px';
-				span.style.top = '${y * 16}px';
+				span.style.position = 'absolute';
+				span.style.left = '${x * size}px';
+				span.style.top = '${y * size}px';
 				world[y][x] = span;
 				canvas.appendChild(span);
 			}

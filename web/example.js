@@ -21,18 +21,20 @@ Example.main = function() {
 	var canvas = window.document.createElement("code");
 	var stat = window.document.createElement("pre");
 	window.document.body.appendChild(canvas);
-	window.document.body.appendChild(window.document.createElement("br"));
 	window.document.body.appendChild(stat);
+	var size = Std.parseInt(window.getComputedStyle(window.document.body).fontSize);
+	var w = window.innerWidth / size > Example.MAX_WIDTH ? Example.MAX_WIDTH : Math.floor(window.innerWidth / size);
+	var h = window.innerHeight / size > Example.MAX_HEIGHT ? Example.MAX_HEIGHT : Math.floor(window.innerHeight / size);
 	Example.echo = new echo_Echo();
-	Example.echo.addSystem(new Movement(Example.w,Example.h));
+	Example.echo.addSystem(new Movement(w,h));
 	Example.echo.addSystem(new Interaction());
-	Example.echo.addSystem(new Render(Example.w,Example.h,canvas));
+	Example.echo.addSystem(new Render(w,h,size,canvas));
 	var _g1 = 0;
-	var _g = Example.h;
+	var _g = h;
 	while(_g1 < _g) {
 		var y = _g1++;
 		var _g3 = 0;
-		var _g2 = Example.w;
+		var _g2 = w;
 		while(_g3 < _g2) {
 			var x = _g3++;
 			if(Math.random() > .5) {
@@ -48,9 +50,9 @@ Example.main = function() {
 	var _g4 = Example.RABBITS_POPULATION;
 	while(_g11 < _g4) {
 		_g11++;
-		Example.rabbit(Std.random(Example.w),Std.random(Example.h));
+		Example.rabbit(Std.random(w),Std.random(h));
 	}
-	Example.tiger(Std.random(Example.w),Std.random(Example.h));
+	Example.tiger(Std.random(w),Std.random(h));
 	window.setInterval(function() {
 		Example.echo.update(.100);
 		var _this = Example.echo;
@@ -246,7 +248,7 @@ Movement.prototype = $extend(echo_System.prototype,{
 	}
 	,__class__: Movement
 });
-var Render = function(w,h,canvas) {
+var Render = function(w,h,size,canvas) {
 	echo_System.call(this);
 	this.__id = 2;
 	this.world = [];
@@ -260,9 +262,9 @@ var Render = function(w,h,canvas) {
 		while(_g3 < _g2) {
 			var x = _g3++;
 			var span = window.document.createElement("span");
-			span.style.position = "fixed";
-			span.style.left = "" + x * 16 + "px";
-			span.style.top = "" + y * 16 + "px";
+			span.style.position = "absolute";
+			span.style.left = "" + x * size + "px";
+			span.style.top = "" + y * size + "px";
 			this.world[y][x] = span;
 			canvas.appendChild(span);
 		}
@@ -397,6 +399,13 @@ Interaction.prototype = $extend(echo_System.prototype,{
 });
 var HxOverrides = function() { };
 HxOverrides.__name__ = ["HxOverrides"];
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
 HxOverrides.remove = function(a,obj) {
 	var i = a.indexOf(obj);
 	if(i == -1) {
@@ -490,6 +499,16 @@ _$List_ListIterator.prototype = {
 Math.__name__ = ["Math"];
 var Std = function() { };
 Std.__name__ = ["Std"];
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) {
+		v = parseInt(x);
+	}
+	if(isNaN(v)) {
+		return null;
+	}
+	return v;
+};
 Std.random = function(x) {
 	if(x <= 0) {
 		return 0;
@@ -892,8 +911,8 @@ ComponentHolder_$Example_$Position.__MAP = new haxe_ds_IntMap();
 ComponentHolder_$Example_$Sprite.__MAP = new haxe_ds_IntMap();
 ComponentHolder_$Example_$Velocity.__MAP = new haxe_ds_IntMap();
 Example.RABBITS_POPULATION = 15;
-Example.w = 50;
-Example.h = 25;
+Example.MAX_WIDTH = 60;
+Example.MAX_HEIGHT = 40;
 Render.__meta__ = { fields : { appendVisual : { onadded : null}, removeVisual : { onremoved : null}, updateDynamicVisual : { update : null}}};
 echo_Echo.__IDSEQUENCE = 0;
 haxe_ds_ObjectMap.count = 0;
