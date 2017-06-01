@@ -5,6 +5,7 @@ import echo.System;
 import echo.View;
 import js.Browser;
 import js.html.Element;
+using Lambda;
 
 /**
  * ...
@@ -12,63 +13,91 @@ import js.html.Element;
  */
 class Example {
 
+	static public var RABBITS_POPULATION = 15;
+	static public var MAX_WIDTH = 60;
+	static public var MAX_HEIGHT = 40;
+
 	static var echo:Echo;
-	static var w = 60;
-	static var h = 30;
 
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
-		canvas.style.color = '#007F0E';
-
+		var stat = Browser.document.createPreElement();
 		Browser.document.body.appendChild(canvas);
+		Browser.document.body.appendChild(stat);
+
+		// mobile friendly (i guess)
+		var size = Std.parseInt(Browser.window.getComputedStyle(Browser.document.body).fontSize);
+		var w = Browser.window.innerWidth / size > MAX_WIDTH ? MAX_WIDTH : Math.floor(Browser.window.innerWidth / size);
+		var h = Browser.window.innerHeight / size > MAX_HEIGHT ? MAX_HEIGHT : Math.floor(Browser.window.innerHeight / size);
 
 
 		echo = new Echo();
 		echo.addSystem(new Movement(w, h));
-		echo.addSystem(new Render(w, h, canvas));
+		echo.addSystem(new Interaction());
+		echo.addSystem(new Render(w, h, size, canvas));
 
-
-		for (i in 0...1000) createGrass(Std.random(w), Std.random(h));
-		for (i in 0...100) createTree(Std.random(w), Std.random(h));
-		for (i in 0...10) {
-			var d = Math.random() * Math.PI * 2;
-			createRabbit(Std.random(w), Std.random(h), Math.cos(d) * 2, Math.sin(d) * 2);
+		// fill world by plants
+		for (y in 0...h) for (x in 0...w) {
+			if (Math.random() > .5) {
+				grass(x, y); 
+			} else {
+				if (Math.random() > .2) tree(x, y); else flower(x, y);
+			}
 		}
 
-		var d = Math.random() * Math.PI * 2;
-		createTiger(Std.random(w), Std.random(h), Math.cos(d) * 6, Math.sin(d) * 6);
+		// some rabbits
+		for (i in 0...RABBITS_POPULATION) rabbit(Std.random(w), Std.random(h));
+
+		// tiger!
+		tiger(Std.random(w), Std.random(h));
 
 
-		Browser.window.setInterval(function() echo.update(.100), 100);
+		Browser.window.setInterval(function() {
+			echo.update(.100);
+			stat.innerHTML = echo.toString();
+		}, 100);
 	}
 
 
-	static function createGrass(x:Float, y:Float) {
+	static function grass(x:Float, y:Float) {
+		var codes = [ '&#x1F33E', '&#x1F33F' ];
 		echo.setComponent(echo.id(),
 			new Position(x, y),
-			new Sprite('&#x1F33E;'));
+			new Sprite(codes[Std.random(codes.length)]));
 	}
 
-	static function createTree(x:Float, y:Float) {
+	static function tree(x:Float, y:Float) {
+		var codes = [ '&#x1F332', '&#x1F333' ];
 		echo.setComponent(echo.id(),
 			new Position(x, y),
-			new Sprite('&#x1F333;')); //1F332
+			new Sprite(codes[Std.random(codes.length)]));
 	}
 
-	static function createDynamic(x:Float, y:Float, vx:Float, vy:Float):Int {
-		var id = echo.id();
+	static function flower(x:Float, y:Float) {
+		var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
+		echo.setComponent(echo.id(),
+			new Position(x, y),
+			new Sprite(codes[Std.random(codes.length)]));
+	}
+
+	static public function rabbit(x:Float, y:Float) {
 		var pos = new Position(x, y);
-		var vel = new Velocity(vx, vy);
-		echo.setComponent(id, pos, vel);
-		return id;
+		var vel = randomVelocity(1);
+		var spr = new Sprite('&#x1F407;');
+		echo.setComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
 	}
 
-	static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
-		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F407;'));
+	static public function tiger(x:Float, y:Float) {
+		var pos = new Position(x, y);
+		var vel = randomVelocity(10);
+		var spr = new Sprite('&#x1F405;');
+		spr.style.fontSize = '200%';
+		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
 	}
 
-	static function createTiger(x:Float, y:Float, vx:Float, vy:Float) {
-		echo.setComponent(createDynamic(x, y, vx, vy), new Sprite('&#x1F405;'));
+	static public function randomVelocity(speed:Float) {
+		var d = Math.random() * Math.PI * 2;
+		return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
 	}
 
 }
@@ -89,7 +118,7 @@ class Vec2 {
 // Components
 
 @:forward(x, y)
-abstract Velocity(Vec2) { // abstracts can be used to create different ComponentClasses from the same BaseClass without overhead
+abstract Velocity(Vec2) {
 	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
@@ -98,12 +127,18 @@ abstract Position(Vec2) {
 	inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
-class Sprite {
-	// in this case it just a char
-	public var value:String;
-	public function new(value:String) {
-		this.value = value;
+@:forward(remove, style)
+abstract Sprite(Element) from Element to Element {
+	inline public function new(value:String) {
+		this = Browser.document.createSpanElement();
+		this.style.position = 'absolute';
+		this.innerHTML = value;
 	}
+}
+
+enum Animal {
+	Rabbit;
+	Tiger;
 }
 
 
@@ -130,33 +165,54 @@ class Movement extends System {
 }
 
 class Render extends System {
-	var canvas:Element;
 	var world:Array<Array<Element>>;
-	var w = 0;
-	var h = 0;
-	var visuals:View<{ pos:Position, spr:Sprite }>;
-	public function new(w:Int, h:Int, canvas:Element) {
-		this.canvas = canvas;
-		this.w = w;
-		this.h = h;
+	public function new(w:Int, h:Int, size:Int, canvas:Element) {
 		world = [];
 		for (y in 0...h) {
 			world[y] = [];
 			for (x in 0...w) {
-				world[y][x] = Browser.document.createSpanElement();
-				canvas.appendChild(world[y][x]);
+				var span = Browser.document.createSpanElement();
+				span.style.position = 'absolute';
+				span.style.left = '${x * size}px';
+				span.style.top = '${y * size}px';
+				world[y][x] = span;
+				canvas.appendChild(span);
 			}
 			canvas.appendChild(Browser.document.createBRElement());
 		}
 	}
+
+	// all visuals
+	// not required updates, just add sprite to the canvas
+	var visuals:View<{ pos:Position, spr:Sprite }>;
+	@onadded function appendVisual(id:Int) {
+		world[Std.int(echo.getComponent(id, Position).y)][Std.int(echo.getComponent(id, Position).x)].appendChild(echo.getComponent(id, Sprite)); // TODO ugly, need more macro
+	}
+	@onremoved function removeVisual(id:Int) {
+		echo.getComponent(id, Sprite).remove();
+	}
+
+	// dynamic visuals only (with Velocity component)
+	@update function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
+	}
+}
+
+// some dummy interaction
+class Interaction extends System {
+	var animals:View<{ a:Animal, pos:Position }>;
 	override public function update(dt:Float) {
-		for (y in 0...h) {
-			for (x in 0...w) {
-				world[y][x].innerHTML = '&#x1F33F;';
+		var del = [];
+		for (a1 in animals) for (a2 in animals) {
+			if (a1 != a2 && samecell(a1.pos, a2.pos)) {
+				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) del.push(a2.id);
+				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
+					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) Example.rabbit(a1.pos.x, a1.pos.y);
+				}
 			}
 		}
-		for (v in visuals) {
-			world[Std.int(v.pos.y)][Std.int(v.pos.x)].innerHTML = v.spr.value;
-		}
+
+		for (id in del) echo.remove(id);
 	}
+	function samecell(pos1:Position, pos2:Position) return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
 }

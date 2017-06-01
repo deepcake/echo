@@ -23,9 +23,9 @@ class MacroBuilder {
 
 
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
-	static var ONADD_META = ['onadded', 'onadd', 'add', 'a'];
-	static var ONREMOVE_META = ['onremoved', 'onremove', 'onrem', 'rem', 'r'];
-	static var ONEACH_META = ['oneach', 'foreach', 'each', 'e', 'update', 'upd', 'u'];
+	static var ONADD_META = ['onadded', 'added', 'onadd', 'add', 'a'];
+	static var ONREMOVE_META = ['onremoved', 'removed', 'onremove', 'onrem', 'remove', 'rem', 'r'];
+	static var ONEACH_META = ['update', 'upd', 'u'];
 
 
 	static public var componentIndex:Int = 0;
@@ -62,11 +62,18 @@ class MacroBuilder {
 		#if echo_verbose
 			if (!reportRegistered) {
 				Context.onGenerate(function(types) {
-					trace('ECHO REPORT');
-					trace('COMPONENTS [${componentCache.count()}]:');
-					componentCache.iter(function(v) trace(v));
-					trace('VIEWS [${viewCache.count()}]:');
-					viewCache.iter(function(v) trace(v));
+					function sortedlist(array:Array<String>) {
+						array.sort(compareStrings);
+						return array;
+					}
+
+					var ret = 'ECHO BUILD REPORT :';
+					ret += '\n  COMPONENTS [${componentCache.count()}] :';
+					ret += '\n    ' + sortedlist({ iterator: function() return componentCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n    ');
+					ret += '\n  VIEWS [${viewCache.count()}] :';
+					ret += '\n    ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n    ');
+					trace('\n$ret');
+
 				});
 				reportRegistered = true;
 			}
@@ -113,13 +120,14 @@ class MacroBuilder {
 	}
 
 
-	static public function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+	static function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
 		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.followComplexType()));
 		return TPath(tpath(['echo'], 'View', [TPType(TAnonymous(viewClsParams))]));
 	}
 
 
 	static public function autoBuildSystem() {
+		report();
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
@@ -422,6 +430,7 @@ class MacroBuilder {
 
 
 	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
+		report();
 		var componentHolderClsName = getClsName('ComponentHolder', componentCls.followName());
 		var componentHolderCls = componentCache.get(componentCls.followName());
 		if (componentHolderCls == null) {

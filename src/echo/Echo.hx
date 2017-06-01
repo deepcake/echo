@@ -32,24 +32,23 @@ class Echo {
 	public function new() { }
 
 
-	#if debug
-		var updateStats:Map<System, Float> = new Map();
+	#if echo_debug
+		var updateStats:Map<Int, Float> = new Map();
+		var timestamp = haxe.Timer.stamp();
 	#end
-	inline public function stats():String {
+	inline public function toString():String {
 		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
-		#if debug
+		#if echo_debug
+			ret += '\n  since last update : ' + updateStats.get(-10) + ' ms';
+			ret += '\n  echo total update : ' + updateStats.get(-100) + ' ms';
 			for (s in systems) {
-				ret += '\n\t( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s) + ' ms';
+				ret += '\n    ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
 			}
 			for (v in views) {
-				ret += '\n\t{ ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
+				ret += '\n  { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
 			}
 		#end
 		return ret;
-	}
-
-	inline public function toString():String {
-		return stats();
 	}
 
 
@@ -57,15 +56,23 @@ class Echo {
 	 *  @param dt - delta time
 	 */
 	public function update(dt:Float) {
+		#if echo_debug
+			updateStats.set(-10, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
+			var updateTimestamp = haxe.Timer.stamp();
+		#end
 		for (s in systems) {
-			#if debug
-				var stamp = haxe.Timer.stamp();
+			#if echo_debug
+				timestamp = haxe.Timer.stamp();
 			#end
 			s.update(dt);
-			#if debug
-				updateStats.set(s, Std.int((haxe.Timer.stamp() - stamp) * 1000));
+			#if echo_debug
+				updateStats.set(s.__id, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
 			#end
 		}
+		#if echo_debug
+			timestamp = haxe.Timer.stamp();
+			updateStats.set(-100, Std.int((timestamp - updateTimestamp) * 1000));
+		#end
 	}
 
 
@@ -140,7 +147,7 @@ class Echo {
 	// Entity
 
 	/**
-	 *  Gets new id (entity) and adds it to the workflow, and return it
+	 *  Creates new id (entity) and adds it to the workflow, and return it
 	 *  Equals to call `next()` and then `add()`
 	 *  @return Int
 	 */
@@ -152,7 +159,7 @@ class Echo {
 	}
 
 	/**
-	 *  Gets new id (entity) without adding it ot the workflow (so it will not be collected by views)
+	 *  Creates new id (entity) without adding it ot the workflow (so it will not be collected by views)
 	 *  @return Int
 	 */
 	public inline function next():Int {
