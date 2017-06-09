@@ -209,27 +209,6 @@ class MacroBuilder {
 					case FFun(x): x;
 					case x: throw "Unexp $x";
 				}
-				var components = func.args.map(function(a) {
-					switch (a.type) {
-						case macro:Int, macro:Float: 
-							return null;
-						default: 
-							return { name: a.name, cls: a.type.followComplexType() };
-					}
-				}).filter(function(el) return el != null);
-
-				var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
-				var view = views.find(function(v) return getClsName('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
-				var viewName = viewClsName.toLowerCase();
-
-				if (view == null) {
-					var viewCls = getViewGenericComplexType(components);
-					fields.push(fvar(viewName, viewCls));
-					views.push({ name: viewName, components: components });
-				} else {
-					// this view already defined in this system
-					viewName = view.name;
-				}
 
 				var funcName = f.name;
 				var funcArgs = func.args.map(function(a) {
@@ -243,7 +222,36 @@ class MacroBuilder {
 					}
 				});
 
-				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs})); // TODO inline ?
+				var components = func.args.map(function(a) {
+					switch (a.type) {
+						case macro:Int, macro:Float: 
+							return null;
+						default: 
+							return { name: a.name, cls: a.type.followComplexType() };
+					}
+				}).filter(function(el) return el != null);
+
+				if (components.length == 0) { // empty update
+
+					updateExprs.push(macro $i{funcName}($a{funcArgs}));
+
+				} else {
+					var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
+					var view = views.find(function(v) return getClsName('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
+					var viewName = viewClsName.toLowerCase();
+
+					if (view == null) {
+						var viewCls = getViewGenericComplexType(components);
+						fields.push(fvar(viewName, viewCls));
+						views.push({ name: viewName, components: components });
+					} else {
+						// this view already defined in this system
+						viewName = view.name;
+					}
+
+					updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs}));
+				}
+
 			}
 		});
 

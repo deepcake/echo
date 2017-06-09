@@ -150,6 +150,15 @@ class TestSystem extends TestCase {
 		assertEquals('A_0.9A_0.9_' + ch.last(), MetaEachSystemDelta.STATIC_ACTUAL);
 	}
 
+	public function test_meta_oneach_empty() {
+		ch.addSystem(new MetaEachSystemEmpty());
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('1A3(0)A5', MetaEachSystemEmpty.STATIC_ACTUAL);
+	}
+
 	public function test_view_reuse1() {
 		ASystem.STATIC_ACTUAL = '';
 		ch.addSystem(new ASystem());
@@ -313,6 +322,17 @@ class MetaEachSystemDelta extends System {
 
 	@update function oneach1(dt:Float, a:CA) STATIC_ACTUAL += a.val + '_$dt';
 	@update function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
+}
+
+class MetaEachSystemEmpty extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@u function act1() STATIC_ACTUAL += '1';
+	@u function act2(a:CA) STATIC_ACTUAL += a.val;
+	@u function act3(dt:Float) STATIC_ACTUAL += '3($dt)';
+	@u inline function act4(a:CA) STATIC_ACTUAL += a.val;
+	@u inline function act5() STATIC_ACTUAL += '5';
 }
 
 class MetaEachSystemTypeParam extends System {
