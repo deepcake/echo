@@ -102,33 +102,33 @@ class TestSystem extends TestCase {
 	}
 
 	public function test_meta_oneach1() {
-		ch.addSystem(new MetaEachSystem1());
+		ch.addSystem(new MetaEachSystemUpdateExistsAlready());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
-		assertEquals('AB#%!', MetaEachSystem1.STATIC_ACTUAL);
+		assertEquals('AB#%!', MetaEachSystemUpdateExistsAlready.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach2() {
-		ch.addSystem(new MetaEachSystem2());
+		ch.addSystem(new MetaEachSystemViewExistsAlready());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
-		assertEquals('AB!#%!', MetaEachSystem2.STATIC_ACTUAL);
+		assertEquals('AB!#%!', MetaEachSystemViewExistsAlready.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach3() {
-		ch.addSystem(new MetaEachSystem3());
+		ch.addSystem(new MetaEachSystemDifferentView());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(2, ch.views.length);
-		assertEquals('A#B%--!', MetaEachSystem3.STATIC_ACTUAL);
+		assertEquals('A#B%--!', MetaEachSystemDifferentView.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach4() {
@@ -274,7 +274,7 @@ class MetaAddRemOrderSystem extends System {
 }
 
 
-class MetaEachSystem1 extends System {
+class MetaEachSystemUpdateExistsAlready extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -283,7 +283,7 @@ class MetaEachSystem1 extends System {
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
 }
 
-class MetaEachSystem2 extends System {
+class MetaEachSystemViewExistsAlready extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -292,7 +292,7 @@ class MetaEachSystem2 extends System {
 	var viewab = new echo.View<{a:CA, b:CB}>();
 }
 
-class MetaEachSystem3 extends System {
+class MetaEachSystemDifferentView extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
