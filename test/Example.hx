@@ -185,8 +185,8 @@ class Render extends System {
 	// all visuals
 	// not required updates, just add sprite to the canvas
 	var visuals:View<{ pos:Position, spr:Sprite }>;
-	@onadded function appendVisual(id:Int) {
-		world[Std.int(echo.getComponent(id, Position).y)][Std.int(echo.getComponent(id, Position).x)].appendChild(echo.getComponent(id, Sprite)); // TODO ugly, need more macro
+	@onadded function appendVisual(pos:Position, spr:Sprite) {
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
 	@onremoved function removeVisual(id:Int) {
 		echo.getComponent(id, Sprite).remove();
