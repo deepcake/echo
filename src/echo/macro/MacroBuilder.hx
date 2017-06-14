@@ -463,7 +463,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.list[i]);
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP.get(this.vd.id)', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
 

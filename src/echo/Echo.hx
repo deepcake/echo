@@ -273,7 +273,7 @@ class Echo {
 	 */
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP.get($id);
+		return macro ${ hCls.expr() }.__MAP[$id];
 	}
 
 	/**
