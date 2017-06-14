@@ -119,23 +119,38 @@ class Movement extends System {
   * `.new()`
     ```haxe
     new View<{ a:A, b:B }>()
-    // or
+     // or
     typedef ABData = { var a:A; var b:B; }
     new View<ABData>()
     ```
   * `.onAdded:Signal<Int->Void>`, `.onRemoved:Signal<Int->Void>` - signals, called when a suitable _id_ is added/removed to _the workflow_. Actualy, signals are dispatchs before an id is removed (or after an id is added), so it always possible to access to the components of dispatched id.
-  * `.entities:Array<Int>` - array of _ids_ into this view. Can be sorted.
-  * `.iterator():Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` with minimal overhead.
+  * `.entities:Array<Int>` - array of _ids_ collected by this view. Can be sorted.
+  * `.iterator():Iterator<T>` - produce iterating over _ids_ like they was an instances of `T` (with minimal overhead).
 * `System` - parent class for systems.
-  * `.onactivate()`, `.ondeactivate()` - to be overridden. Called when this system is added/removed from _the workflow_.
+  * `.onactivate()`, `.ondeactivate()` - to be overridden. Called when this system is added/removed to _the workflow_.
   * `.update(dt:Float)` - to be overridden.
   * `@skip`, `@ignore` - all views defined in the system (without `@skip` meta) will be added to _the workflow_.
-  * `@onadded`, `@add`, `@a` - meta that adds a function to the `onAdded` view's signal.
-  * `@onremoved`, `@rem`, `@r` - meta that adds a function to the `onRemoved` view's signal.
+  * `@update`, `@upd`, `@u` - meta that calls a tagged function for each entity in view's iterating cycle. To tagged function must be passed all components of associated view (or nothing at all). If a suitable view will be not found, new one will be defined. If tagged function is not have any argument, it will be called before/after (depends on define order) view's iterating cycle.
+    ```haxe
+    @update function update_ab(a:A, b:B) trace(a, b);
+    @update function after_ab() trace("Bye!");
+     // equals to
+    var view_ab:View<{ a:A, b:B }>;
+    override function update(dt:Float) {
+      for (v in view_ab) update_ab(v.a, v.b);
+      after_ab();
+    }
+    ```
+      To a tagged function can be passed an optional args - `Float` for delta time and `Int` for id:
+    ```haxe
+    @update function update_ab(a:A, b:B, dt:Float, id:Int) trace(a, b);
+    ```
+  * `@onadded`, `@add`, `@a` - meta that adds a tagged function to the `onAdded` view's signal.
+  * `@onremoved`, `@rem`, `@r` - meta that adds a tagged function to the `onRemoved` view's signal. To tagged function can be passed an `Int` id, any components of associated view, or nothing.
     ```haxe
     var view_ab:View<{ a:A, b:B }>;
     @onadded function onadd_ab(id:Int) trace(echo.getComponent(id, A));
-    // converts to:
+     // equals to
     override function onactivate() {
       view_ab.onAdded.add(onadd_ab);
     }
@@ -143,37 +158,27 @@ class Movement extends System {
       view_ab.onAdded.remove(onadd_ab);
     }
     ```
-      It also possible to pass a view name or index (starts from 0) to the onadded/onremoved meta, if system contains more then one view:
+      It also possible to pass a view name or index (starts from 0) to the `@onadded`/`@onremoved` meta (if system contains more then single view):
     ```haxe
     var view_a:View<{ a:A }>; // index 0
     var view_b:View<{ b:B }>; // index 1
     @onadded("view_a") function onadd_a(id:Int) trace(echo.getComponent(id, A));
     @onadded(1) function onadd_b(id:Int) trace(echo.getComponent(id, B));
     ```
-  * `@update`, `@upd`, `@u` - meta that calls a function for each view's entity in update cycle. If a suitable view will be not found, new one will be defined.
+      So it possible to use `@onadded` meta with `@update` meta like:
     ```haxe
-    @update function update_ab(a:A, b:B) trace(a, b);
-    // converts to:
-    var view_ab:View<{ a:A, b:B }>;
-    override function update(dt:Float) {
-      for (v in view_ab) update_ab(v.a, v.b);
-    }
-    ```
-      To update function can be passed an optional args - `Float` for delta time and `Int` for id:
-    ```haxe
-    @update function update_ab(a:A, b:B, dt:Float, id:Int) trace(a, b);
+    @update function update_a(a:A) trace(a); // index 0
+    @update function update_b(b:A) trace(b); // index 1
+    @onadded function onadd_a(a:A) trace(a); // index 0 can be omitted
+    @onadded(1) function onadd_b() trace("B!");
     ```
 
-So Render system from the example above can be written with meta like this:
+So Render system from the example above can be written with metas like:
 ```haxe
 class Render extends System {
-  @onadded function onVisualAdded(id:Int) {
-    scene.addChild(echo.getComponent(id, Sprite));
-  }
-  @onremoved function onVisualRemoved(id:Int) {
-    scene.removeChild(echo.getComponent(id, Sprite));
-  }
-  @update function updateVisuals(spr:Sprite, pos:Position, dt:Float) {
+  @add function onVisualAdded(s:Sprite) scene.addChild(s);
+  @rem function onVisualRemoved(s:Sprite) scene.removeChild(s);
+  @upd inline function updateVisuals(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
@@ -182,7 +187,7 @@ class Render extends System {
 
 There is also exists a few additional compiler flags:
  * `-D echo_verbose` - traces to console all generated classes (for debug purposes)
- * `-D echo_debug` - collecting some more info for `toString()` method (note, that it uses reflection, so remove it in release build)
+ * `-D echo_debug` - collecting some more info for `toString()` method (note, that it uses reflection, so better to remove it in release build)
 
 #### Install
 ```haxelib git echo https://github.com/wimcake/echo.git```
