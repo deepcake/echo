@@ -102,33 +102,33 @@ class TestSystem extends TestCase {
 	}
 
 	public function test_meta_oneach1() {
-		ch.addSystem(new MetaEachSystem1());
+		ch.addSystem(new MetaEachSystemUpdateExistsAlready());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
-		assertEquals('AB#%!', MetaEachSystem1.STATIC_ACTUAL);
+		assertEquals('AB#%!', MetaEachSystemUpdateExistsAlready.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach2() {
-		ch.addSystem(new MetaEachSystem2());
+		ch.addSystem(new MetaEachSystemViewExistsAlready());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
-		assertEquals('AB!#%!', MetaEachSystem2.STATIC_ACTUAL);
+		assertEquals('AB!#%!', MetaEachSystemViewExistsAlready.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach3() {
-		ch.addSystem(new MetaEachSystem3());
+		ch.addSystem(new MetaEachSystemDifferentView());
 		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(2, ch.views.length);
-		assertEquals('A#B%--!', MetaEachSystem3.STATIC_ACTUAL);
+		assertEquals('A#B%--!', MetaEachSystemDifferentView.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach4() {
@@ -148,6 +148,15 @@ class TestSystem extends TestCase {
 
 		assertEquals(1, ch.views.length);
 		assertEquals('A_0.9A_0.9_' + ch.last(), MetaEachSystemDelta.STATIC_ACTUAL);
+	}
+
+	public function test_meta_oneach_empty() {
+		ch.addSystem(new MetaEachSystemEmpty());
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0);
+
+		assertEquals(1, ch.views.length);
+		assertEquals('1A3(0)A5', MetaEachSystemEmpty.STATIC_ACTUAL);
 	}
 
 	public function test_view_reuse1() {
@@ -182,6 +191,16 @@ class TestSystem extends TestCase {
 
 		assertEquals(1, ch.views.length);
 		assertEquals('M', MetaEachSystemTypeParam.STATIC_ACTUAL);
+	}
+
+
+	public function test_meta_skip() {
+		ch.addSystem(new MetaSkipSystem());
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0);
+
+		assertEquals(0, ch.views.length);
+		assertEquals('?', MetaSkipSystem.STATIC_ACTUAL);
 	}
 
 
@@ -265,7 +284,17 @@ class MetaAddRemOrderSystem extends System {
 }
 
 
-class MetaEachSystem1 extends System {
+class MetaSkipSystem extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+	@skip @update function oneach1(a:CA) STATIC_ACTUAL += '!';
+	@update @skip function oneach2(a:CA) STATIC_ACTUAL += '!';
+	@update function onlyupdate() STATIC_ACTUAL += '?';
+	@i @onadded @onadd @add @a @some_other_meta_tag function onadd(a:CA) STATIC_ACTUAL += '>';
+}
+
+
+class MetaEachSystemUpdateExistsAlready extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -274,7 +303,7 @@ class MetaEachSystem1 extends System {
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
 }
 
-class MetaEachSystem2 extends System {
+class MetaEachSystemViewExistsAlready extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -283,7 +312,7 @@ class MetaEachSystem2 extends System {
 	var viewab = new echo.View<{a:CA, b:CB}>();
 }
 
-class MetaEachSystem3 extends System {
+class MetaEachSystemDifferentView extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -313,6 +342,17 @@ class MetaEachSystemDelta extends System {
 
 	@update function oneach1(dt:Float, a:CA) STATIC_ACTUAL += a.val + '_$dt';
 	@update function oneach2(a:CA, deltaTime:Float, entityId:Int) STATIC_ACTUAL += a.val + '_$deltaTime' + '_$entityId';
+}
+
+class MetaEachSystemEmpty extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+
+	@u function act1() STATIC_ACTUAL += '1';
+	@u function act2(a:CA) STATIC_ACTUAL += a.val;
+	@u function act3(dt:Float) STATIC_ACTUAL += '3($dt)';
+	@u inline function act4(a:CA) STATIC_ACTUAL += a.val;
+	@u inline function act5() STATIC_ACTUAL += '5';
 }
 
 class MetaEachSystemTypeParam extends System {

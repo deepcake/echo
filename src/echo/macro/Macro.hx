@@ -119,6 +119,7 @@ class Macro {
 	static public function identName(e:Expr) {
 		return switch(e.expr) {
 			case EConst(CIdent(name)): name;
+			case EField(path, name): identName(path) + '.' + name;
 			case x: throw 'Unexpected $x';
 		}
 	}

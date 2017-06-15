@@ -68,10 +68,10 @@ class MacroBuilder {
 					}
 
 					var ret = 'ECHO BUILD REPORT :';
-					ret += '\n  COMPONENTS [${componentCache.count()}] :';
-					ret += '\n    ' + sortedlist({ iterator: function() return componentCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n    ');
-					ret += '\n  VIEWS [${viewCache.count()}] :';
-					ret += '\n    ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n    ');
+					ret += '\n    COMPONENTS [${componentCache.count()}] :';
+					ret += '\n        ' + sortedlist({ iterator: function() return componentCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
+					ret += '\n    VIEWS [${viewCache.count()}] :';
+					ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
 					trace('\n$ret');
 
 				});
@@ -203,33 +203,21 @@ class MacroBuilder {
 		var deactivateExprs = [];
 		var updateExprs = [];
 
+		function extFunc(f:Field) {
+			return switch (f.kind) {
+				case FFun(x): x;
+				case x: null;
+			}
+		}
+
 		fields.iter(function(f) {
+			if (hasMeta(f, EXCLUDE_META)) return; // skip by meta
+
 			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
-				var func = switch (f.kind) {
-					case FFun(x): x;
-					case x: throw "Unexp $x";
-				}
-				var components = func.args.map(function(a) {
-					switch (a.type) {
-						case macro:Int, macro:Float: 
-							return null;
-						default: 
-							return { name: a.name, cls: a.type.followComplexType() };
-					}
-				}).filter(function(el) return el != null);
+				var func = extFunc(f);
 
-				var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
-				var view = views.find(function(v) return getClsName('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
-				var viewName = viewClsName.toLowerCase();
-
-				if (view == null) {
-					var viewCls = getViewGenericComplexType(components);
-					fields.push(fvar(viewName, viewCls));
-					views.push({ name: viewName, components: components });
-				} else {
-					// this view already defined in this system
-					viewName = view.name;
-				}
+				// skip if not a func
+				if (func == null) return;
 
 				var funcName = f.name;
 				var funcArgs = func.args.map(function(a) {
@@ -243,7 +231,36 @@ class MacroBuilder {
 					}
 				});
 
-				updateExprs.push(macro for (i in $i{viewName}) $i{funcName}($a{funcArgs})); // TODO inline ?
+				var components = func.args.map(function(a) {
+					switch (a.type) {
+						case macro:Int, macro:Float: 
+							return null;
+						default: 
+							return { name: a.name, cls: a.type.followComplexType() };
+					}
+				}).filter(function(el) return el != null);
+
+				if (components.length == 0) { // empty update
+
+					updateExprs.push(macro $i{funcName}($a{funcArgs}));
+
+				} else {
+					var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
+					var view = views.find(function(v) return getClsName('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
+					var viewName = viewClsName.toLowerCase();
+
+					if (view == null) {
+						var viewCls = getViewGenericComplexType(components);
+						fields.push(fvar(viewName, viewCls));
+						views.push({ name: viewName, components: components });
+					} else {
+						// this view already defined in this system
+						viewName = view.name;
+					}
+
+					updateExprs.push(macro for (i in $i{ viewName }) $i{ funcName }($a{ funcArgs }));
+				}
+
 			}
 		});
 
@@ -257,33 +274,92 @@ class MacroBuilder {
 		} );
 
 		// onadd, onremove signals
+		function refViewName(m:MetadataEntry) {
+			return switch (m.params) {
+				case [ _.expr => EConst(CString(x)) ]: x;
+				case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
+				case []: views[0].name;
+				case x: throw 'Unexp $x';
+			}
+		}
 		fields.iter(function(f) {
+			if (hasMeta(f, EXCLUDE_META)) return; // skip by meta
+
 			var onaddMeta = getMeta(f, ONADD_META);
 			if (onaddMeta != null) {
-				var viewname = switch (onaddMeta.params) {
-					case [ _.expr => EConst(CString(x)) ]: x;
-					case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
-					case []: views[0].name;
-					case x: throw 'Unexp $x';
+				var viewName = refViewName(onaddMeta);
+				var func = extFunc(f);
+
+				// skip if not a func
+				if (func == null) return;
+
+				var funcName = f.name;
+
+				switch (func) {
+					case _.args => []:
+						// nothing passed, so create a proxy func with no args
+						funcName = '__${f.name}';
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }()));
+
+					case _.args => (args = [ (arg = { type: TPath({ pack: [], name: 'Int' }) }) ]) if (args.length == 1):
+						// only id:Int passed, so add this func to the signal
+						funcName = f.name;
+
+					default:
+						// some components passed, so build a proxy func
+						funcName = '__${f.name}';
+						var funcArgs = func.args.map(function(a) {
+							switch (a.type) {
+								case macro:Int:
+									return macro id;
+								default:
+									return macro echo.getComponent(id, ${ a.type.expr() });
+							}
+						});
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
 				}
-				activateExprs.push(macro $i{viewname}.onAdded.add($i{f.name}));
-				activateExprs.push(macro for (i in $i{viewname}.entities) $i{f.name}(i));
-				deactivateExprs.push(macro $i{viewname}.onAdded.remove($i{f.name}));
+
+				activateExprs.push(macro $i{ viewName }.onAdded.add($i{ funcName }));
+				activateExprs.push(macro for (i in $i{ viewName }.entities) $i{ funcName }(i));
+				deactivateExprs.push(macro $i{ viewName }.onAdded.remove($i{ funcName }));
 			}
+
 			var onremMeta = getMeta(f, ONREMOVE_META);
 			if (onremMeta != null) {
-				var viewname = switch (onremMeta.params) {
-					case [ _.expr => EConst(CString(x)) ]: x;
-					case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
-					case []: views[0].name;
-					case x: throw 'Unexp $x';
+				var viewName = refViewName(onremMeta);
+				var func = extFunc(f);
+
+				if (func == null) return;
+
+				var funcName = f.name;
+
+				switch (func) {
+					case _.args => []:
+						funcName = '__${f.name}';
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }()));
+
+					case _.args => (args = [ (arg = { type: TPath({ pack: [], name: 'Int' }) }) ]) if (args.length == 1):
+						funcName = f.name;
+
+					default:
+						funcName = '__${f.name}';
+						var funcArgs = func.args.map(function(a) {
+							switch (a.type) {
+								case macro:Int:
+									return macro id;
+								default:
+									return macro echo.getComponent(id, ${ a.type.expr() });
+							}
+						});
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
 				}
-				activateExprs.push(macro $i{viewname}.onRemoved.add($i{f.name}));
-				deactivateExprs.push(macro $i{viewname}.onRemoved.remove($i{f.name}));
+
+				activateExprs.push(macro $i{ viewName }.onRemoved.add($i{ funcName }));
+				deactivateExprs.push(macro $i{ viewName }.onRemoved.remove($i{ funcName }));
 			}
 		} );
 
-		// onactivate,  ondeactivate
+		// onactivate, ondeactivate
 		activateExprs.push(macro super.activate(echo)); // after view added
 		deactivateExprs.unshift(macro super.deactivate()); // before view removed
 
@@ -391,7 +467,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.list[i]);
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP.get(this.vd.id)', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
 

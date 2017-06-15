@@ -39,13 +39,13 @@ class Echo {
 	inline public function toString():String {
 		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
 		#if echo_debug
-			ret += '\n  since last update : ' + updateStats.get(-10) + ' ms';
-			ret += '\n  echo total update : ' + updateStats.get(-100) + ' ms';
+			ret += '\n    since last update : ' + updateStats.get(-10) + ' ms';
+			ret += '\n    echo total update : ' + updateStats.get(-100) + ' ms';
 			for (s in systems) {
-				ret += '\n    ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
+				ret += '\n        ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
 			}
 			for (v in views) {
-				ret += '\n  { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
+				ret += '\n    { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
 			}
 		#end
 		return ret;
@@ -273,7 +273,7 @@ class Echo {
 	 */
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP.get($id);
+		return macro ${ hCls.expr() }.__MAP[$id];
 	}
 
 	/**

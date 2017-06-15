@@ -57,21 +57,21 @@ Example.main = function() {
 		Example.echo.update(.100);
 		var _this = Example.echo;
 		var ret = "Echo" + (" ( " + _this.systems.length + " )") + (" { " + _this.views.length + " }") + (" [ " + _this.entities.length + " ]");
-		ret += "\n  since last update : " + _this.updateStats.get(-10) + " ms";
-		ret += "\n  echo total update : " + _this.updateStats.get(-100) + " ms";
+		ret += "\n    since last update : " + _this.updateStats.get(-10) + " ms";
+		ret += "\n    echo total update : " + _this.updateStats.get(-100) + " ms";
 		var _g_head = _this.systems.h;
 		while(_g_head != null) {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var s = val;
-			ret += "\n    ( " + Type.getClassName(s == null ? null : js_Boot.getClass(s)) + " ) : " + _this.updateStats.get(s.__id) + " ms";
+			ret += "\n        ( " + Type.getClassName(s == null ? null : js_Boot.getClass(s)) + " ) : " + _this.updateStats.get(s.__id) + " ms";
 		}
 		var _g_head1 = _this.views.h;
 		while(_g_head1 != null) {
 			var val1 = _g_head1.item;
 			_g_head1 = _g_head1.next;
 			var v = val1;
-			ret += "\n  { " + Type.getClassName(v == null ? null : js_Boot.getClass(v)) + (" } [ " + v.entities.length + " ]");
+			ret += "\n    { " + Type.getClassName(v == null ? null : js_Boot.getClass(v)) + (" } [ " + v.entities.length + " ]");
 		}
 		stat.innerHTML = ret;
 	},100);
@@ -276,14 +276,17 @@ var Render = function(w,h,size,canvas) {
 Render.__name__ = ["Render"];
 Render.__super__ = echo_System;
 Render.prototype = $extend(echo_System.prototype,{
-	appendVisual: function(id) {
-		this.world[ComponentHolder_$Example_$Position.__MAP.h[id].y | 0][ComponentHolder_$Example_$Position.__MAP.h[id].x | 0].appendChild(ComponentHolder_$Example_$Sprite.__MAP.h[id]);
+	appendVisual: function(pos,spr) {
+		this.world[pos.y | 0][pos.x | 0].appendChild(spr);
 	}
 	,removeVisual: function(id) {
 		ComponentHolder_$Example_$Sprite.__MAP.h[id].remove();
 	}
 	,updateDynamicVisual: function(dt,vel,pos,spr) {
 		this.world[pos.y | 0][pos.x | 0].appendChild(spr);
+	}
+	,__appendVisual: function(id) {
+		this.appendVisual(ComponentHolder_$Example_$Position.__MAP.h[id],ComponentHolder_$Example_$Sprite.__MAP.h[id]);
 	}
 	,update: function(dt) {
 		var _g_vd;
@@ -308,13 +311,13 @@ Render.prototype = $extend(echo_System.prototype,{
 			echo1.addView(new View_$Example_$Position_$Example_$Sprite_$Example_$Velocity());
 		}
 		this.view_example_position_example_sprite_example_velocity = echo1.viewsMap.h[3];
-		this.visuals.onAdded.push($bind(this,this.appendVisual));
+		this.visuals.onAdded.push($bind(this,this.__appendVisual));
 		var _g = 0;
 		var _g1 = this.visuals.entities;
 		while(_g < _g1.length) {
 			var i = _g1[_g];
 			++_g;
-			this.appendVisual(i);
+			this.__appendVisual(i);
 		}
 		this.visuals.onRemoved.push($bind(this,this.removeVisual));
 		echo_System.prototype.activate.call(this,echo1);

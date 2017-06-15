@@ -182,11 +182,10 @@ class Render extends System {
 		}
 	}
 
-	// all visuals
-	// not required updates, just add sprite to the canvas
+	// all visuals, not required updates, just add sprite to the canvas
 	var visuals:View<{ pos:Position, spr:Sprite }>;
-	@onadded function appendVisual(id:Int) {
-		world[Std.int(echo.getComponent(id, Position).y)][Std.int(echo.getComponent(id, Position).x)].appendChild(echo.getComponent(id, Sprite)); // TODO ugly, need more macro
+	@onadded function appendVisual(pos:Position, spr:Sprite) {
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
 	@onremoved function removeVisual(id:Int) {
 		echo.getComponent(id, Sprite).remove();
@@ -203,16 +202,25 @@ class Interaction extends System {
 	var animals:View<{ a:Animal, pos:Position }>;
 	override public function update(dt:Float) {
 		var del = [];
+		// everyone with everyone
 		for (a1 in animals) for (a2 in animals) {
 			if (a1 != a2 && samecell(a1.pos, a2.pos)) {
-				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) del.push(a2.id);
+				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) {
+					// tiger eats rabbit
+					del.push(a2.id);
+				}
 				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
-					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) Example.rabbit(a1.pos.x, a1.pos.y);
+					// rabbits reproduce
+					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) {
+						Example.rabbit(a1.pos.x, a1.pos.y);
+					}
 				}
 			}
 		}
 
 		for (id in del) echo.remove(id);
 	}
-	function samecell(pos1:Position, pos2:Position) return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
+	function samecell(pos1:Position, pos2:Position) {
+		return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
+	}
 }
