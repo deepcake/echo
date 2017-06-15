@@ -194,6 +194,16 @@ class TestSystem extends TestCase {
 	}
 
 
+	public function test_meta_skip() {
+		ch.addSystem(new MetaSkipSystem());
+		ch.setComponent(ch.id(), new CA('A'));
+		ch.update(0);
+
+		assertEquals(0, ch.views.length);
+		assertEquals('?', MetaSkipSystem.STATIC_ACTUAL);
+	}
+
+
 	public function test_system_get() {
 		var s0 = new SA();
 		ch.addSystem(s0);
@@ -271,6 +281,16 @@ class MetaAddRemOrderSystem extends System {
 
 	@r function onrema0(id:Int) STATIC_ACTUAL += '!A0';
 	@r function onrema1(id:Int) STATIC_ACTUAL += '!A1';
+}
+
+
+class MetaSkipSystem extends System {
+	static public var STATIC_ACTUAL = '';
+	public function new() STATIC_ACTUAL = '';
+	@skip @update function oneach1(a:CA) STATIC_ACTUAL += '!';
+	@update @skip function oneach2(a:CA) STATIC_ACTUAL += '!';
+	@update function onlyupdate() STATIC_ACTUAL += '?';
+	@i @onadded @onadd @add @a @some_other_meta_tag function onadd(a:CA) STATIC_ACTUAL += '>';
 }
 
 

@@ -211,6 +211,8 @@ class MacroBuilder {
 		}
 
 		fields.iter(function(f) {
+			if (hasMeta(f, EXCLUDE_META)) return; // skip by meta
+
 			if (hasMeta(f, ONEACH_META)) { // TODO params ? (view name)
 				var func = extFunc(f);
 
@@ -281,6 +283,8 @@ class MacroBuilder {
 			}
 		}
 		fields.iter(function(f) {
+			if (hasMeta(f, EXCLUDE_META)) return; // skip by meta
+
 			var onaddMeta = getMeta(f, ONADD_META);
 			if (onaddMeta != null) {
 				var viewName = refViewName(onaddMeta);
