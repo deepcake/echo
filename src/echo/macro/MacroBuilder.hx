@@ -388,6 +388,9 @@ class MacroBuilder {
 		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
 		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
 
+		// toString
+		fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }));
+
 		traceFields(cls.followName(), fields);
 
 		return fields;
@@ -432,6 +435,9 @@ class MacroBuilder {
 
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
+
+			// toString
+			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ viewClsName }));
 
 			traceTypeDefenition(def);
 

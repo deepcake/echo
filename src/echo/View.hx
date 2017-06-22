@@ -77,4 +77,7 @@ class ViewBase {
 		if (exists(id)) remove(id);
 	}
 
+
+	public function toString():String return 'ViewBase';
+
 }

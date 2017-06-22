@@ -42,10 +42,10 @@ class Echo {
 			ret += '\n    since last update : ' + updateStats.get(-10) + ' ms';
 			ret += '\n    echo total update : ' + updateStats.get(-100) + ' ms';
 			for (s in systems) {
-				ret += '\n        ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
+				ret += '\n        ( $s ) : ' + updateStats.get(s.__id) + ' ms';
 			}
 			for (v in views) {
-				ret += '\n    { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
+				ret += '\n    { $v } [ ${v.entities.length} ]';
 			}
 		#end
 		return ret;

@@ -32,4 +32,7 @@ class System {
 
 	public function update(dt:Float) { }
 
+
+	public function toString():String return 'System';
+
 }
