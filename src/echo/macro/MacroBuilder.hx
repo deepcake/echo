@@ -225,9 +225,9 @@ class MacroBuilder {
 						case macro:Float: 
 							return macro dt;
 						case macro:Int: 
-							return macro i.id;
+							return macro _id_;
 						default: 
-							return Context.parse('i.${a.name}', Context.currentPos());
+							return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
 					}
 				});
 
@@ -242,7 +242,7 @@ class MacroBuilder {
 
 				if (components.length == 0) { // empty update
 
-					updateExprs.push(macro $i{funcName}($a{funcArgs}));
+					updateExprs.push(macro $i{ funcName }($a{ funcArgs }));
 
 				} else {
 					var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
@@ -258,7 +258,7 @@ class MacroBuilder {
 						viewName = view.name;
 					}
 
-					updateExprs.push(macro for (i in $i{ viewName }) $i{ funcName }($a{ funcArgs }));
+					updateExprs.push(macro for (_id_ in $i{ viewName }.entities) $i{ funcName }($a{ funcArgs }));
 				}
 
 			}
@@ -311,12 +311,12 @@ class MacroBuilder {
 						var funcArgs = func.args.map(function(a) {
 							switch (a.type) {
 								case macro:Int:
-									return macro id;
+									return macro _id_;
 								default:
-									return macro echo.getComponent(id, ${ a.type.expr() });
+									return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
 							}
 						});
-						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
+						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
 				}
 
 				activateExprs.push(macro $i{ viewName }.onAdded.add($i{ funcName }));
@@ -346,12 +346,12 @@ class MacroBuilder {
 						var funcArgs = func.args.map(function(a) {
 							switch (a.type) {
 								case macro:Int:
-									return macro id;
+									return macro _id_;
 								default:
-									return macro echo.getComponent(id, ${ a.type.expr() });
+									return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
 							}
 						});
-						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
+						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
 				}
 
 				activateExprs.push(macro $i{ viewName }.onRemoved.add($i{ funcName }));
