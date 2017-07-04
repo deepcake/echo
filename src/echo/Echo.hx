@@ -296,7 +296,7 @@ class Echo {
 		return macro {
 			$esafe;
 			if (${ hCls.expr() }.__MAP.exists(_id_)) {
-				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.testcomponent(${ hCls.expr() }.__ID)) _v_.removeIfMatch(_id_);
+				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.isRequire(${ hCls.expr() }.__ID)) _v_.removeIfMatch(_id_);
 				${ hCls.expr() }.__MAP.remove(_id_);
 			}
 		}

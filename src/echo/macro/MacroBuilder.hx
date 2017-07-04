@@ -428,10 +428,10 @@ class MacroBuilder {
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
 
 			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
-			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'test', [arg('id', macro:Int)], macro:Bool, testBody));
+			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody));
 
-			// testcomponent
-			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'testcomponent', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
+			// isRequire
+			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
 
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__ID => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));

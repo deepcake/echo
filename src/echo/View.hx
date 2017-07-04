@@ -41,13 +41,13 @@ class ViewBase {
 	}
 
 
-	@:noCompletion function test(id:Int):Bool { // macro
-		// each component map exists(e)
+	@:noCompletion function isMatch(id:Int):Bool { // macro
+		// each required component exists in global component map with this id
 		return false;
 	}
 
-	@:noCompletion public function testcomponent(c:Int):Bool { // macro
-		// this view has a component
+	@:noCompletion public function isRequire(c:Int):Bool { // macro
+		// this view requires a component
 		return false;
 	}
 
@@ -70,7 +70,7 @@ class ViewBase {
 
 
 	@:noCompletion public function addIfMatch(id:Int) {
-		if (!exists(id) && test(id)) add(id);
+		if (!exists(id) && isMatch(id)) add(id);
 	}
 
 	@:noCompletion public function removeIfMatch(id:Int) {
