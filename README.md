@@ -89,8 +89,7 @@ class Render extends System {
 
 #### Api
 * `Echo` - something like called "Engine" in other frameworks. Entry point. _The workflow_.
-  * `.id():Int` - creates a new _id_ and adds it to _the workflow_.
-  * `.next():Int` - creates a new _id_ without adding it to _the workflow_.
+  * `.id(add:Bool):Int` - creates a new _id_ and adds it to _the workflow_ (or not if `false` passed).
   * `.add(id:Int)` - adds the _id_ to _the workflow_.
   * `.poll(id:Int)` - removes the _id_ from _the workflow_ without removing its components.
   * `.remove(id:Int)` - removes the _id_ from _the workflow_ and removes all it components. If expected to use _id_ with all its components after removing from _the workflow_ - must be used `.poll()`, otherwise `.remove()`.

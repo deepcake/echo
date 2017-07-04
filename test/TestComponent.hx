@@ -275,7 +275,7 @@ class TestComponent extends TestCase {
 
 	public function test_add_after_next() {
 		var ch = new Echo();
-		var id = ch.next();
+		var id = ch.id(false);
 
 		assertEquals(0, ch.entities.length);
 
@@ -291,7 +291,7 @@ class TestComponent extends TestCase {
 
 	public function test_set_before_add() {
 		var ch = new Echo();
-		var id = ch.next();
+		var id = ch.id(false);
 
 		ch.setComponent(id, 'A');
 

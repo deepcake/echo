@@ -180,7 +180,7 @@ class TestView extends TestCase {
 		var ab = new echo.View<{a:C1, b:C2}>();
 		ch.addView(ab);
 
-		var cache = [ for (i in 0...10) ch.next() ];
+		var cache = [ for (i in 0...10) ch.id(false) ];
 		for (id in cache) ch.setComponent(id, new C1('A'), new C2('A'));
 
 		assertEquals(0, ch.entities.length);

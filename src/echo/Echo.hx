@@ -54,7 +54,7 @@ class Echo {
 
 	/**
 	 * Update
-	 * @param dt `Float` delta time
+	 * @param dt `Float` Delta time
 	 */
 	public function update(dt:Float) {
 		#if echo_debug
@@ -114,7 +114,7 @@ class Echo {
 	}
 
 	/**
-	 * Retrives a system from the workflow by its type. If system with passed type will be not found, `null` will be returned
+	 * Retrives a system from the workflow by its type. If system with passed type will be not founded, `null` will be returned
 	 * @param type `Class<T>` system type
 	 * @return `System`
 	 */
@@ -184,23 +184,17 @@ class Echo {
 	// Entity
 
 	/**
-	 * Creates a new id (entity) and adds it to the workflow, and return it
-	 * Equals to call `next()` and then `add()`
+	 * Creates a new id (entity) and returns it
+	 * @param add `Bool` Immediate adds created id to the workflow if `true`, otherwise not. Default `true`
 	 * @return `Int`
 	 */
-	public function id():Int {
-		var id = next();
-		entitiesMap.set(id, id);
-		entities.add(id);
+	public function id(add:Bool = true):Int {
+		var id = ++__IDSEQUENCE;
+		if (add) {
+			entitiesMap.set(id, id);
+			entities.add(id);
+		}
 		return id;
-	}
-
-	/**
-	 * Creates a new id (entity) without adding it to the workflow (so it will not be collected by views)
-	 * @return `Int`
-	 */
-	public inline function next():Int {
-		return ++__IDSEQUENCE;
 	}
 
 	/**
@@ -212,7 +206,7 @@ class Echo {
 	}
 
 	/**
-	 * Return `true` if the id (entity) is added to the workflow, otherwise return `false`
+	 * Returns `true` if the id (entity) is added to the workflow, otherwise returns `false`
 	 * @param id `Int` The id (entity)
 	 * @return `Bool`
 	 */
@@ -314,7 +308,7 @@ class Echo {
 	}
 
 	/**
-	 * Return true if the id (entity) has a component with this type, otherwise flase returned
+	 * Returns true if the id (entity) has a component with this type, otherwise returns false
 	 * @param id `Int` The id (entity)
 	 * @param type `Class<T>` component type
 	 * @return `Bool`
