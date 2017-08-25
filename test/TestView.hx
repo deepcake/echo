@@ -49,7 +49,7 @@ class TestView extends TestCase {
 	}
 
 
-	public function test_sorting() {
+	/*public function test_sorting() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 
@@ -60,9 +60,9 @@ class TestView extends TestCase {
 		for (va in viewa) ACTUAL += va.a;
 
 		assertEquals('EIOPQRTUWY', ACTUAL);
-	}
+	}*/
 
-	public function test_sort_and_remove_component() {
+	/*public function test_sort_and_remove_component() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -78,9 +78,9 @@ class TestView extends TestCase {
 		for (va in viewa) ACTUAL += va.a;
 
 		assertEquals('IOPRTUWY', ACTUAL);
-	}
+	}*/
 
-	public function test_sort_and_poll_entity() {
+	/*public function test_sort_and_poll_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -96,9 +96,9 @@ class TestView extends TestCase {
 		for (va in viewa) ACTUAL += va.a;
 
 		assertEquals('IOPRTUWY', ACTUAL);
-	}
+	}*/
 
-	public function test_sort_and_remove_entity() {
+	/*public function test_sort_and_remove_entity() {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for (i in 0...10) ch.id() ];
@@ -114,7 +114,7 @@ class TestView extends TestCase {
 		for (va in viewa) ACTUAL += va.a;
 
 		assertEquals('IOPRTUWY', ACTUAL);
-	}
+	}*/
 
 
 	public function test_remove_component() {

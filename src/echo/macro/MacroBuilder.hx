@@ -425,7 +425,7 @@ class MacroBuilder {
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();
-			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities)));
+			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities.iterator())));
 
 			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody));
@@ -459,20 +459,18 @@ class MacroBuilder {
 			var viewDataType = viewDataCls.tp();
 
 			var def = macro class $viewIterClsName {
-				var i:Int;
-				var list:Array<Int>;
+				var it:Iterator<Int>;
 				var vd:$viewDataCls;
-				public inline function new(list:Array<Int>) {
-					this.i = -1;
-					this.list = list;
+				public inline function new(it:Iterator<Int>) {
+					this.it = it;
 					this.vd = new $viewDataType(); // TODO opt js ( Object ? )
 				}
-				public inline function hasNext():Bool return ++i < list.length;
+				public inline function hasNext():Bool return it.hasNext();
 				//public inline function next():$dataViewCls return vd;
 			}
 
 			var nextExprs = [];
-			nextExprs.push(macro this.vd.id = this.list[i]);
+			nextExprs.push(macro this.vd.id = this.it.next());
 			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));

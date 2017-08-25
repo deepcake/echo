@@ -50,9 +50,27 @@ class TestSmoke2 extends TestCase {
 		assertEquals('+,+,+(x),+(y),A,A,', SmokeSystem3.OUT);
 	}
 
+
+	public function test_remove_component_from_iteration_cycle() {
+		ch.addSystem(new RemoveComponentFromIterationCycleSystem());
+		assertEquals(10, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
+		ch.update(1);
+
+		assertEquals(0, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
+	}
+
+	public function test_remove_component_from_meta_iteration_cycle() {
+		ch.addSystem(new RemoveComponentFromMetaIterationCycleSystem());
+		assertEquals(10, RemoveComponentFromMetaIterationCycleSystem.viewab.entities.length);
+		ch.update(1);
+
+		assertEquals(0, RemoveComponentFromMetaIterationCycleSystem.viewab.entities.length);
+	}
+
+
 	public function test_stats() {
 		ch.addSystem(new SmokeSystem());
-
+		
 		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.toString());
 		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', '$ch');
 	}
@@ -145,6 +163,42 @@ class SmokeSystem3 extends System {
 
 	@a(1) function onaddGreeting(id:Int, g:Greeting) {
 		OUT += '+(${g.val}),';
+	}
+
+}
+
+class RemoveComponentFromIterationCycleSystem extends System {
+
+	static public var OUT = '';
+	public function new() OUT = '';
+
+	static public var viewab = new echo.View<{ n:Name, g:Greeting }>();
+
+	override function onactivate() {
+		var ids = [ for(i in 0...10) echo.id() ];
+		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+	}
+
+	override function update(dt:Float) {
+		for (i in viewab) echo.removeComponent(i.id, Name);
+	}
+
+}
+
+class RemoveComponentFromMetaIterationCycleSystem extends System {
+
+	static public var OUT = '';
+	public function new() OUT = '';
+
+	static public var viewab = new echo.View<{ n:Name, g:Greeting }>();
+
+	override function onactivate() {
+		var ids = [ for(i in 0...10) echo.id() ];
+		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+	}
+
+	@u function remove(i:Int, n:Name, g:Greeting) {
+		echo.removeComponent(i, Name);
 	}
 
 }

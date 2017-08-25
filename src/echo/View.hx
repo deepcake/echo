@@ -27,7 +27,7 @@ class ViewBase {
 	public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
 	/** List of matched ids (entities) */
-	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
+	public var entities(default, null):List<Int> = new List();
 
 
 	@:noCompletion public function activate(echo:Echo) {
@@ -58,7 +58,7 @@ class ViewBase {
 
 	inline function add(id:Int) {
 		entitiesMap.set(id, id);
-		entities.push(id);
+		entities.add(id);
 		onAdded.dispatch(id);
 	}
 
