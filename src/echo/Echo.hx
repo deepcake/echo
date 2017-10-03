@@ -330,17 +330,17 @@ abstract H(IntIntAnyMap) from IntIntAnyMap to IntIntAnyMap {
 	public function new() {
 		this = new IntIntAnyMap();
 	}
-	public inline function setValue(k1:Int, k2:Int, v:Any) {
+	public function setValue(k1:Int, k2:Int, v:Any) {
 		if (!this.exists(k1)) this.set(k1, new Map<Int, Any>());
 		this.get(k1).set(k2, v);
 	}
-	public inline function getValue(k1:Int, k2:Int):Any {
+	public function getValue(k1:Int, k2:Int):Any {
 		return this.exists(k1) ? this.get(k1).get(k2) : null;
 	}
-	public inline function hasValue(k1:Int, k2:Int):Bool {
+	public function hasValue(k1:Int, k2:Int):Bool {
 		return this.exists(k1) ? this.get(k1).exists(k2) : false;
 	}
-	public inline function removeValue(k1:Int, k2:Int) {
+	public function removeValue(k1:Int, k2:Int) {
 		if (this.exists(k1)) this.get(k1).remove(k2);
 	}
 }
