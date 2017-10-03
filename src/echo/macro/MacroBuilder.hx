@@ -42,6 +42,9 @@ class MacroBuilder {
 	static public var systemIndex:Int = 0;
 	static public var systemIdsMap:Map<String, Int> = new Map();
 
+	static public var componentIds = new Map<String, Int>();
+	static public var componentIdSequence = 0;
+
 
 	static var reportRegistered = false;
 
@@ -227,7 +230,7 @@ class MacroBuilder {
 						case macro:Int: 
 							return macro _id_;
 						default: 
-							return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
+							return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
 					}
 				});
 
@@ -313,7 +316,7 @@ class MacroBuilder {
 								case macro:Int:
 									return macro _id_;
 								default:
-									return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
+									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
 							}
 						});
 						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
@@ -348,7 +351,7 @@ class MacroBuilder {
 								case macro:Int:
 									return macro _id_;
 								default:
-									return macro ${ getComponentHolder(a.type.followComplexType()).expr() }.__MAP[_id_];
+									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
 							}
 						});
 						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
@@ -360,8 +363,12 @@ class MacroBuilder {
 		} );
 
 		// onactivate, ondeactivate
-		activateExprs.push(macro super.activate(echo)); // after view added
-		deactivateExprs.unshift(macro super.deactivate()); // before view removed
+		activateExprs.unshift(macro this.echo = echo); // before anything
+		activateExprs.push(macro onactivate()); // after all
+
+		deactivateExprs.unshift(macro ondeactivate()); // before anything
+		deactivateExprs.push(macro this.echo = null); // after all
+
 
 		if (updateExprs.length > 0) {
 			var func = (function() {
@@ -425,15 +432,15 @@ class MacroBuilder {
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();
-			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.entities.iterator())));
+			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator())));
 
-			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
+			var testBody = Context.parse('return ' + components.map(function(c) return 'echo.h.hasValue(${getComponentId(c.cls)}, id)').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody));
 
 			// isRequire
 			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
 
-			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__ID => true').join(', ') + ']', Context.currentPos());
+			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 
 			// toString
@@ -459,9 +466,11 @@ class MacroBuilder {
 			var viewDataType = viewDataCls.tp();
 
 			var def = macro class $viewIterClsName {
+				var ch:echo.Echo;
 				var it:Iterator<Int>;
 				var vd:$viewDataCls;
-				public inline function new(it:Iterator<Int>) {
+				public inline function new(ch:echo.Echo, it:Iterator<Int>) {
+					this.ch = ch;
 					this.it = it;
 					this.vd = new $viewDataType(); // TODO opt js ( Object ? )
 				}
@@ -471,7 +480,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.it.next());
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = this.ch.h.getValue(${getComponentId(c.cls)}, this.vd.id)', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
 
@@ -528,6 +537,14 @@ class MacroBuilder {
 			componentCache[componentCls.followName()] = componentHolderCls;
 		}
 		return componentHolderCls;
+	}
+
+	static public function getComponentId(componentCls:ComplexType):Int {
+		var componentClsName = componentCls.followName();
+		if (!componentIds.exists(componentClsName)) {
+			componentIds[componentClsName] = componentIdSequence++;
+		}
+		return componentIds[componentClsName];
 	}
 
 }

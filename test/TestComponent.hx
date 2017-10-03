@@ -32,6 +32,23 @@ class TestComponent extends TestCase {
 		}
 	}
 
+	/*public function test1() {
+		var ch = new Echo();
+		var id = ch.id();
+
+		ch.setComponent(id, '12345');
+		ch.setComponent(id, 12345);
+		ch.setComponent(id, new Name('name'));
+
+		trace(ch.hasComponent(id, String));
+		trace(ch.hasComponent(id, Int));
+		trace(ch.hasComponent(id, Name));
+
+		trace(ch.getComponent(id, String));
+		trace(ch.getComponent(id, Int));
+		trace(ch.getComponent(id, Name));
+	}*/
+
 
 	public function test_get() {
 		var c0 = ch.getComponent(ids[0], String);

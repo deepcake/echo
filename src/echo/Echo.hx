@@ -17,6 +17,9 @@ class Echo {
 	@:noCompletion static public var __IDSEQUENCE = 0;
 
 
+	@:noCompletion public var h = new H(); // components holder
+
+
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
 	@:noCompletion public var systemsMap:Map<Int, System> = new Map();
@@ -245,8 +248,8 @@ class Echo {
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
-			for (hCls in echo.macro.MacroBuilder.componentCache) {
-				macro ${ hCls.expr() }.__MAP.remove(_id_);
+			for (i in echo.macro.MacroBuilder.componentIds) {
+				macro $self.h.removeValue($v{ i }, _id_);
 			}
 		];
 		return macro {
@@ -268,8 +271,8 @@ class Echo {
 		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
 			for (c in components) {
-				var hCls = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
-				macro ${ hCls.expr() }.__MAP[_id_] = $c;
+				var i = echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
+				macro $self.h.setValue($v{ i }, _id_, $c);
 			}
 		];
 		return macro {
@@ -286,12 +289,12 @@ class Echo {
 	 */
 	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>) {
 		var esafe = macro var _id_ = $id;
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		var i = echo.macro.MacroBuilder.getComponentId(type.identName().getType().follow().toComplexType());
 		return macro {
 			$esafe;
-			if (${ hCls.expr() }.__MAP.exists(_id_)) {
-				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.isRequire(${ hCls.expr() }.__ID)) _v_.removeIfMatch(_id_);
-				${ hCls.expr() }.__MAP.remove(_id_);
+			if ($self.h.hasValue($v{ i }, _id_)) {
+				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.isRequire($v{ i })) _v_.removeIfMatch(_id_);
+				$self.h.removeValue($v{ i }, _id_);
 			}
 		}
 	}
@@ -302,9 +305,10 @@ class Echo {
 	 * @param type `Class<T>` component type
 	 * @return `Any`
 	 */
-	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP[$id];
+	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, t:ExprOf<Class<T>>):ExprOf<T> {
+		var ctype = t.identName().getType().follow().toComplexType();
+		var i = echo.macro.MacroBuilder.getComponentId(ctype);
+		return macro ( $self.h.getValue($v{ i }, $id) : $ctype );
 	}
 
 	/**
@@ -314,8 +318,29 @@ class Echo {
 	 * @return `Bool`
 	 */
 	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP.exists($id);
+		var i = echo.macro.MacroBuilder.getComponentId(type.identName().getType().follow().toComplexType());
+		return macro $self.h.hasValue($v{ i }, $id);
 	}
 
+}
+
+typedef IntIntAnyMap = Map<Int, Map<Int, Any>>;
+
+abstract H(IntIntAnyMap) from IntIntAnyMap to IntIntAnyMap {
+	public function new() {
+		this = new IntIntAnyMap();
+	}
+	public inline function setValue(k1:Int, k2:Int, v:Any) {
+		if (!this.exists(k1)) this.set(k1, new Map<Int, Any>());
+		this.get(k1).set(k2, v);
+	}
+	public inline function getValue(k1:Int, k2:Int):Any {
+		return this.exists(k1) ? this.get(k1).get(k2) : null;
+	}
+	public inline function hasValue(k1:Int, k2:Int):Bool {
+		return this.exists(k1) ? this.get(k1).exists(k2) : false;
+	}
+	public inline function removeValue(k1:Int, k2:Int) {
+		if (this.exists(k1)) this.get(k1).remove(k2);
+	}
 }
