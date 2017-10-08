@@ -14,7 +14,7 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion static public var __IDSEQUENCE = 0;
+	@:noCompletion public var __IDSEQUENCE = 0;
 
 
 	@:noCompletion public var h = new H(); // components holder
