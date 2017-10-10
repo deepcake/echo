@@ -14,10 +14,10 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion public var __IDSEQUENCE = 0;
+	@:noCompletion public var _IDSEQUENCE_ = 0;
 
 
-	@:noCompletion public var h = new H(); // components holder
+	@:noCompletion public var h = new H(haxe.rtti.Meta.getType(Echo).componentCount[0]); // components holder
 
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
@@ -192,7 +192,7 @@ class Echo {
 	 * @return `Int`
 	 */
 	public function id(add:Bool = true):Int {
-		var id = ++__IDSEQUENCE;
+		var id = ++_IDSEQUENCE_;
 		if (add) {
 			entitiesMap.set(id, id);
 			entities.add(id);
@@ -205,7 +205,7 @@ class Echo {
 	 * @return `Int`
 	 */
 	public inline function last():Int {
-		return __IDSEQUENCE;
+		return _IDSEQUENCE_;
 	}
 
 	/**
@@ -324,23 +324,23 @@ class Echo {
 
 }
 
-typedef IntIntAnyMap = Map<Int, Map<Int, Any>>;
+@:noCompletion typedef IntIntAnyMap = haxe.ds.Vector<Map<Int, Any>>;
 
-abstract H(IntIntAnyMap) from IntIntAnyMap to IntIntAnyMap {
-	public function new() {
-		this = new IntIntAnyMap();
+@:noCompletion abstract H(IntIntAnyMap) from IntIntAnyMap to IntIntAnyMap {
+	inline public function new(len:Int) {
+		this = new IntIntAnyMap(len);
+		for (i in 0...len) this.set(i, new Map<Int, Any>());
 	}
-	public function setValue(k1:Int, k2:Int, v:Any) {
-		if (!this.exists(k1)) this.set(k1, new Map<Int, Any>());
-		this.get(k1).set(k2, v);
+	inline public function setValue(k1:Int, k2:Int, v:Any) {
+		this[k1][k2] = v;
 	}
-	public function getValue(k1:Int, k2:Int):Any {
-		return this.exists(k1) ? this.get(k1).get(k2) : null;
+	inline public function getValue(k1:Int, k2:Int):Any {
+		return this[k1][k2];
 	}
-	public function hasValue(k1:Int, k2:Int):Bool {
-		return this.exists(k1) ? this.get(k1).exists(k2) : false;
+	inline public function hasValue(k1:Int, k2:Int):Bool {
+		return this[k1].exists(k2);
 	}
-	public function removeValue(k1:Int, k2:Int) {
-		if (this.exists(k1)) this.get(k1).remove(k2);
+	inline public function removeValue(k1:Int, k2:Int) {
+		this[k1].remove(k2);
 	}
 }

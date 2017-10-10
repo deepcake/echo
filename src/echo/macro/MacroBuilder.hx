@@ -30,6 +30,7 @@ class MacroBuilder {
 
 	static public var componentIndex:Int = 0;
 	static public var componentCache:Map<String, ComplexType> = new Map();
+	static public var componentIds:Map<String, Int> = new Map();
 
 	static public var viewIndex:Int = 0;
 	static public var viewIdsMap:Map<String, Int> = new Map();
@@ -42,11 +43,9 @@ class MacroBuilder {
 	static public var systemIndex:Int = 0;
 	static public var systemIdsMap:Map<String, Int> = new Map();
 
-	static public var componentIds = new Map<String, Int>();
-	static public var componentIdSequence = 0;
-
 
 	static var reportRegistered = false;
+	static var metaRegistered = false;
 
 	static var shortenMap:Map<String, String> = new Map();
 
@@ -61,7 +60,16 @@ class MacroBuilder {
 		return null;
 	}
 
-	static function report() {
+	static function gen() {
+		Context.onMacroContextReused(function() {
+			#if echo_verbose 
+				trace('macro context reused');
+			#end
+			reportRegistered = false;
+			metaRegistered = false;
+			return true;
+		});
+
 		#if echo_verbose
 			if (!reportRegistered) {
 				Context.onGenerate(function(types) {
@@ -81,6 +89,20 @@ class MacroBuilder {
 				reportRegistered = true;
 			}
 		#end
+
+		if (!metaRegistered) {
+			Context.onGenerate(function(types) {
+
+				switch (Context.getType("echo.Echo")) {
+					case TInst(_.get() => ct, _):
+						if (ct.meta.has('componentCount')) ct.meta.remove('componentCount');
+						ct.meta.add('componentCount', [macro $v{ componentIndex }], Context.currentPos());
+					default:
+				}
+
+			});
+			metaRegistered = true;
+		}
 	}
 
 
@@ -130,7 +152,7 @@ class MacroBuilder {
 
 
 	static public function autoBuildSystem() {
-		report();
+		gen();
 		var fields = Context.getBuildFields();
 		var cls = Context.getLocalType().toComplexType();
 
@@ -420,7 +442,7 @@ class MacroBuilder {
 
 
 	static public function getView(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		report();
+		gen();
 		var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
 		var viewCls = viewCache.get(viewClsName);
 		if (viewCls == null) {
@@ -517,32 +539,11 @@ class MacroBuilder {
 		return viewDataCls;
 	}
 
-
-	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
-		report();
-		var componentHolderClsName = getClsName('ComponentHolder', componentCls.followName());
-		var componentHolderCls = componentCache.get(componentCls.followName());
-		if (componentHolderCls == null) {
-
-			var def = macro class $componentHolderClsName {
-				static public var __ID:Int = $v{componentIndex++};
-				static public var __MAP:Map<Int, $componentCls> = new Map();
-			}
-
-			traceTypeDefenition(def);
-
-			Context.defineType(def);
-
-			componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
-			componentCache[componentCls.followName()] = componentHolderCls;
-		}
-		return componentHolderCls;
-	}
-
 	static public function getComponentId(componentCls:ComplexType):Int {
 		var componentClsName = componentCls.followName();
 		if (!componentIds.exists(componentClsName)) {
-			componentIds[componentClsName] = componentIdSequence++;
+			componentIds[componentClsName] = componentIndex++;
+			componentCache[componentClsName] = componentCls;
 		}
 		return componentIds[componentClsName];
 	}
