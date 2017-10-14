@@ -42,7 +42,7 @@ class ViewBase {
 
 
 	@:noCompletion function isMatch(id:Int):Bool { // macro
-		// each required component exists in global component map with this id
+		// each required component exists in component map with this id
 		return false;
 	}
 

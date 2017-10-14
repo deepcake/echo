@@ -107,7 +107,7 @@ class MacroBuilder {
 
 
 	static function safename(str:String) {
-		return str.replace('.', '_').replace('<', '').replace('>', '');
+		return str.replace('.', '_').replace('<', '').replace('>', '').replace(',', '');
 	}
 
 	static function compareStrings(a:String, b:String):Int {
@@ -132,10 +132,10 @@ class MacroBuilder {
 		return getClsNameSuffix(components.map(function(c) return c.cls));
 	}
 
-	static function getClsNameSuffix(types:Array<ComplexType>):String {
+	static function getClsNameSuffix(types:Array<ComplexType>, safe:Bool = true):String {
 		var suf = types.map(function(type) return type.followName());
 		suf.sort(compareStrings);
-		return safename(suf.join('_'));
+		return safe ? safename(suf.join('_')) : suf.join(',');
 	}
 
 
@@ -466,7 +466,8 @@ class MacroBuilder {
 			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
 
 			// toString
-			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ viewClsName }));
+			var stringBody = getClsNameSuffix(components.map(function(c) return c.cls), false);
+			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ stringBody }));
 
 			traceTypeDefenition(def);
 

@@ -36,19 +36,17 @@ class Echo {
 
 
 	#if echo_debug
-		var updateStats:Map<Int, Float> = new Map();
-		var timestamp = haxe.Timer.stamp();
+		var times:Map<Int, Float> = new Map();
 	#end
 	inline public function toString():String {
-		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
+		var ret = 'Echo ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 		#if echo_debug
-			ret += '\n    since last update : ' + updateStats.get(-10) + ' ms';
-			ret += '\n    echo total update : ' + updateStats.get(-100) + ' ms';
+			ret += ' : ${ times.get(-100) } ms';
 			for (s in systems) {
-				ret += '\n        ( $s ) : ' + updateStats.get(s.__id) + ' ms';
+				ret += '\n        ($s) : ${ times.get(s.__id) } ms';
 			}
 			for (v in views) {
-				ret += '\n    { $v } [ ${v.entities.length} ]';
+				ret += '\n    {$v} [${v.entities.length}]';
 			}
 		#end
 		return ret;
@@ -61,21 +59,19 @@ class Echo {
 	 */
 	public function update(dt:Float) {
 		#if echo_debug
-			updateStats.set(-10, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
-			var updateTimestamp = haxe.Timer.stamp();
+			var engineUpdateStartTimestamp = haxe.Timer.stamp();
 		#end
 		for (s in systems) {
 			#if echo_debug
-				timestamp = haxe.Timer.stamp();
+				var systemUpdateStartTimestamp = haxe.Timer.stamp();
 			#end
 			s.update(dt);
 			#if echo_debug
-				updateStats.set(s.__id, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
+				times.set(s.__id, Std.int((haxe.Timer.stamp() - systemUpdateStartTimestamp) * 1000));
 			#end
 		}
 		#if echo_debug
-			timestamp = haxe.Timer.stamp();
-			updateStats.set(-100, Std.int((timestamp - updateTimestamp) * 1000));
+			times.set(-100, Std.int((haxe.Timer.stamp() - engineUpdateStartTimestamp) * 1000));
 		#end
 	}
 
