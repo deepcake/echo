@@ -13,7 +13,7 @@ using Lambda;
  */
 class Example {
 
-	static public var RABBITS_POPULATION = 15;
+	static public var RABBITS_POPULATION = 64;
 	static public var MAX_WIDTH = 60;
 	static public var MAX_HEIGHT = 40;
 
@@ -35,6 +35,7 @@ class Example {
 		echo.addSystem(new Movement(w, h));
 		echo.addSystem(new Interaction());
 		echo.addSystem(new Render(w, h, size, canvas));
+		echo.addSystem(new InteractionEvent());
 
 		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
@@ -53,9 +54,9 @@ class Example {
 
 
 		Browser.window.setInterval(function() {
-			echo.update(.100);
+			echo.update(.050);
 			stat.innerHTML = echo.toString();
-		}, 100);
+		}, 50);
 	}
 
 
@@ -93,6 +94,18 @@ class Example {
 		var spr = new Sprite('&#x1F405;');
 		spr.style.fontSize = '200%';
 		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+	}
+
+	static public function event(x:Float, y:Float, type:String) {
+		var code = switch(type) {
+			case 'heart': '&#x1F498;';
+			case 'skull': '&#x1F480;';
+			default: '';
+		}
+		echo.setComponent(echo.id(),
+			new Position(x, y),
+			new Sprite(code),
+			new Timeout(3.0));
 	}
 
 	static public function randomVelocity(speed:Float) {
@@ -139,6 +152,14 @@ abstract Sprite(Element) from Element to Element {
 enum Animal {
 	Rabbit;
 	Tiger;
+}
+
+class Timeout {
+	public var timeout:Float;
+	public var t:Float;
+	public function new(t:Float) {
+		this.t = timeout = t;
+	}
 }
 
 
@@ -204,23 +225,39 @@ class Interaction extends System {
 		var del = [];
 		// everyone with everyone
 		for (a1 in animals) for (a2 in animals) {
-			if (a1 != a2 && samecell(a1.pos, a2.pos)) {
+			if (a1 != a2 && isInteract(a1.pos, a2.pos, 1.0)) {
+
 				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) {
 					// tiger eats rabbit
+					Example.event(a1.pos.x, a1.pos.y, 'skull');
 					del.push(a2.id);
 				}
 				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
-					// rabbits reproduce
+					// rabbits reproduces
 					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) {
 						Example.rabbit(a1.pos.x, a1.pos.y);
+						Example.event(a1.pos.x, a1.pos.y, 'heart');
 					}
 				}
+
 			}
 		}
 
 		for (id in del) echo.remove(id);
 	}
-	function samecell(pos1:Position, pos2:Position) {
-		return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
+
+	function isInteract(pos1:Position, pos2:Position, radius:Float) {
+		return Math.abs(pos1.x - pos2.x) < radius && Math.abs(pos1.y - pos2.y) < radius;
+	}
+}
+
+class InteractionEvent extends System {
+	@u inline function action(id:Int, dt:Float, t:Timeout, s:Sprite) {
+		s.style.opacity = '${t.t / t.timeout}';
+		t.t -= dt;
+		if (t.t <= .0) {
+			s.style.opacity = '.0';
+			echo.remove(id);
+		}
 	}
 }
