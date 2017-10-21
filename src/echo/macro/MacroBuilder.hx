@@ -36,6 +36,7 @@ class MacroBuilder {
 	static public var viewIndex:Int = 0;
 	static public var viewIdsMap:Map<String, Int> = new Map();
 	static public var viewCache:Map<String, ComplexType> = new Map();
+	static public var viewMasks:Map<Int, Map<Int, Bool>> = new Map();
 
 	static public var viewIterCache:Map<String, ComplexType> = new Map();
 
@@ -473,6 +474,9 @@ class MacroBuilder {
 			traceTypeDefenition(def);
 
 			Context.defineType(def);
+
+			viewMasks.set(viewIndex, new Map<Int, Bool>());
+			components.iter(function(c) viewMasks[viewIndex].set(getComponentId(c.cls), true));
 
 			viewCls = Context.getType(viewClsName).toComplexType();
 			viewCache.set(viewClsName, viewCls);

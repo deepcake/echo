@@ -271,27 +271,60 @@ class Echo {
 				macro $self.h.setValue($v{ i }, _id_, $c);
 			}
 		];
+		var matchedViews = [];
+		for (c in components) {
+			var i = echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
+			for (vid in echo.macro.MacroBuilder.viewMasks.keys()) {
+				if (echo.macro.MacroBuilder.viewMasks[vid].exists(i)) if (matchedViews.indexOf(vid) == -1) matchedViews.push(vid);
+			}
+		}
+		var exprs2 = [
+			for (vid in matchedViews) {
+				// TODO get instead exists
+				macro if ($self.viewsMap.exists($v{vid})) $self.viewsMap[$v{vid}].addIfMatch(_id_);
+			}
+		];
 		return macro {
 			$esafe;
 			$b{exprs};
-			if ($self.has(_id_)) for (_v_ in $self.views) _v_.addIfMatch(_id_);
+			if ($self.has(_id_)) {
+				$b{exprs2}
+			}
 		}
 	}
 
 	/**
 	 * Removes a component from the id (entity) by its type
 	 * @param id `Int` The id (entity)
-	 * @param type `Class<T>` component type
+	 * @param types `Class<T>` component types to remove
 	 */
-	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>) {
+	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>) {
 		var esafe = macro var _id_ = $id;
-		var i = echo.macro.MacroBuilder.getComponentId(type.identName().getType().follow().toComplexType());
+		var exprs = [
+			for (t in types) {
+				var i = echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
+				macro $self.h.removeValue($v{ i }, _id_);
+			}
+		];
+		var matchedViews = [];
+		for (t in types) {
+			var i = echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
+			for (vid in echo.macro.MacroBuilder.viewMasks.keys()) {
+				if (echo.macro.MacroBuilder.viewMasks[vid].exists(i)) if (matchedViews.indexOf(vid) == -1) matchedViews.push(vid);
+			}
+		}
+		var exprs2 = [
+			for (vid in matchedViews) {
+				// TODO get instead exists
+				macro if ($self.viewsMap.exists($v{vid})) $self.viewsMap[$v{vid}].removeIfMatch(_id_);
+			}
+		];
 		return macro {
 			$esafe;
-			if ($self.h.hasValue($v{ i }, _id_)) {
-				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.isRequire($v{ i })) _v_.removeIfMatch(_id_);
-				$self.h.removeValue($v{ i }, _id_);
+			if ($self.has(_id_)) {
+				$b{exprs2}
 			}
+			$b{exprs};
 		}
 	}
 
