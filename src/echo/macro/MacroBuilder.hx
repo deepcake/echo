@@ -461,12 +461,6 @@ class MacroBuilder {
 			var testBody = Context.parse('return ' + components.map(function(c) return 'echo.h.hasValue(${getComponentId(c.cls)}, id)').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
-			// isRequire
-			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c), Context.currentPos()));
-
-			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
-			def.fields.push(fvar([meta(':noCompletion', Context.currentPos())], [AStatic], '__MASK', null, maskBody, Context.currentPos()));
-
 			// toString
 			var stringBody = getClsNameSuffix(components.map(function(c) return c.cls), false);
 			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ stringBody }, Context.currentPos()));

@@ -280,8 +280,7 @@ class Echo {
 		}
 		var exprs2 = [
 			for (vid in matchedViews) {
-				// TODO get instead exists
-				macro if ($self.viewsMap.exists($v{vid})) $self.viewsMap[$v{vid}].addIfMatch(_id_);
+				macro if ($self.viewsMap.get($v{vid}) != null) $self.viewsMap[$v{vid}].addIfMatch(_id_);
 			}
 		];
 		return macro {
@@ -315,8 +314,7 @@ class Echo {
 		}
 		var exprs2 = [
 			for (vid in matchedViews) {
-				// TODO get instead exists
-				macro if ($self.viewsMap.exists($v{vid})) $self.viewsMap[$v{vid}].removeIfMatch(_id_);
+				macro if ($self.viewsMap.get($v{vid}) != null) $self.viewsMap[$v{vid}].removeIfMatch(_id_);
 			}
 		];
 		return macro {
