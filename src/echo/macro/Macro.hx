@@ -1,15 +1,16 @@
 package echo.macro;
-#if macro
-using haxe.macro.Context;
-using haxe.macro.ComplexTypeTools;
-using Lambda;
+
+import haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
 import haxe.macro.Expr.Field;
 import haxe.macro.Expr.FunctionArg;
 import haxe.macro.Expr.TypePath;
+import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
+using haxe.macro.Context;
+using Lambda;
 
 /**
  * ...
@@ -19,9 +20,9 @@ import haxe.macro.Printer;
 @:final
 @:dce
 class Macro {
+	#if macro
 
-
-	static public function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr):Field {
+	static public function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
 		return {
 			meta: meta != null ? meta : [],
 			name: name,
@@ -31,17 +32,17 @@ class Macro {
 				expr: body != null ? body : macro { },
 				ret: ret
 			}),
-			pos: Context.currentPos()
+			pos: pos
 		};
 	}
 
-	static public function fvar(?meta:Metadata, ?access:Array<Access>, name:String, ?type:ComplexType, ?expr:Expr):Field {
+	static public function fvar(?meta:Metadata, ?access:Array<Access>, name:String, ?type:ComplexType, ?expr:Expr, pos:Position):Field {
 		return {
 			meta: meta != null ? meta : [],
 			name: name,
 			access: access != null ? access : [],
 			kind: FVar(type, expr),
-			pos: Context.currentPos()
+			pos: pos
 		};
 	}
 
@@ -53,10 +54,10 @@ class Macro {
 		};
 	}
 
-	static public function meta(name:String):MetadataEntry {
+	static public function meta(name:String, pos:Position):MetadataEntry {
 		return {
 			name: name,
-			pos: Context.currentPos()
+			pos: pos
 		}
 	}
 
@@ -86,7 +87,7 @@ class Macro {
 	}
 
 	static public function followComplexType(cls:ComplexType) {
-		return cls.toType().follow().toComplexType();
+		return ComplexTypeTools.toType(cls).follow().toComplexType();
 	}
 
 	static public function followName(cls:ComplexType):String {
@@ -112,9 +113,9 @@ class Macro {
 		}
 	}
 
-	static public function expr(cls:ComplexType):Expr {
-		return Context.parse(followName(cls), Context.currentPos());
-	}
+	/*static public function expr(cls:ComplexType, pos:Position):Expr {
+		return Context.parse(followName(cls), pos);
+	}*/
 
 	static public function identName(e:Expr) {
 		return switch(e.expr) {
@@ -124,5 +125,5 @@ class Macro {
 		}
 	}
 
+	#end
 }
-#end

@@ -1,5 +1,5 @@
 package echo.macro;
-#if macro
+
 import echo.macro.Macro.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -20,6 +20,7 @@ using Lambda;
 @:final
 @:dce
 class MacroBuilder {
+	#if macro
 
 
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
@@ -146,7 +147,7 @@ class MacroBuilder {
 
 
 	static function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
-		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.followComplexType()));
+		var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.followComplexType(), Context.currentPos()));
 		return TPath(tpath(['echo'], 'View', [TPType(TAnonymous(viewClsParams))]));
 	}
 
@@ -160,7 +161,7 @@ class MacroBuilder {
 
 		var fnew = fields.find(function(f) return f.name == 'new');
 		if (fnew == null) {
-			fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ systemIndex }));
+			fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ systemIndex }, Context.currentPos()));
 		} else {
 			switch (fnew.kind) {
 				case FFun(func):
@@ -276,7 +277,7 @@ class MacroBuilder {
 
 					if (view == null) {
 						var viewCls = getViewGenericComplexType(components);
-						fields.push(fvar(viewName, viewCls));
+						fields.push(fvar(viewName, viewCls, Context.currentPos()));
 						views.push({ name: viewName, components: components });
 					} else {
 						// this view already defined in this system
@@ -324,7 +325,7 @@ class MacroBuilder {
 					case _.args => []:
 						// nothing passed, so create a proxy func with no args
 						funcName = '__${f.name}';
-						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }()));
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }(), Context.currentPos()));
 
 					case _.args => (args = [ (arg = { type: TPath({ pack: [], name: 'Int' }) }) ]) if (args.length == 1):
 						// only id:Int passed, so add this func to the signal
@@ -341,7 +342,7 @@ class MacroBuilder {
 									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
 							}
 						});
-						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
+						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs }), Context.currentPos()));
 				}
 
 				activateExprs.push(macro $i{ viewName }.onAdded.add($i{ funcName }));
@@ -361,7 +362,7 @@ class MacroBuilder {
 				switch (func) {
 					case _.args => []:
 						funcName = '__${f.name}';
-						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }()));
+						fields.push(ffun([], [], funcName, [arg('id', macro:Int)], null, macro $i{ f.name }(), Context.currentPos()));
 
 					case _.args => (args = [ (arg = { type: TPath({ pack: [], name: 'Int' }) }) ]) if (args.length == 1):
 						funcName = f.name;
@@ -376,7 +377,7 @@ class MacroBuilder {
 									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
 							}
 						});
-						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs })));
+						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs }), Context.currentPos()));
 				}
 
 				activateExprs.push(macro $i{ viewName }.onRemoved.add($i{ funcName }));
@@ -410,15 +411,15 @@ class MacroBuilder {
 				}
 				func.expr = macro $b{updateExprs};
 			} else {
-				fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}));
+				fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}, Context.currentPos()));
 			}
 		}
 
-		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}));
-		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}));
+		fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}, Context.currentPos()));
+		fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}, Context.currentPos()));
 
 		// toString
-		fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }));
+		fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));
 
 		traceFields(cls.followName(), fields);
 
@@ -454,20 +455,20 @@ class MacroBuilder {
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();
-			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator())));
+			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
 			var testBody = Context.parse('return ' + components.map(function(c) return 'echo.h.hasValue(${getComponentId(c.cls)}, id)').join(' && '), Context.currentPos());
-			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody));
+			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
 			// isRequire
-			def.fields.push(ffun([meta(':noCompletion')], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c)));
+			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __MASK.exists(c), Context.currentPos()));
 
 			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
-			def.fields.push(fvar([meta(':noCompletion')], [AStatic], '__MASK', null, maskBody));
+			def.fields.push(fvar([meta(':noCompletion', Context.currentPos())], [AStatic], '__MASK', null, maskBody, Context.currentPos()));
 
 			// toString
 			var stringBody = getClsNameSuffix(components.map(function(c) return c.cls), false);
-			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ stringBody }));
+			def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ stringBody }, Context.currentPos()));
 
 			traceTypeDefenition(def);
 
@@ -505,7 +506,7 @@ class MacroBuilder {
 			nextExprs.push(macro this.vd.id = this.it.next());
 			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = this.ch.h.getValue(${getComponentId(c.cls)}, this.vd.id)', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
-			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}));
+			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}, Context.currentPos()));
 
 			traceTypeDefenition(def);
 
@@ -528,7 +529,7 @@ class MacroBuilder {
 				public var id:Int;
 			}
 
-			for (c in components) def.fields.push(fvar([APublic], c.name, c.cls));
+			for (c in components) def.fields.push(fvar([APublic], c.name, c.cls, Context.currentPos()));
 
 			traceTypeDefenition(def);
 
@@ -549,5 +550,5 @@ class MacroBuilder {
 		return componentIds[componentClsName];
 	}
 
+	#end
 }
-#end
