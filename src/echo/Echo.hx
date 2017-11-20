@@ -36,18 +36,18 @@ class Echo {
 
 
 	#if echo_debug
-		var times:Map<Int, Float> = new Map();
+	var times:Map<Int, Float> = new Map();
 	#end
 	inline public function toString():String {
 		var ret = 'Echo ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 		#if echo_debug
-			ret += ' : ${ times.get(-100) } ms';
-			for (s in systems) {
-				ret += '\n        ($s) : ${ times.get(s.__id) } ms';
-			}
-			for (v in views) {
-				ret += '\n    {$v} [${v.entities.length}]';
-			}
+		ret += ' : ${ times.get(-100) } ms';
+		for (s in systems) {
+			ret += '\n        ($s) : ${ times.get(s.__id) } ms';
+		}
+		for (v in views) {
+			ret += '\n    {$v} [${v.entities.length}]';
+		}
 		#end
 		return ret;
 	}
@@ -263,7 +263,7 @@ class Echo {
 	 * @param id `Int` The id (entity)
 	 * @param components List of `Any` components to add to the id (entity), one or many at once
 	 */
-	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<Expr>) {
+	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<ExprOf<Any>>) {
 		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
 			for (c in components) {
@@ -332,8 +332,8 @@ class Echo {
 	 * @param type `Class<T>` component type
 	 * @return `Any`
 	 */
-	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, t:ExprOf<Class<T>>):ExprOf<T> {
-		var ctype = t.identName().getType().follow().toComplexType();
+	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
+		var ctype = type.identName().getType().follow().toComplexType();
 		var i = echo.macro.MacroBuilder.getComponentId(ctype);
 		return macro ( $self.h.getValue($v{ i }, $id) : $ctype );
 	}

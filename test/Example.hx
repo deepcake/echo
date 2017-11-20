@@ -92,7 +92,7 @@ class Example {
 		var pos = new Position(x, y);
 		var vel = randomVelocity(10);
 		var spr = new Sprite('&#x1F405;');
-		spr.style.fontSize = '200%';
+		spr.style.fontSize = '150%';
 		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
 	}
 
@@ -102,9 +102,11 @@ class Example {
 			case 'skull': '&#x1F480;';
 			default: '';
 		}
+		var spr = new Sprite(code);
+		spr.style.fontSize = '150%';
 		echo.setComponent(echo.id(),
 			new Position(x, y),
-			new Sprite(code),
+			spr,
 			new Timeout(3.0));
 	}
 
@@ -229,14 +231,16 @@ class Interaction extends System {
 
 				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) {
 					// tiger eats rabbit
-					Example.event(a1.pos.x, a1.pos.y, 'skull');
+					Example.event(a2.pos.x, a2.pos.y, 'skull');
 					del.push(a2.id);
 				}
 				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
 					// rabbits reproduces
 					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) {
-						Example.rabbit(a1.pos.x, a1.pos.y);
-						Example.event(a1.pos.x, a1.pos.y, 'heart');
+						var x = (a1.pos.x + a2.pos.x) * .5;
+						var y = (a1.pos.y + a2.pos.y) * .5;
+						Example.rabbit(x, y);
+						Example.event(x, y, 'heart');
 					}
 				}
 
