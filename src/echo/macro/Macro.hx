@@ -113,9 +113,9 @@ class Macro {
 		}
 	}
 
-	/*static public function expr(cls:ComplexType, pos:Position):Expr {
+	static public function expr(cls:ComplexType, pos:Position):Expr {
 		return Context.parse(followName(cls), pos);
-	}*/
+	}
 
 	static public function identName(e:Expr) {
 		return switch(e.expr) {

@@ -14,10 +14,7 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion public var _IDSEQUENCE_ = 0;
-
-
-	@:noCompletion public var h = new H(haxe.rtti.Meta.getType(Echo).componentCount[0]); // components holder
+	@:noCompletion public static var _IDSEQUENCE_ = 0;
 
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
@@ -244,8 +241,8 @@ class Echo {
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
-			for (i in echo.macro.MacroBuilder.componentIds) {
-				macro $self.h.removeValue($v{ i }, _id_);
+			for (ct in echo.macro.MacroBuilder.componentCache) {
+				macro ${ ct.expr(Context.currentPos()) }.__MAP.remove(_id_);
 			}
 		];
 		return macro {
@@ -267,8 +264,8 @@ class Echo {
 		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
 		var exprs = [
 			for (c in components) {
-				var i = echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
-				macro $self.h.setValue($v{ i }, _id_, $c);
+				var ct = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
+				macro ${ ct.expr(Context.currentPos()) }.__MAP[_id_] = $c;
 			}
 		];
 		var matchedViews = [];
@@ -301,8 +298,8 @@ class Echo {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
 			for (t in types) {
-				var i = echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
-				macro $self.h.removeValue($v{ i }, _id_);
+				var ct = echo.macro.MacroBuilder.getComponentHolder(t.identName().getType().follow().toComplexType());
+				macro ${ ct.expr(Context.currentPos()) }.__MAP.remove(_id_);
 			}
 		];
 		var matchedViews = [];
@@ -332,10 +329,9 @@ class Echo {
 	 * @param type `Class<T>` component type
 	 * @return `Any`
 	 */
-	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, t:ExprOf<Class<T>>):ExprOf<T> {
-		var ctype = t.identName().getType().follow().toComplexType();
-		var i = echo.macro.MacroBuilder.getComponentId(ctype);
-		return macro ( $self.h.getValue($v{ i }, $id) : $ctype );
+	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
+		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		return macro ${ ct.expr(Context.currentPos()) }.__MAP[$id];
 	}
 
 	/**
@@ -345,29 +341,8 @@ class Echo {
 	 * @return `Bool`
 	 */
 	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		var i = echo.macro.MacroBuilder.getComponentId(type.identName().getType().follow().toComplexType());
-		return macro $self.h.hasValue($v{ i }, $id);
+		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		return macro ${ ct.expr(Context.currentPos()) }.__MAP.exists($id);
 	}
 
-}
-
-@:noCompletion typedef IntIntAnyMap = haxe.ds.Vector<Map<Int, Any>>;
-
-@:noCompletion abstract H(IntIntAnyMap) from IntIntAnyMap to IntIntAnyMap {
-	inline public function new(len:Int) {
-		this = new IntIntAnyMap(len);
-		for (i in 0...len) this.set(i, new Map<Int, Any>());
-	}
-	inline public function setValue(k1:Int, k2:Int, v:Any) {
-		this[k1][k2] = v;
-	}
-	inline public function getValue(k1:Int, k2:Int):Any {
-		return this[k1][k2];
-	}
-	inline public function hasValue(k1:Int, k2:Int):Bool {
-		return this[k1].exists(k2);
-	}
-	inline public function removeValue(k1:Int, k2:Int) {
-		this[k1].remove(k2);
-	}
 }

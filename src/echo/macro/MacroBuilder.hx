@@ -63,14 +63,14 @@ class MacroBuilder {
 	}
 
 	static function gen() {
-		Context.onMacroContextReused(function() {
+		/*Context.onMacroContextReused(function() {
 			#if echo_verbose 
 				trace('macro context reused');
 			#end
 			reportRegistered = false;
 			metaRegistered = false;
 			return true;
-		});
+		});*/
 
 		#if echo_verbose
 			if (!reportRegistered) {
@@ -92,7 +92,7 @@ class MacroBuilder {
 			}
 		#end
 
-		if (!metaRegistered) {
+		/*if (!metaRegistered) {
 			Context.onGenerate(function(types) {
 
 				switch (Context.getType("echo.Echo")) {
@@ -104,7 +104,7 @@ class MacroBuilder {
 
 			});
 			metaRegistered = true;
-		}
+		}*/
 	}
 
 
@@ -254,7 +254,7 @@ class MacroBuilder {
 						case macro:Int: 
 							return macro _id_;
 						default: 
-							return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
+							return macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.__MAP[_id_];
 					}
 				});
 
@@ -340,7 +340,7 @@ class MacroBuilder {
 								case macro:Int:
 									return macro _id_;
 								default:
-									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
+									return macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.__MAP[_id_];
 							}
 						});
 						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs }), Context.currentPos()));
@@ -375,7 +375,7 @@ class MacroBuilder {
 								case macro:Int:
 									return macro _id_;
 								default:
-									return macro cast echo.h.getValue($v{ getComponentId(a.type.followComplexType()) }, _id_);
+									return macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.__MAP[_id_];
 							}
 						});
 						fields.push(ffun([], [], funcName, [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ funcArgs }), Context.currentPos()));
@@ -458,7 +458,7 @@ class MacroBuilder {
 			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
-			var testBody = Context.parse('return ' + components.map(function(c) return 'echo.h.hasValue(${getComponentId(c.cls)}, id)').join(' && '), Context.currentPos());
+			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
 			// toString
@@ -502,7 +502,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.it.next());
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = this.ch.h.getValue(${getComponentId(c.cls)}, this.vd.id)', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}, Context.currentPos()));
 
@@ -539,13 +539,34 @@ class MacroBuilder {
 		return viewDataCls;
 	}
 
+	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
+			gen();
+			var componentClsName = componentCls.followName();
+			var componentHolderClsName = getClsName('ComponentCache', componentClsName);
+			var componentHolderCls = componentCache.get(componentClsName);
+			
+			if (componentHolderCls == null) {
+
+				componentIndex++;
+
+				var def = macro class $componentHolderClsName {
+					static public var __MAP:Map<Int, $componentCls> = new Map();
+				}
+
+				traceTypeDefenition(def);
+
+				Context.defineType(def);
+
+				componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
+				componentCache[componentClsName] = componentHolderCls;
+				componentIds[componentClsName] = componentIndex;
+			}
+			return componentHolderCls;
+	}
+
 	static public function getComponentId(componentCls:ComplexType):Int {
-		var componentClsName = componentCls.followName();
-		if (!componentIds.exists(componentClsName)) {
-			componentIds[componentClsName] = componentIndex++;
-			componentCache[componentClsName] = componentCls;
-		}
-		return componentIds[componentClsName];
+		getComponentHolder(componentCls);
+		return componentIds[componentCls.followName()];
 	}
 
 	#end
