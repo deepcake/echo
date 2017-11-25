@@ -28,19 +28,19 @@ class TestComponentTypes extends TestCase {
 		ch.setComponent(id, new SimpleComponent('C'));
 
 		assertEquals('C', ch.getComponent(id, SimpleComponent).val);
-		assertEquals('C', ch.getComponent(id, TypedefComponent).val);
+		assertEquals('C', ch.getComponent(id, TypedefSimpleComponent).val);
 
-		ch.setComponent(id, new TypedefComponent('T'));
+		ch.setComponent(id, new TypedefSimpleComponent('T'));
 
 		assertEquals('T', ch.getComponent(id, SimpleComponent).val);
-		assertEquals('T', ch.getComponent(id, TypedefComponent).val);
+		assertEquals('T', ch.getComponent(id, TypedefSimpleComponent).val);
 	}
 
 	public function test_notfollow_abstract() {
-		ch.setComponent(id, new SimpleComponent('C'), new AbstractComponent('A'));
+		ch.setComponent(id, new SimpleComponent('C'), new AbstractSimpleComponent('A'));
 
 		assertEquals('C', ch.getComponent(id, SimpleComponent).val);
-		assertEquals('A', ch.getComponent(id, AbstractComponent).val);
+		assertEquals('A', ch.getComponent(id, AbstractSimpleComponent).val);
 	}
 
 	public function test_notfollow_enumabstract() {
@@ -53,13 +53,13 @@ class TestComponentTypes extends TestCase {
 
 
 	public function test_abstract() {
-		var view = new View<{ c:AbstractComponent }>();
+		var view = new View<{ c:AbstractSimpleComponent }>();
 		ch.addView(view);
 
-		ch.setComponent(id, new AbstractComponent('A'));
+		ch.setComponent(id, new AbstractSimpleComponent('A'));
 
 		assertEquals(1, view.entities.length);
-		assertEquals('A', ch.getComponent(id, AbstractComponent).val);
+		assertEquals('A', ch.getComponent(id, AbstractSimpleComponent).val);
 	}
 
 	public function test_enum() {
@@ -103,7 +103,7 @@ class TestComponentTypes extends TestCase {
 	}
 
 	public function test_anon() {
-		var view = new View<AnonymousView>();
+		var view = new View<AnonymousViewParam>();
 		ch.addView(view);
 
 		ch.setComponent(id, new SimpleComponent('A'), EOne);
@@ -113,7 +113,7 @@ class TestComponentTypes extends TestCase {
 	}
 
 	public function test_anon_extended() {
-		var view = new View<AnonymousViewExtended>();
+		var view = new View<AnonymousViewParamExtended>();
 		ch.addView(view);
 
 		ch.setComponent(id, new SimpleComponent('A'), EOne);
@@ -132,9 +132,9 @@ class SimpleComponent {
 	}
 }
 
-typedef TypedefComponent = SimpleComponent;
+typedef TypedefSimpleComponent = SimpleComponent;
 
-@:forward(val) abstract AbstractComponent(SimpleComponent) {
+@:forward(val) abstract AbstractSimpleComponent(SimpleComponent) {
 	public function new(v:String) this = new SimpleComponent(v);
 }
 
@@ -151,6 +151,6 @@ enum EnumComponent {
 
 typedef TypeParamComponent = Array<Int>; // only way ?
 
-typedef AnonymousView = { var a:SimpleComponent; }
+typedef AnonymousViewParam = { var a:SimpleComponent; }
 
-typedef AnonymousViewExtended = { > AnonymousView, var b:EnumComponent; }
+typedef AnonymousViewParamExtended = { > AnonymousViewParam, var b:EnumComponent; }
