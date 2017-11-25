@@ -72,7 +72,7 @@ class MacroBuilder {
 			return true;
 		});*/
 
-		#if echo_verbose
+		#if echo_report
 			if (!reportRegistered) {
 				Context.onGenerate(function(types) {
 					function sortedlist(array:Array<String>) {
