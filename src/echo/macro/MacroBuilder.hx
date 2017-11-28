@@ -30,8 +30,10 @@ class MacroBuilder {
 
 
 	static public var componentIndex:Int = 0;
-	static public var componentCache:Map<String, ComplexType> = new Map();
 	static public var componentIds:Map<String, Int> = new Map();
+	static public var componentCache:Map<String, ComplexType> = new Map();
+
+	static public var componentMapCache:Map<String, ComplexType> = new Map();
 
 	static public var viewIndex:Int = 0;
 	static public var viewIdsMap:Map<String, Int> = new Map();
@@ -81,8 +83,8 @@ class MacroBuilder {
 					}
 
 					var ret = 'ECHO BUILD REPORT :';
-					ret += '\n    COMPONENTS [${componentCache.count()}] :';
-					ret += '\n        ' + sortedlist({ iterator: function() return componentCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
+					ret += '\n    COMPONENTS [${componentMapCache.count()}] :';
+					ret += '\n        ' + sortedlist({ iterator: function() return componentMapCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
 					ret += '\n    VIEWS [${viewCache.count()}] :';
 					ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
 					trace('\n$ret');
@@ -92,7 +94,7 @@ class MacroBuilder {
 			}
 		#end
 
-		/*if (!metaRegistered) {
+		if (!metaRegistered) {
 			Context.onGenerate(function(types) {
 
 				switch (Context.getType("echo.Echo")) {
@@ -104,7 +106,7 @@ class MacroBuilder {
 
 			});
 			metaRegistered = true;
-		}*/
+		}
 	}
 
 
@@ -255,7 +257,7 @@ class MacroBuilder {
 			return switch (a.type) {
 				case macro:Float: macro dt;
 				case macro:Int: macro _id_;
-				default: macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.__MAP[_id_];
+				default: macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.get(echo.__id)[_id_];
 			}
 		};
 
@@ -410,13 +412,15 @@ class MacroBuilder {
 			viewIdsMap[viewClsName] = ++viewIndex;
 
 			var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
-				public function new() { __id = $v{ viewIndex }; }
+				public function new() {
+					__id = $v{ viewIndex };
+				}
 			}
 
 			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
-			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.__MAP.exists(id)').join(' && '), Context.currentPos());
+			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.get(echo.__id)[id] != null').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
 			// toString
@@ -460,7 +464,7 @@ class MacroBuilder {
 
 			var nextExprs = [];
 			nextExprs.push(macro this.vd.id = this.it.next());
-			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.__MAP[this.vd.id]', Context.currentPos())));
+			components.iter(function(c) nextExprs.push(Context.parse('this.vd.${c.name} = ${getComponentHolder(c.cls).followName()}.get(ch.__id)[this.vd.id]', Context.currentPos())));
 			nextExprs.push(macro return this.vd);
 			def.fields.push(ffun([APublic, AInline], 'next', null, viewDataCls, macro $b{nextExprs}, Context.currentPos()));
 
@@ -500,15 +504,16 @@ class MacroBuilder {
 	static public function getComponentHolder(componentCls:ComplexType):ComplexType {
 			gen();
 			var componentClsName = componentCls.followName();
-			var componentHolderClsName = getClsName('ComponentCache', componentClsName);
-			var componentHolderCls = componentCache.get(componentClsName);
+			var componentHolderClsName = getClsName('ComponentMap', componentClsName);
+			var componentHolderCls = componentMapCache.get(componentClsName);
 			
 			if (componentHolderCls == null) {
 
 				componentIndex++;
 
 				var def = macro class $componentHolderClsName {
-					static public var __MAP:Map<Int, $componentCls> = new Map();
+					static var __tl:Map<Int, Map<Int, $componentCls>> = new Map();
+					public static function get(i:Int) return __tl[i] != null ? __tl[i] : __tl[i] = new Map<Int, $componentCls>();
 				}
 
 				traceTypeDefenition(def);
@@ -516,8 +521,9 @@ class MacroBuilder {
 				Context.defineType(def);
 
 				componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
-				componentCache[componentClsName] = componentHolderCls;
 				componentIds[componentClsName] = componentIndex;
+				componentCache[componentClsName] = componentCls;
+				componentMapCache[componentClsName] = componentHolderCls;
 			}
 			return componentHolderCls;
 	}

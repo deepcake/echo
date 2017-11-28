@@ -14,8 +14,10 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion public static var _IDSEQUENCE_ = 0;
+	@:noCompletion static var __echoSequence = 0;
 
+	@:noCompletion public var __id = 0;
+	@:noCompletion public var __componentSequence = 0;
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
@@ -29,7 +31,9 @@ class Echo {
 	public var systems(default, null):List<System> = new List();
 
 
-	public function new() { }
+	public function new() {
+		__id = __echoSequence++;
+	}
 
 
 	#if echo_debug
@@ -185,7 +189,7 @@ class Echo {
 	 * @return `Int`
 	 */
 	public function id(add:Bool = true):Int {
-		var id = ++_IDSEQUENCE_;
+		var id = ++__componentSequence;
 		if (add) {
 			entitiesMap.set(id, id);
 			entities.add(id);
@@ -198,7 +202,7 @@ class Echo {
 	 * @return `Int`
 	 */
 	public inline function last():Int {
-		return _IDSEQUENCE_;
+		return __componentSequence;
 	}
 
 	/**
@@ -241,8 +245,8 @@ class Echo {
 	macro public function remove(self:Expr, id:ExprOf<Int>) {
 		var esafe = macro var _id_ = $id;
 		var exprs = [
-			for (ct in echo.macro.MacroBuilder.componentCache) {
-				macro ${ ct.expr(Context.currentPos()) }.__MAP.remove(_id_);
+			for (ct in echo.macro.MacroBuilder.componentMapCache) {
+				macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(_id_);
 			}
 		];
 		return macro {
@@ -265,7 +269,7 @@ class Echo {
 		var exprs = [
 			for (c in components) {
 				var ct = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
-				macro ${ ct.expr(Context.currentPos()) }.__MAP[_id_] = $c;
+				macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[_id_] = $c;
 			}
 		];
 		var matchedViews = [];
@@ -299,7 +303,7 @@ class Echo {
 		var exprs = [
 			for (t in types) {
 				var ct = echo.macro.MacroBuilder.getComponentHolder(t.identName().getType().follow().toComplexType());
-				macro ${ ct.expr(Context.currentPos()) }.__MAP.remove(_id_);
+				macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(_id_);
 			}
 		];
 		var matchedViews = [];
@@ -331,7 +335,7 @@ class Echo {
 	 */
 	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ ct.expr(Context.currentPos()) }.__MAP[$id];
+		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id];
 	}
 
 	/**
@@ -342,7 +346,7 @@ class Echo {
 	 */
 	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
 		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ ct.expr(Context.currentPos()) }.__MAP.exists($id);
+		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id] != null;
 	}
 
 }
