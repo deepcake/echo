@@ -23,31 +23,53 @@ class TestComponent extends TestCase {
 
 	override public function setup() {
 		ch = new Echo();
+		
 		ids = [];
 
 		for (v in '01234'.split('')) {
 			var e = ch.id();
-			ch.setComponent(e, v);
+			ch.addComponent(e, v);
 			ids.push(e);
 		}
 	}
 
-	/*public function test1() {
+	public function test1() {
 		var ch = new Echo();
+		
 		var id = ch.id();
+		var name = new Name('name');
 
-		ch.setComponent(id, '12345');
-		ch.setComponent(id, 12345);
-		ch.setComponent(id, new Name('name'));
+		ch.addView(new echo.View<{ n:Name }>());
 
-		trace(ch.hasComponent(id, String));
+		ch.addComponent(id, '12345');
+		ch.addComponent(id, 12345);
+		ch.addComponent(id, name);
+
+		/*var i = ch.add('qqq', 123.1);
+		var i2 = ch.add(id, 'qqq', 123.1);
+		var i3 = ch.add();
+
+		trace(ch.getComponent(i, String));
+		trace(ch.getComponent(i, Int));
+		trace(ch.getComponent(i, Float));
+		trace(ch.getComponent(i, Name));*/
+
+		/*trace(ch.hasComponent(id, String));
 		trace(ch.hasComponent(id, Int));
 		trace(ch.hasComponent(id, Name));
 
 		trace(ch.getComponent(id, String));
 		trace(ch.getComponent(id, Int));
-		trace(ch.getComponent(id, Name));
-	}*/
+		trace(ch.getComponent(id, Name));*/
+
+		assertTrue(ch.hasComponent(id, String));
+		assertTrue(ch.hasComponent(id, Int));
+		assertTrue(ch.hasComponent(id, Name));
+
+		assertEquals('12345', ch.getComponent(id, String));
+		assertEquals(12345, ch.getComponent(id, Int));
+		assertEquals(name, ch.getComponent(id, Name));
+	}
 
 
 	public function test_get() {
@@ -67,9 +89,9 @@ class TestComponent extends TestCase {
 	}
 
 	public function test_set() {
-		ch.setComponent(ids[0], 'A');
-		ch.setComponent(ids[2], 'A');
-		ch.setComponent(ids[4], 'A');
+		ch.addComponent(ids[0], 'A');
+		ch.addComponent(ids[2], 'A');
+		ch.addComponent(ids[4], 'A');
 
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -90,7 +112,7 @@ class TestComponent extends TestCase {
 	}
 
 	public function test_second_get() {
-		for (id in ids) ch.setComponent(id, new Name('$id'));
+		for (id in ids) ch.addComponent(id, new Name('$id'));
 
 		assertEquals(5, ch.entities.length);
 
@@ -102,7 +124,7 @@ class TestComponent extends TestCase {
 	}
 
 	public function test_second_change() {
-		for (id in ids) ch.setComponent(id, new Name('A'));
+		for (id in ids) ch.addComponent(id, new Name('A'));
 
 		var c0 = ch.getComponent(ids[0], Name);
 		var c1 = ch.getComponent(ids[1], Name);
@@ -120,7 +142,7 @@ class TestComponent extends TestCase {
 	}
 
 	public function test_all_set() {
-		for (id in ids) ch.setComponent(id, new Name('A'), 'B');
+		for (id in ids) ch.addComponent(id, new Name('A'), 'B');
 
 		assertEquals(5, ch.entities.length);
 
@@ -203,9 +225,9 @@ class TestComponent extends TestCase {
 		ch.poll(ids[2]);
 		ch.poll(ids[4]);
 
-		ch.add(ids[0]);
-		ch.add(ids[2]);
-		ch.add(ids[4]);
+		ch.push(ids[0]);
+		ch.push(ids[2]);
+		ch.push(ids[4]);
 
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -227,9 +249,9 @@ class TestComponent extends TestCase {
 		ch.remove(ids[2]);
 		ch.remove(ids[4]);
 
-		ch.add(ids[0]);
-		ch.add(ids[2]);
-		ch.add(ids[4]);
+		ch.push(ids[0]);
+		ch.push(ids[2]);
+		ch.push(ids[4]);
 
 		var c0 = ch.getComponent(ids[0], String);
 		var c1 = ch.getComponent(ids[1], String);
@@ -248,27 +270,27 @@ class TestComponent extends TestCase {
 
 
 	public function test_set_after_remove_component() {
-		ch.setComponent(ids[0], 'A');
+		ch.addComponent(ids[0], 'A');
 		ch.removeComponent(ids[0], String);
-		ch.setComponent(ids[0], '!');
+		ch.addComponent(ids[0], '!');
 
 		assertEquals(5, ch.entities.length);
 		assertEquals('!', ch.getComponent(ids[0], String));
 	}
 
 	public function test_set_after_poll_entity() {
-		ch.setComponent(ids[0], 'A');
+		ch.addComponent(ids[0], 'A');
 		ch.poll(ids[0]);
-		ch.setComponent(ids[0], '!');
+		ch.addComponent(ids[0], '!');
 
 		assertEquals(4, ch.entities.length);
 		assertEquals('!', ch.getComponent(ids[0], String));
 	}
 
 	public function test_set_after_remove_entity() {
-		ch.setComponent(ids[0], 'A');
+		ch.addComponent(ids[0], 'A');
 		ch.remove(ids[0]);
-		ch.setComponent(ids[0], '!');
+		ch.addComponent(ids[0], '!');
 
 		assertEquals(4, ch.entities.length);
 		assertEquals('!', ch.getComponent(ids[0], String));
@@ -277,30 +299,32 @@ class TestComponent extends TestCase {
 
 	public function test_add_after_id() {
 		var ch = new Echo();
+		
 		var id = ch.id();
 
 		assertEquals(1, ch.entities.length);
 
-		ch.add(id);
+		ch.push(id);
 
 		assertEquals(1, ch.entities.length);
 
-		ch.add(id);
+		ch.push(id);
 
 		assertEquals(1, ch.entities.length);
 	}
 
 	public function test_add_after_next() {
 		var ch = new Echo();
+		
 		var id = ch.id(false);
 
 		assertEquals(0, ch.entities.length);
 
-		ch.add(id);
+		ch.push(id);
 
 		assertEquals(1, ch.entities.length);
 
-		ch.add(id);
+		ch.push(id);
 
 		assertEquals(1, ch.entities.length);
 	}
@@ -308,14 +332,15 @@ class TestComponent extends TestCase {
 
 	public function test_set_before_add() {
 		var ch = new Echo();
+		
 		var id = ch.id(false);
 
-		ch.setComponent(id, 'A');
+		ch.addComponent(id, 'A');
 
 		assertEquals(0, ch.entities.length);
 		assertEquals('A', ch.getComponent(id, String));
 
-		ch.add(id);
+		ch.push(id);
 
 		assertEquals(1, ch.entities.length);
 		assertEquals('A', ch.getComponent(id, String));
@@ -324,11 +349,12 @@ class TestComponent extends TestCase {
 
 	public function test_last() {
 		var ch = new Echo();
-		ch.setComponent(ch.id(), 'A');
+		
+		ch.addComponent(ch.id(), 'A');
 
 		assertEquals('A', ch.getComponent(ch.last(), String));
 
-		ch.setComponent(ch.id(), 'B');
+		ch.addComponent(ch.id(), 'B');
 
 		assertEquals('B', ch.getComponent(ch.last(), String));
 	}
@@ -338,15 +364,16 @@ class TestComponent extends TestCase {
 
 	public function test_set_singleton() {
 		var name = new Name('A');
-		ch.setComponent(ids[0], name);
-		ch.setComponent(ids[1], name);
+		ch.addComponent(ids[0], name);
+		ch.addComponent(ids[1], name);
 
 		assertEquals(ch.getComponent(ids[0], Name), ch.getComponent(ids[1], Name));
 	}
 
 	public function test_set_empty() {
 		var ch = new Echo();
-		ch.setComponent(ch.id()); // empty
+		
+		ch.addComponent(ch.id()); // empty
 
 		assertEquals(1, ch.entities.length);
 	}

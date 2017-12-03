@@ -30,11 +30,11 @@ class TestSmoke1 extends TestCase {
 		var i2 = ch.id();
 		var i3 = ch.id();
 
-		ch.setComponent(i1, new Name('John'), new Greeting('Hello'));
-		ch.setComponent(i2, new Name('Luca'), new Greeting('Bonjour'));
-		ch.setComponent(i3, new Name('Vlad'), new Greeting('Privet'));
-		ch.setComponent(ch.id(), new Name('Hodor'));
-		ch.setComponent(ch.id(), new Greeting('Hodor'));
+		ch.addComponent(i1, new Name('John'), new Greeting('Hello'));
+		ch.addComponent(i2, new Name('Luca'), new Greeting('Bonjour'));
+		ch.addComponent(i3, new Name('Vlad'), new Greeting('Privet'));
+		ch.addComponent(ch.id(), new Name('Hodor'));
+		ch.addComponent(ch.id(), new Greeting('Hodor'));
 
 		assertEquals(4, RoomSystem.LOG.length);
 

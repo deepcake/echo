@@ -37,9 +37,9 @@ class TestView extends TestCase {
 
 		for (i in 0...100) {
 			var id = ch.id();
-			ch.setComponent(id, new C1());
-			if (i % 2 == 0) ch.setComponent(id, new C2());
-			if (i % 5 == 0) ch.setComponent(id, new C3());
+			ch.addComponent(id, new C1());
+			if (i % 2 == 0) ch.addComponent(id, new C2());
+			if (i % 5 == 0) ch.addComponent(id, new C3());
 		}
 
 		assertEquals(100, viewa.entities.length);
@@ -53,7 +53,7 @@ class TestView extends TestCase {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 
-		for (i in 'QWERTYUIOP'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+		for (i in 'QWERTYUIOP'.split('')) ch.addComponent(ch.id(), new C1('$i'));
 
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 
@@ -68,7 +68,7 @@ class TestView extends TestCase {
 		var ids = [ for (i in 0...10) ch.id() ];
 		var letters = 'QWERTYUIOP'.split('');
 
-		for (i in 0...ids.length) ch.setComponent(ids[i], new C1(letters[i]));
+		for (i in 0...ids.length) ch.addComponent(ids[i], new C1(letters[i]));
 
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 
@@ -86,7 +86,7 @@ class TestView extends TestCase {
 		var ids = [ for (i in 0...10) ch.id() ];
 		var letters = 'QWERTYUIOP'.split('');
 
-		for (i in 0...ids.length) ch.setComponent(ids[i], new C1(letters[i]));
+		for (i in 0...ids.length) ch.addComponent(ids[i], new C1(letters[i]));
 
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 
@@ -104,7 +104,7 @@ class TestView extends TestCase {
 		var ids = [ for (i in 0...10) ch.id() ];
 		var letters = 'QWERTYUIOP'.split('');
 
-		for (i in 0...ids.length) ch.setComponent(ids[i], new C1(letters[i]));
+		for (i in 0...ids.length) ch.addComponent(ids[i], new C1(letters[i]));
 
 		viewa.entities.sort(function(id1, id2) return ch.getComponent(id1, C1).charCodeAt(0) - ch.getComponent(id2, C1).charCodeAt(0));
 
@@ -121,7 +121,7 @@ class TestView extends TestCase {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
-		for (id in ids) ch.setComponent(id, new C1('A'));
+		for (id in ids) ch.addComponent(id, new C1('A'));
 
 		for (id in ids) ch.removeComponent(id, C1);
 
@@ -132,13 +132,13 @@ class TestView extends TestCase {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
-		for (id in ids) ch.setComponent(id, new C1('A'));
+		for (id in ids) ch.addComponent(id, new C1('A'));
 
 		for (id in ids) ch.poll(id);
 
 		assertEquals(0, viewa.entities.length);
 
-		for (id in ids) ch.add(id);
+		for (id in ids) ch.push(id);
 
 		assertEquals(10, viewa.entities.length);
 	}
@@ -147,13 +147,13 @@ class TestView extends TestCase {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
-		for (id in ids) ch.setComponent(id, new C1('A'));
+		for (id in ids) ch.addComponent(id, new C1('A'));
 
 		for (id in ids) ch.remove(id);
 
 		assertEquals(0, viewa.entities.length);
 
-		for (id in ids) ch.add(id);
+		for (id in ids) ch.push(id);
 
 		assertEquals(0, viewa.entities.length);
 	}
@@ -162,7 +162,7 @@ class TestView extends TestCase {
 		var viewa = new echo.View<{a:C1}>();
 		ch.addView(viewa);
 		var ids = [ for(i in 0...10) ch.id() ];
-		for (id in ids) ch.setComponent(id, new C1('A'));
+		for (id in ids) ch.addComponent(id, new C1('A'));
 
 		ch.removeView(viewa);
 
@@ -181,12 +181,12 @@ class TestView extends TestCase {
 		ch.addView(ab);
 
 		var cache = [ for (i in 0...10) ch.id(false) ];
-		for (id in cache) ch.setComponent(id, new C1('A'), new C2('A'));
+		for (id in cache) ch.addComponent(id, new C1('A'), new C2('A'));
 
 		assertEquals(0, ch.entities.length);
 		assertEquals(0, ab.entities.length);
 
-		for (id in cache) ch.add(id);
+		for (id in cache) ch.push(id);
 
 		assertEquals(10, ch.entities.length);
 		assertEquals(10, ab.entities.length);
@@ -199,7 +199,7 @@ class TestView extends TestCase {
 
 		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
-		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+		for (i in 'QWERTY'.split('')) ch.addComponent(ch.id(), new C1('$i'));
 
 		assertEquals('QWERTY', ACTUAL);
 	}
@@ -209,7 +209,7 @@ class TestView extends TestCase {
 
 		view.onAdded.add(function(i) ACTUAL += ch.getComponent(i, C1));
 
-		for (i in 'QWERTY'.split('')) ch.setComponent(ch.id(), new C1('$i'));
+		for (i in 'QWERTY'.split('')) ch.addComponent(ch.id(), new C1('$i'));
 
 		ch.addView(view);
 
@@ -226,7 +226,7 @@ class TestView extends TestCase {
 		for (i in 'QWERTY'.split('')) {
 			var id = ch.id();
 			ids.push(id);
-			ch.setComponent(id, new C1('$i'));
+			ch.addComponent(id, new C1('$i'));
 		}
 
 		assertEquals('', ACTUAL);
@@ -246,7 +246,7 @@ class TestView extends TestCase {
 		for (i in 'QWERTY'.split('')) {
 			var id = ch.id();
 			ids.push(id);
-			ch.setComponent(id, new C1('$i'));
+			ch.addComponent(id, new C1('$i'));
 		}
 
 		assertEquals('', ACTUAL);
@@ -266,7 +266,7 @@ class TestView extends TestCase {
 		for (i in 'QWERTY'.split('')) {
 			var id = ch.id();
 			ids.push(id);
-			ch.setComponent(id, new C1('$i'));
+			ch.addComponent(id, new C1('$i'));
 		}
 
 		assertEquals('', ACTUAL);
@@ -347,7 +347,7 @@ class TestView extends TestCase {
 		ch.addView(new View12());
 		ch.addView(new View21());
 
-		for (i in 0...10) ch.setComponent(ch.id(), new C1('$i'), new C2('$i'));
+		for (i in 0...10) ch.addComponent(ch.id(), new C1('$i'), new C2('$i'));
 
 		assertEquals(1, ch.views.length);
 		assertEquals(10, ch.entities.length);

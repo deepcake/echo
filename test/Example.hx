@@ -62,21 +62,21 @@ class Example {
 
 	static function grass(x:Float, y:Float) {
 		var codes = [ '&#x1F33E', '&#x1F33F' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function tree(x:Float, y:Float) {
 		var codes = [ '&#x1F332', '&#x1F333' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function flower(x:Float, y:Float) {
 		var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
@@ -85,7 +85,7 @@ class Example {
 		var pos = new Position(x, y);
 		var vel = randomVelocity(1);
 		var spr = new Sprite('&#x1F407;');
-		echo.setComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
+		echo.addComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
 	}
 
 	static public function tiger(x:Float, y:Float) {
@@ -93,7 +93,7 @@ class Example {
 		var vel = randomVelocity(10);
 		var spr = new Sprite('&#x1F405;');
 		spr.style.fontSize = '200%';
-		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+		echo.addComponent(echo.id(), pos, vel, spr, Animal.Tiger);
 	}
 
 	static public function event(x:Float, y:Float, type:String) {
@@ -102,7 +102,7 @@ class Example {
 			case 'skull': '&#x1F480;';
 			default: '';
 		}
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(code),
 			new Timeout(3.0));

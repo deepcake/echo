@@ -68,7 +68,7 @@ class TestSystem extends TestCase {
 		ch.addSystem(new MetaAddRemSystem());
 		var id = ch.id();
 
-		ch.setComponent(id, new CA(), new CB());
+		ch.addComponent(id, new CA(), new CB());
 
 		assertEquals('A!B!', MetaAddRemSystem.STATIC_ACTUAL);
 
@@ -80,7 +80,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_onadd_onrem_added_after_entity() {
 		var id = ch.id();
-		ch.setComponent(id, new CA(), new CB());
+		ch.addComponent(id, new CA(), new CB());
 
 		ch.addSystem(new MetaAddRemSystem());
 
@@ -93,7 +93,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_onadd_onrem_order() {
 		ch.addSystem(new MetaAddRemOrderSystem());
-		ch.setComponent(ch.id(), new CA(), new CB());
+		ch.addComponent(ch.id(), new CA(), new CB());
 
 		ch.removeComponent(ch.last(), CA);
 		ch.removeComponent(ch.last(), CB);
@@ -103,8 +103,8 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach1() {
 		ch.addSystem(new MetaEachSystemUpdateExistsAlready());
-		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
-		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.addComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.addComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -113,8 +113,8 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach2() {
 		ch.addSystem(new MetaEachSystemViewExistsAlready());
-		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
-		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.addComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.addComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -123,8 +123,8 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach3() {
 		ch.addSystem(new MetaEachSystemDifferentView());
-		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
-		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.addComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.addComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(2, ch.views.length);
@@ -133,8 +133,8 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach4() {
 		ch.addSystem(new MetaEachSystem4());
-		ch.setComponent(ch.id(), new CA('A'), new CB('B'));
-		ch.setComponent(ch.id(), new CA('#'), new CB('%'));
+		ch.addComponent(ch.id(), new CA('A'), new CB('B'));
+		ch.addComponent(ch.id(), new CA('#'), new CB('%'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -143,7 +143,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach_delta() {
 		ch.addSystem(new MetaEachSystemDelta());
-		ch.setComponent(ch.id(), new CA('A'));
+		ch.addComponent(ch.id(), new CA('A'));
 		ch.update(0.9);
 
 		assertEquals(1, ch.views.length);
@@ -152,7 +152,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach_empty() {
 		ch.addSystem(new MetaEachSystemEmpty());
-		ch.setComponent(ch.id(), new CA('A'));
+		ch.addComponent(ch.id(), new CA('A'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -164,7 +164,7 @@ class TestSystem extends TestCase {
 		ch.addSystem(new ASystem());
 		ch.addSystem(new ASystemReuse());
 
-		ch.setComponent(ch.id(), new CA('A'));
+		ch.addComponent(ch.id(), new CA('A'));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -177,7 +177,7 @@ class TestSystem extends TestCase {
 		ch.getViewByTypes(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
 		ch.addSystem(new ASystemReuse());
 
-		ch.setComponent(ch.id(), new CA(''));
+		ch.addComponent(ch.id(), new CA(''));
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -186,7 +186,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach_type_param() {
 		ch.addSystem(new MetaEachSystemTypeParam());
-		ch.setComponent(ch.id(), [ 'M' ]);
+		ch.addComponent(ch.id(), [ 'M' ]);
 		ch.update(0);
 
 		assertEquals(1, ch.views.length);
@@ -196,7 +196,7 @@ class TestSystem extends TestCase {
 
 	public function test_meta_skip() {
 		ch.addSystem(new MetaSkipSystem());
-		ch.setComponent(ch.id(), new CA('A'));
+		ch.addComponent(ch.id(), new CA('A'));
 		ch.update(0);
 
 		assertEquals(0, ch.views.length);

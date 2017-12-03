@@ -20,7 +20,7 @@ class TestSmoke2 extends TestCase {
 
 	override public function setup() {
 		ch = new Echo();
-		for (i in 'xy'.split('')) ch.setComponent(ch.id(), new Name(i));
+		for (i in 'xy'.split('')) ch.addComponent(ch.id(), new Name(i));
 	}
 
 	public function test_workflow1() {
@@ -176,7 +176,7 @@ class RemoveComponentFromIterationCycleSystem extends System {
 
 	override function onactivate() {
 		var ids = [ for(i in 0...10) echo.id() ];
-		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+		for (id in ids) echo.addComponent(id, new Name('A'), new Greeting('B'));
 	}
 
 	override function update(dt:Float) {
@@ -194,7 +194,7 @@ class RemoveComponentFromMetaIterationCycleSystem extends System {
 
 	override function onactivate() {
 		var ids = [ for(i in 0...10) echo.id() ];
-		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+		for (id in ids) echo.addComponent(id, new Name('A'), new Greeting('B'));
 	}
 
 	@u function remove(i:Int, n:Name, g:Greeting) {

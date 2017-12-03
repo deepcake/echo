@@ -25,26 +25,26 @@ class TestComponentTypes extends TestCase {
 
 
 	public function test_follow_typedef() {
-		ch.setComponent(id, new SimpleComponent('C'));
+		ch.addComponent(id, new SimpleComponent('C'));
 
 		assertEquals('C', ch.getComponent(id, SimpleComponent).val);
 		assertEquals('C', ch.getComponent(id, TypedefSimpleComponent).val);
 
-		ch.setComponent(id, new TypedefSimpleComponent('T'));
+		ch.addComponent(id, new TypedefSimpleComponent('T'));
 
 		assertEquals('T', ch.getComponent(id, SimpleComponent).val);
 		assertEquals('T', ch.getComponent(id, TypedefSimpleComponent).val);
 	}
 
 	public function test_notfollow_abstract() {
-		ch.setComponent(id, new SimpleComponent('C'), new AbstractSimpleComponent('A'));
+		ch.addComponent(id, new SimpleComponent('C'), new AbstractSimpleComponent('A'));
 
 		assertEquals('C', ch.getComponent(id, SimpleComponent).val);
 		assertEquals('A', ch.getComponent(id, AbstractSimpleComponent).val);
 	}
 
 	public function test_notfollow_enumabstract() {
-		ch.setComponent(id, 1337, EnumAbstractComponent.EATwo);
+		ch.addComponent(id, 1337, EnumAbstractComponent.EATwo);
 
 		assertEquals(1337, ch.getComponent(id, Int));
 		assertEquals(EnumAbstractComponent.EATwo, ch.getComponent(id, EnumAbstractComponent));
@@ -56,7 +56,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<{ c:AbstractSimpleComponent }>();
 		ch.addView(view);
 
-		ch.setComponent(id, new AbstractSimpleComponent('A'));
+		ch.addComponent(id, new AbstractSimpleComponent('A'));
 
 		assertEquals(1, view.entities.length);
 		assertEquals('A', ch.getComponent(id, AbstractSimpleComponent).val);
@@ -66,7 +66,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<{ c:EnumComponent }>();
 		ch.addView(view);
 
-		ch.setComponent(id, EnumComponent.EOne);
+		ch.addComponent(id, EnumComponent.EOne);
 
 		assertEquals(1, view.entities.length);
 		assertEquals(EnumComponent.EOne, ch.getComponent(id, EnumComponent));
@@ -76,7 +76,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<{ c:EnumAbstractComponent }>();
 		ch.addView(view);
 
-		ch.setComponent(id, EnumAbstractComponent.EAOne);
+		ch.addComponent(id, EnumAbstractComponent.EAOne);
 
 		assertEquals(1, view.entities.length);
 		assertEquals(EnumAbstractComponent.EAOne, ch.getComponent(id, EnumAbstractComponent));
@@ -86,7 +86,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<{ c:Int }>();
 		ch.addView(view);
 
-		ch.setComponent(id, 1337);
+		ch.addComponent(id, 1337);
 
 		assertEquals(1, view.entities.length);
 		assertEquals(1337, ch.getComponent(id, Int));
@@ -96,7 +96,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<{ c:Array<Int> }>();
 		ch.addView(view);
 
-		ch.setComponent(id, [1, 2, 3]);
+		ch.addComponent(id, [1, 2, 3]);
 
 		assertEquals(1, view.entities.length);
 		assertEquals([1, 2, 3].toString(), ch.getComponent(id, TypeParamComponent).toString());
@@ -106,7 +106,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<AnonymousViewParam>();
 		ch.addView(view);
 
-		ch.setComponent(id, new SimpleComponent('A'), EOne);
+		ch.addComponent(id, new SimpleComponent('A'), EOne);
 
 		assertEquals(1, view.entities.length);
 		assertEquals('A', ch.getComponent(id, SimpleComponent).val);
@@ -116,7 +116,7 @@ class TestComponentTypes extends TestCase {
 		var view = new View<AnonymousViewParamExtended>();
 		ch.addView(view);
 
-		ch.setComponent(id, new SimpleComponent('A'), EOne);
+		ch.addComponent(id, new SimpleComponent('A'), EOne);
 
 		assertEquals(1, view.entities.length);
 		assertEquals('A', ch.getComponent(id, SimpleComponent).val);
