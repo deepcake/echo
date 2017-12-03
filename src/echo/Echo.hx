@@ -14,10 +14,10 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion static var __echoSequence = 0;
-
+	@:noCompletion static var __echoSequence = -1;
 	@:noCompletion public var __id = 0;
-	@:noCompletion public var __componentSequence = 0;
+
+	@:noCompletion public var __componentSequence = -1;
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
@@ -32,47 +32,54 @@ class Echo {
 
 
 	public function new() {
-		__id = __echoSequence++;
+		//trace(haxe.rtti.Meta.getType(Echo).components);
+		__id = ++__echoSequence;
 	}
 
 
 	#if echo_debug
-		var times:Map<Int, Float> = new Map();
+	var times:Map<Int, Float> = new Map();
 	#end
 	inline public function toString():String {
 		var ret = 'Echo ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
+
 		#if echo_debug
-			ret += ' : ${ times.get(-100) } ms';
-			for (s in systems) {
-				ret += '\n        ($s) : ${ times.get(s.__id) } ms';
-			}
-			for (v in views) {
-				ret += '\n    {$v} [${v.entities.length}]';
-			}
+		ret += ' : ${ times.get(-100) } ms';
+		for (s in systems) {
+			ret += '\n        ($s) : ${ times.get(s.__id) } ms';
+		}
+		for (v in views) {
+			ret += '\n    {$v} [${v.entities.length}]';
+		}
 		#end
+
 		return ret;
 	}
 
 
 	/**
 	 * Update
-	 * @param dt `Float` Delta time
+	 * @param dt - delta time
 	 */
 	public function update(dt:Float) {
 		#if echo_debug
-			var engineUpdateStartTimestamp = haxe.Timer.stamp();
+		var engineUpdateStartTimestamp = haxe.Timer.stamp();
 		#end
+
 		for (s in systems) {
 			#if echo_debug
-				var systemUpdateStartTimestamp = haxe.Timer.stamp();
+			var systemUpdateStartTimestamp = haxe.Timer.stamp();
 			#end
+
 			s.update(dt);
+
 			#if echo_debug
-				times.set(s.__id, Std.int((haxe.Timer.stamp() - systemUpdateStartTimestamp) * 1000));
+			times.set(s.__id, Std.int((haxe.Timer.stamp() - systemUpdateStartTimestamp) * 1000));
 			#end
 		}
+
 		#if echo_debug
-			times.set(-100, Std.int((haxe.Timer.stamp() - engineUpdateStartTimestamp) * 1000));
+		times.set(-100, Std.int((haxe.Timer.stamp() - engineUpdateStartTimestamp) * 1000));
 		#end
 	}
 
@@ -184,9 +191,9 @@ class Echo {
 	// Entity
 
 	/**
-	 * Creates a new id (entity) and returns it
-	 * @param add `Bool` Immediate adds created id to the workflow if `true`, otherwise not. Default `true`
-	 * @return `Int`
+	 * Creates a new id (entity)
+	 * @param add - immediate adds created id to the workflow if `true`, otherwise not. Default `true`
+	 * @return created `Int` id
 	 */
 	public function id(add:Bool = true):Int {
 		var id = ++__componentSequence;
@@ -207,7 +214,7 @@ class Echo {
 
 	/**
 	 * Returns `true` if the id (entity) is added to the workflow, otherwise returns `false`
-	 * @param id `Int` The id (entity)
+	 * @param id - `Int` id (entity)
 	 * @return `Bool`
 	 */
 	public inline function has(id:Int):Bool {
@@ -216,9 +223,9 @@ class Echo {
 
 	/**
 	 * Adds the id (entity) to the workflow
-	 * @param id `Int` The id (entity)
+	 * @param id - `Int` id (entity)
 	 */
-	public inline function add(id:Int) {
+	public inline function push(id:Int) {
 		if (!this.has(id)) {
 			entitiesMap.set(id, id);
 			entities.add(id);
@@ -227,8 +234,9 @@ class Echo {
 	}
 
 	/**
-	 * Removes the id (entity) from the workflow without removing its components
-	 * @param id `Int` The id (entity)
+	 * Removes the id (entity) from the workflow with saving all it's components. 
+	 * The id can be pushed back to the workflow
+	 * @param id - `Int` id (entity)
 	 */
 	public inline function poll(id:Int) {
 		if (this.has(id)) {
@@ -240,19 +248,19 @@ class Echo {
 
 	/**
 	 * Removes the id (entity) from the workflow and removes all it components
-	 * @param id `Int` The id (entity)
+	 * @param id - `Int` id (entity)
 	 */
-	macro public function remove(self:Expr, id:ExprOf<Int>) {
-		var esafe = macro var _id_ = $id;
-		var exprs = [
-			for (ct in echo.macro.MacroBuilder.componentMapCache) {
-				macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(_id_);
-			}
-		];
-		return macro {
-			$esafe;
-			$self.poll(_id_);
-			$b{exprs};
+	public function remove(id:Int) {
+		poll(id);
+		for (c in haxe.rtti.Meta.getType(Echo).components) {
+			var cls = Type.resolveClass(c);
+
+			#if js
+			untyped cls.get(__id).remove(id);
+			#else
+			var map:Map<Int, Dynamic> = Reflect.callMethod(cls, Reflect.field(cls, 'get'), [ __id ]);
+			map.remove(id);
+			#end
 		}
 	}
 
@@ -260,91 +268,131 @@ class Echo {
 	// Component
 
 	/**
-	 * Adds/Sets a components to the id
-	 * @param id `Int` The id (entity)
-	 * @param components List of `Any` components to add to the id (entity), one or many at once
+	 * Adds specified components to the id (entity).
+	 * If component with same type is already added to the id, it will be replaced.
+	 * @param id - `Int` id (entity)
+	 * @param components - comma separated list of components of `Any` type
+	 * @return `Int` id
 	 */
-	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<Expr>) {
-		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
-		var exprs = [
-			for (c in components) {
-				var ct = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
-				macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[_id_] = $c;
-			}
-		];
-		var matchedViews = [];
-		for (c in components) {
-			var i = echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
-			for (vid in echo.macro.MacroBuilder.viewMasks.keys()) {
-				if (echo.macro.MacroBuilder.viewMasks[vid].exists(i)) if (matchedViews.indexOf(vid) == -1) matchedViews.push(vid);
-			}
-		}
-		var exprs2 = [
-			for (vid in matchedViews) {
-				macro if ($self.viewsMap.get($v{vid}) != null) $self.viewsMap[$v{vid}].addIfMatch(_id_);
-			}
-		];
-		return macro {
-			$esafe;
-			$b{exprs};
-			if ($self.has(_id_)) {
-				$b{exprs2}
-			}
-		}
+	macro public function addComponent(self:Expr, id:ExprOf<Int>, components:Array<ExprOf<Any>>):ExprOf<Int> {
+		var argExpr = macro $id;
+
+		var componentExprs = new List<Expr>()
+			.concat(
+				components
+					.map(function(c){
+						var ct = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
+						return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] = $c;
+					})
+			)
+			.array();
+
+		var viewExprs = new List<Expr>()
+			.concat(
+				components
+					.map(function(c){
+						return echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
+					})
+					.fold(function(cid, r:Array<Int>){
+						{ iterator: MacroBuilder.viewMasks.keys }
+							.iter(function(vid) {
+								if (MacroBuilder.viewMasks[vid].exists(cid) && r.indexOf(vid) == -1) r.push(vid);
+							});
+						return r;
+					}, new Array<Int>())
+					.map(function(i){
+						return macro if ($self.viewsMap.get($v{i}) != null) $self.viewsMap[$v{i}].addIfMatch(id);
+					})
+			)
+			.array();
+
+		var exprs = new List<Expr>()
+			.concat(componentExprs)
+			.concat(viewExprs.length > 0 ? [ macro if ($self.has(id)) $b{viewExprs} ] : [])
+			.concat([ macro return id ])
+			.array();
+
+		var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+
+		#if echo_verbose
+		trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+		#end
+
+		return ret;
 	}
 
 	/**
-	 * Removes a component from the id (entity) by its type
-	 * @param id `Int` The id (entity)
-	 * @param types `Class<T>` component types to remove
+	 * Removes a components from the id (entity) by its type
+	 * @param id - `Int` id (entity)
+	 * @param types - comma separated `Class<Any>` types of components to be removed
+	 * @return `Int` id
 	 */
-	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>) {
-		var esafe = macro var _id_ = $id;
-		var exprs = [
-			for (t in types) {
-				var ct = echo.macro.MacroBuilder.getComponentHolder(t.identName().getType().follow().toComplexType());
-				macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(_id_);
-			}
-		];
-		var matchedViews = [];
-		for (t in types) {
-			var i = echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
-			for (vid in echo.macro.MacroBuilder.viewMasks.keys()) {
-				if (echo.macro.MacroBuilder.viewMasks[vid].exists(i)) if (matchedViews.indexOf(vid) == -1) matchedViews.push(vid);
-			}
-		}
-		var exprs2 = [
-			for (vid in matchedViews) {
-				macro if ($self.viewsMap.get($v{vid}) != null) $self.viewsMap[$v{vid}].removeIfMatch(_id_);
-			}
-		];
-		return macro {
-			$esafe;
-			if ($self.has(_id_)) {
-				$b{exprs2}
-			}
-			$b{exprs};
-		}
+	macro public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>):ExprOf<Int> {
+		var argExpr = macro $id;
+
+		var componentExprs = new List<Expr>()
+			.concat(
+				types
+					.map(function(t){
+						var ct = echo.macro.MacroBuilder.getComponentHolder(t.identName().getType().follow().toComplexType());
+						return macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(id);
+					})
+			)
+			.array();
+
+		var viewExprs = new List<Expr>()
+			.concat(
+				types
+					.map(function(t){
+						return echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
+					})
+					.fold(function(cid, r:Array<Int>){
+						{ iterator: MacroBuilder.viewMasks.keys }
+							.iter(function(vid) {
+								if (MacroBuilder.viewMasks[vid].exists(cid) && r.indexOf(vid) == -1) r.push(vid);
+							});
+						return r;
+					}, new Array<Int>())
+					.map(function(i){
+						return macro if ($self.viewsMap.get($v{i}) != null) $self.viewsMap[$v{i}].removeIfMatch(id);
+					})
+			)
+			.array();
+
+		var exprs = new List<Expr>()
+			.concat(viewExprs.length > 0 ? [ macro if ($self.has(id)) $b{viewExprs} ] : [])
+			.concat(componentExprs)
+			.concat([ macro return id ])
+			.array();
+
+		var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+
+		#if echo_verbose
+		trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+		#end
+
+		return ret;
 	}
 
 	/**
-	 * Retrives a component from the id (entity) by its type
-	 * @param id `Int` The id (entity)
-	 * @param type `Class<T>` component type
-	 * @return `Any`
+	 * Retrives a component from the id (entity) by its type.
+	 * If component with passed type is not added to the id, `null` will be returned.
+	 * @param id - `Int` id (entity)
+	 * @param type - `Class<T>` type of component to be retrieved
+	 * @return `T`
 	 */
-	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
+	macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
 		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id];
 	}
 
 	/**
-	 * Returns true if the id (entity) has a component with this type, otherwise returns false
-	 * @param id `Int` The id (entity)
-	 * @param type `Class<T>` component type
+	 * Returns `true` if the id (entity) has a component with passed type, otherwise returns false
+	 * @param id - `Int` id (entity)
+	 * @param type - `Class<T>` type of component
 	 * @return `Bool`
 	 */
-	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
+	macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
 		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id] != null;
 	}

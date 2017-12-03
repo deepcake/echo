@@ -34,6 +34,7 @@ class MacroBuilder {
 	static public var componentCache:Map<String, ComplexType> = new Map();
 
 	static public var componentMapCache:Map<String, ComplexType> = new Map();
+	static public var componentMapNames:Array<String> = [];
 
 	static public var viewIndex:Int = 0;
 	static public var viewIdsMap:Map<String, Int> = new Map();
@@ -65,33 +66,34 @@ class MacroBuilder {
 	}
 
 	static function gen() {
-		/*Context.onMacroContextReused(function() {
+		Context.onMacroContextReused(function() {
 			#if echo_verbose 
-				trace('macro context reused');
+			trace('macro context reused');
 			#end
+
 			reportRegistered = false;
 			metaRegistered = false;
 			return true;
-		});*/
+		});
 
 		#if echo_report
-			if (!reportRegistered) {
-				Context.onGenerate(function(types) {
-					function sortedlist(array:Array<String>) {
-						array.sort(compareStrings);
-						return array;
-					}
+		if (!reportRegistered) {
+			Context.onGenerate(function(types) {
+				function sortedlist(array:Array<String>) {
+					array.sort(compareStrings);
+					return array;
+				}
 
-					var ret = 'ECHO BUILD REPORT :';
-					ret += '\n    COMPONENTS [${componentMapCache.count()}] :';
-					ret += '\n        ' + sortedlist({ iterator: function() return componentMapCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
-					ret += '\n    VIEWS [${viewCache.count()}] :';
-					ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
-					trace('\n$ret');
+				var ret = 'ECHO BUILD REPORT :';
+				ret += '\n    COMPONENTS [${componentMapCache.count()}] :';
+				ret += '\n        ' + sortedlist({ iterator: function() return componentMapCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
+				ret += '\n    VIEWS [${viewCache.count()}] :';
+				ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k').array()).join('\n        ');
+				trace('\n$ret');
 
-				});
-				reportRegistered = true;
-			}
+			});
+			reportRegistered = true;
+		}
 		#end
 
 		if (!metaRegistered) {
@@ -99,8 +101,8 @@ class MacroBuilder {
 
 				switch (Context.getType("echo.Echo")) {
 					case TInst(_.get() => ct, _):
-						if (ct.meta.has('componentCount')) ct.meta.remove('componentCount');
-						ct.meta.add('componentCount', [macro $v{ componentIndex }], Context.currentPos());
+						if (ct.meta.has('components')) ct.meta.remove('components');
+						ct.meta.add('components', componentMapNames.map(function(s) return macro $v{s}), Context.currentPos());
 					default:
 				}
 
@@ -524,6 +526,7 @@ class MacroBuilder {
 				componentIds[componentClsName] = componentIndex;
 				componentCache[componentClsName] = componentCls;
 				componentMapCache[componentClsName] = componentHolderCls;
+				componentMapNames.push(componentHolderClsName);
 			}
 			return componentHolderCls;
 	}

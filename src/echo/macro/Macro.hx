@@ -54,9 +54,10 @@ class Macro {
 		};
 	}
 
-	static public function meta(name:String, pos:Position):MetadataEntry {
+	static public function meta(name:String, ?params:Array<Expr>, pos:Position):MetadataEntry {
 		return {
 			name: name,
+			params: params != null ? params : [],
 			pos: pos
 		}
 	}
