@@ -12,8 +12,10 @@ class Main {
 		var r = new TestRunner();
 
 		r.add(new TestSignal());
-		r.add(new TestComponent());
 		r.add(new TestComponentTypes());
+		r.add(new TestComponentOp());
+		r.add(new TestIdOp());
+
 		r.add(new TestView());
 		r.add(new TestSystem());
 		r.add(new TestSmoke1());

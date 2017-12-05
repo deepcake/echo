@@ -3,7 +3,6 @@ package;
 import echo.Echo;
 import echo.View;
 import haxe.unit.TestCase;
-import echo.System;
 
 /**
  * ...
@@ -18,7 +17,7 @@ class TestComponentTypes extends TestCase {
 
 	public function new() super();
 
-	override public function setup():Void {
+	override public function setup() {
 		ch = new Echo();
 		id = ch.id();
 	}
@@ -82,14 +81,14 @@ class TestComponentTypes extends TestCase {
 		assertEquals(EnumAbstractComponent.EAOne, ch.getComponent(id, EnumAbstractComponent));
 	}
 
-	public function test_primitive() {
-		var view = new View<{ c:Int }>();
+	public function test_abstract_primitive() {
+		var view = new View<{ c:AbstractPrimitive }>();
 		ch.addView(view);
 
-		ch.addComponent(id, 1337);
+		ch.addComponent(id, new AbstractPrimitive(1337));
 
 		assertEquals(1, view.entities.length);
-		assertEquals(1337, ch.getComponent(id, Int));
+		assertEquals(1337, ch.getComponent(id, AbstractPrimitive));
 	}
 
 	public function test_type_param() {
@@ -134,8 +133,13 @@ class SimpleComponent {
 
 typedef TypedefSimpleComponent = SimpleComponent;
 
-@:forward(val) abstract AbstractSimpleComponent(SimpleComponent) {
+@:forward(val) 
+abstract AbstractSimpleComponent(SimpleComponent) {
 	public function new(v:String) this = new SimpleComponent(v);
+}
+
+abstract AbstractPrimitive(Int) from Int to Int {
+	public function new(i:Int) this = i;
 }
 
 enum EnumComponent {
@@ -144,7 +148,8 @@ enum EnumComponent {
 	ESome(value:Int);
 }
 
-@:enum abstract EnumAbstractComponent(Int) from Int to Int {
+@:enum 
+abstract EnumAbstractComponent(Int) from Int to Int {
 	var EAOne = 1;
 	var EATwo = 2;
 }
