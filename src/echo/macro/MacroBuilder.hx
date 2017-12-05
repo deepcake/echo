@@ -303,7 +303,8 @@ class MacroBuilder {
 		var rfuncs = fields.map(findMetaFunc.bind(_, ONREMOVE_META)).filter(notNull);
 
 		afuncs.concat(rfuncs).iter(function(f) {
-			fields.push(ffun([], [], '__${f.name}', [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ f.args }), Context.currentPos()));
+			//fields.push(ffun([], [], '__${f.name}', [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ f.args }), Context.currentPos()));
+			fields.push(fvar([], [], '__${f.name}', macro:Int->Void, null, Context.currentPos()));
 		});
 
 
@@ -320,38 +321,61 @@ class MacroBuilder {
 
 		var activateExprs = new List<Expr>()
 			.concat([ macro this.echo = echo ])
-			.concat(views.map(function(v){
-				var viewCls = getViewGenericComplexType(v.components);
-				var viewType = viewCls.tp();
-				var viewId = viewIdsMap[viewCls.followName()];
-				return [
-					macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
-					macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
-				];
-			}).flatten())
-			.concat(afuncs.map(function(f){
-				return [ 
-					macro $i{ f.view }.onAdded.add($i{ '__${f.name}' }),
-					macro for (i in $i{ f.view }.entities) $i{ '__${f.name}' }(i)
-				];
-			}).flatten())
-			.concat(rfuncs.map(function(f){
-				return macro 
-					$i{ f.view }.onRemoved.add($i{ '__${f.name}' });
-			}))
+			.concat(
+				afuncs.concat(rfuncs)
+					.map(function(f){
+						return macro $i{'__${f.name}'} = function(_id_:Int) $i{ f.name }($a{ f.args });
+					})
+			)
+			.concat(
+				views
+					.map(function(v){
+						var viewCls = getViewGenericComplexType(v.components);
+						var viewType = viewCls.tp();
+						var viewId = viewIdsMap[viewCls.followName()];
+						return [
+							macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
+							macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
+						];
+					})
+					.flatten()
+			)
+			.concat(
+				afuncs.map(function(f){
+					return macro $i{ f.view }.onAdded.add($i{ '__${f.name}' });
+				})
+			)
+			.concat(
+				rfuncs.map(function(f){
+					return macro $i{ f.view }.onRemoved.add($i{ '__${f.name}' });
+				})
+			)
 			.concat([ macro onactivate() ])
+			.concat(
+				afuncs.map(function(f){
+					return macro for (i in $i{ f.view }.entities) $i{ '__${f.name}' }(i);
+				})
+			)
 			.array();
 
 		var deactivateExprs = new List<Expr>()
 			.concat([ macro ondeactivate() ])
-			.concat(afuncs.map(function(f){
-				return macro 
-					$i{ f.view }.onAdded.remove($i{ '__${f.name}' });
-			}))
-			.concat(rfuncs.map(function(f){
-				return macro 
-					$i{ f.view }.onRemoved.remove($i{ '__${f.name}' });
-			}))
+			.concat(
+				afuncs.map(function(f){
+					return macro $i{ f.view }.onAdded.remove($i{ '__${f.name}' });
+				})
+			)
+			.concat(
+				rfuncs.map(function(f){
+					return macro $i{ f.view }.onRemoved.remove($i{ '__${f.name}' });
+				})
+			)
+			.concat(
+				afuncs.concat(rfuncs)
+					.map(function(f) {
+						return macro $i{'__${f.name}'} = null;
+					})
+			)
 			.concat([ macro this.echo = null ])
 			.array();
 
@@ -422,8 +446,16 @@ class MacroBuilder {
 			var iteratorTypePath = getViewIterator(components).tp();
 			def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
+			// isMatch
 			var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.get(echo.__id)[id] != null').join(' && '), Context.currentPos());
 			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
+
+			// isRequire
+			def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __mask[c] != null, Context.currentPos()));
+
+			// mask
+			var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
+			def.fields.push(fvar([meta(':noCompletion', Context.currentPos())], [AStatic], '__mask', null, maskBody, Context.currentPos()));
 
 			// toString
 			var stringBody = getClsNameSuffix(components.map(function(c) return c.cls), false);

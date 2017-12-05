@@ -46,6 +46,10 @@ class ViewBase {
 		return false;
 	}
 
+	@:noCompletion public function isRequire(c:Int):Bool { // macro
+		return false;
+	}
+
 
 	inline function exists(id:Int):Bool {
 		return entitiesMap.exists(id);

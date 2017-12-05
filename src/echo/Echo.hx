@@ -83,6 +83,15 @@ class Echo {
 		#end
 	}
 
+	/**
+	* Removes all views, systems and ids (entities)
+	 */
+	public function dispose() {
+		for (v in views) removeView(v);
+		for (s in systems) removeSystem(s);
+		for (e in entities) remove(e);
+	}
+
 
 	// System
 
@@ -287,28 +296,9 @@ class Echo {
 			)
 			.array();
 
-		var viewExprs = new List<Expr>()
-			.concat(
-				components
-					.map(function(c){
-						return echo.macro.MacroBuilder.getComponentId(c.typeof().follow().toComplexType());
-					})
-					.fold(function(cid, r:Array<Int>){
-						{ iterator: MacroBuilder.viewMasks.keys }
-							.iter(function(vid) {
-								if (MacroBuilder.viewMasks[vid].exists(cid) && r.indexOf(vid) == -1) r.push(vid);
-							});
-						return r;
-					}, new Array<Int>())
-					.map(function(i){
-						return macro if ($self.viewsMap.get($v{i}) != null) $self.viewsMap[$v{i}].addIfMatch(id);
-					})
-			)
-			.array();
-
 		var exprs = new List<Expr>()
 			.concat(componentExprs)
-			.concat(viewExprs.length > 0 ? [ macro if ($self.has(id)) $b{viewExprs} ] : [])
+			.concat([ macro if ($self.has(id)) for (v in $self.views) v.addIfMatch(id) ])
 			.concat([ macro return id ])
 			.array();
 
@@ -346,21 +336,14 @@ class Echo {
 					.map(function(t){
 						return echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
 					})
-					.fold(function(cid, r:Array<Int>){
-						{ iterator: MacroBuilder.viewMasks.keys }
-							.iter(function(vid) {
-								if (MacroBuilder.viewMasks[vid].exists(cid) && r.indexOf(vid) == -1) r.push(vid);
-							});
-						return r;
-					}, new Array<Int>())
 					.map(function(i){
-						return macro if ($self.viewsMap.get($v{i}) != null) $self.viewsMap[$v{i}].removeIfMatch(id);
+						return macro if (v.isRequire($v{i})) v.removeIfMatch(id);
 					})
 			)
 			.array();
 
 		var exprs = new List<Expr>()
-			.concat(viewExprs.length > 0 ? [ macro if ($self.has(id)) $b{viewExprs} ] : [])
+			.concat([ macro if ($self.has(id)) for (v in $self.views) $b{viewExprs} ])
 			.concat(componentExprs)
 			.concat([ macro return id ])
 			.array();
