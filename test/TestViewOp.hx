@@ -56,19 +56,32 @@ class TestViewOp extends haxe.unit.TestCase {
     }
 
     public function test_mapping_remove_component() {
-        for (i in 0...100) {
-            ch.addComponent(ch.id(), new C1(), new C2());
-        }
+        var ids = [ for (i in 0...100) ch.addComponent(ch.id(), new C1(), new C2()) ];
 
-        for (i in 0...100) {
-            if (i % 2 == 0) ch.removeComponent(i, C1);
-            if (i % 5 == 0) ch.removeComponent(i, C2);
+        for (id in ids) {
+            if (id % 2 == 0) ch.removeComponent(id, C1);
+            if (id % 5 == 0) ch.removeComponent(id, C2);
         }
 
         assertEquals(100, ch.entities.length);
         assertEquals(50, va_.entities.length);
         assertEquals(80, v_b.entities.length);
         assertEquals(40, vab.entities.length);
+        assertEquals(100, va_added);
+        assertEquals(50, va_removed);
+    }
+
+    public function test_mapping_remove_component_inline() {
+        var ids = [ for (i in 0...100) ch.addComponent(ch.id(), new C1(), new C2()) ];
+
+        for (id in ids) {
+            if (id % 2 == 0) ch.removeComponent(id, C1, C2);
+        }
+
+        assertEquals(100, ch.entities.length);
+        assertEquals(50, va_.entities.length);
+        assertEquals(50, v_b.entities.length);
+        assertEquals(50, vab.entities.length);
         assertEquals(100, va_added);
         assertEquals(50, va_removed);
     }

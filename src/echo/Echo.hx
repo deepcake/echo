@@ -330,20 +330,25 @@ class Echo {
 			)
 			.array();
 
-		var viewExprs = new List<Expr>()
+		var requireExprs = new List<Expr>()
 			.concat(
 				types
 					.map(function(t){
 						return echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
 					})
 					.map(function(i){
-						return macro if (v.isRequire($v{i})) v.removeIfMatch(id);
+						return macro v.isRequire($v{i});
 					})
 			)
 			.array();
 
+		var requireCond = requireExprs.slice(1)
+			.fold(function(e:Expr, r:Expr){
+				return macro $r || $e;
+			}, requireExprs.length > 0 ? requireExprs[0] : null);
+
 		var exprs = new List<Expr>()
-			.concat([ macro if ($self.has(id)) for (v in $self.views) $b{viewExprs} ])
+			.concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) v.removeIfMatch(id) ])
 			.concat(componentExprs)
 			.concat([ macro return id ])
 			.array();
