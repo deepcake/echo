@@ -52,8 +52,6 @@ class MacroBuilder {
 	static var reportRegistered = false;
 	static var metaRegistered = false;
 
-	static var shortenMap:Map<String, String> = new Map();
-
 
 	static function hasMeta(field:Field, metas:Array<String>) {
 		for (m in field.meta) for (meta in metas) if (m.name == meta) return true;
@@ -126,12 +124,7 @@ class MacroBuilder {
 
 	static function getClsName(prefix:String, suffix:String) {
 		var id = safename(prefix + '_' + suffix);
-		#if !echo_shorten
-			return id;
-		#else
-			if (!shortenMap.exists(id)) shortenMap.set(id, 'ECHO' + shortenMap.count());
-			return shortenMap.get(id);
-		#end
+		return id;
 	}
 
 	static function getClsNameSuffixByComponents(components:Array<{ name:String, cls:ComplexType }>) {

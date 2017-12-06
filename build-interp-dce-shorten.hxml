@@ -1,6 +1,0 @@
-build-each.hxml
--dce full
--D analyzer-optimize
--D echo_shorten
--D echo_verbose
---interp

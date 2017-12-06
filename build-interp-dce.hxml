@@ -1,5 +1,5 @@
 build-each.hxml
 -dce full
 -D analyzer-optimize
--D echo_verbose
+-D echo_report
 --interp
