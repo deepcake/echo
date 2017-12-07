@@ -179,47 +179,25 @@ class MacroBuilder {
 		var views = fields.map(function(field) {
 			if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
 
-			function getComponentsFromAnonTypeParam(t:TypePath) {
-				switch (t.params) {
-					case [ TPType(TAnonymous(fields)) ]:
-
-						return fields.map(function(field) {
-							switch (field.kind) {
-								case FVar(cls, _): return { name: field.name, cls: cls.followComplexType() };
-								case x: throw 'Unexp $x';
-							}
-						});
-
-					case [ TPType(a = TPath(_)) ]:
-
-						switch (a.toType().follow()) {
-							case TAnonymous(_.get() => p):
-								return p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
-
-							case x: throw 'Unexp $x';
-						}
-
-					case x: throw 'Unexp $x';
-				}
-			}
-
 			switch (field.kind) {
-				case FVar(TPath(t), e) if (e == null):
-					if (t.name.toLowerCase() == 'view') {
-						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+				case FVar(cls, e) if (e == null):
+					var viewCls = cls.followComplexType();
+					if (viewCache.exists(viewCls.followName())) {
+						return { name: field.name, cls: viewCls };
 					}
 
 				case FVar(_, _.expr => ENew(t, _)):
-					if (t.name.toLowerCase() == 'view') {
-						field.kind = FVar(TPath(t), null); // remove new call, just define type
-						return { name: field.name, components: getComponentsFromAnonTypeParam(t) };
+					var viewCls = TPath(t).followComplexType();
+					if (viewCache.exists(viewCls.followName())) {
+						field.kind = FVar(viewCls, null);
+						return { name: field.name, cls: viewCls };
 					}
 
 				default:
 			}
 
 			return null;
-			
+
 		} ).filter(function(el) return el != null);
 
 
@@ -232,13 +210,13 @@ class MacroBuilder {
 
 		function requestView(components) {
 			var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
-			var view = views.find(function(v) return getClsName('View', getClsNameSuffixByComponents(v.components)) == viewClsName);
+			var view = views.find(function(v) return v.cls.followName() == viewClsName);
 
 			if (view == null) {
 				var viewName = viewClsName.toLowerCase();
 				var viewCls = getViewGenericComplexType(components);
-				view = { name: viewName, components: components };
 				fields.push(fvar(viewName, viewCls, Context.currentPos()));
+				view = { name: viewName, cls: viewCls };
 				views.push(view);
 			}
 
@@ -323,7 +301,7 @@ class MacroBuilder {
 			.concat(
 				views
 					.map(function(v){
-						var viewCls = getViewGenericComplexType(v.components);
+						var viewCls = v.cls; //getViewGenericComplexType(v.components);
 						var viewType = viewCls.tp();
 						var viewId = viewIdsMap[viewCls.followName()];
 						return [
@@ -407,18 +385,24 @@ class MacroBuilder {
 	}
 
 
-	static public function genericBuildView() {
-		switch (Context.getLocalType()) {
-			case TInst(_.get() => cls, [TAnonymous(_.get() => p)]):
-				var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
-				return getView(components).toType();
+	static function createViewType(type:haxe.macro.Type) {
+		return switch(type) {
+			case TInst(_, [x]):
+				createViewType(x);
 
-			case TInst(_.get() => cls, [TType(_.get() => { type:TAnonymous(_.get() => p) }, [])]):
-				var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
-				return getView(components).toType();
+			case TType(_.get() => { type: x }, []):
+				createViewType(x);
 
-			case x: throw 'Unexpected $x! Require TAnonymous(_) or TType(TAnonymous(_))';
+			case TAnonymous(_.get() => p):
+				var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
+				getView(components).toType();
+
+			case x: throw 'Unexpected $x';
 		}
+	}
+
+	static public function genericBuildView() {
+		return createViewType(Context.getLocalType());
 	}
 
 
