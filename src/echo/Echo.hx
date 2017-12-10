@@ -44,7 +44,7 @@ class Echo {
 		var ret = 'Echo ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
 		#if echo_debug
-		ret += ' : ${ times.get(-100) } ms';
+		ret += ' : ${ times.get(-2) } ms';
 		for (s in systems) {
 			ret += '\n        ($s) : ${ times.get(s.__id) } ms';
 		}
@@ -63,23 +63,23 @@ class Echo {
 	 */
 	public function update(dt:Float) {
 		#if echo_debug
-		var engineUpdateStartTimestamp = haxe.Timer.stamp();
+		var engineUpdateStartTimestamp = Date.now().getTime();
 		#end
 
 		for (s in systems) {
 			#if echo_debug
-			var systemUpdateStartTimestamp = haxe.Timer.stamp();
+			var systemUpdateStartTimestamp = Date.now().getTime();
 			#end
 
 			s.update(dt);
 
 			#if echo_debug
-			times.set(s.__id, Std.int((haxe.Timer.stamp() - systemUpdateStartTimestamp) * 1000));
+			times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
 			#end
 		}
 
 		#if echo_debug
-		times.set(-100, Std.int((haxe.Timer.stamp() - engineUpdateStartTimestamp) * 1000));
+		times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
 		#end
 	}
 
