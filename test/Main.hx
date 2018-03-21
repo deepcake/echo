@@ -16,6 +16,9 @@ class Main {
 		r.add(new TestComponentOp());
 		r.add(new TestIdOp());
 
+		r.add(new TestEchoOp());
+		r.add(new TestMeta());
+
 		r.add(new TestViewOp());
 		r.add(new TestSystem());
 		r.add(new TestSmoke1());

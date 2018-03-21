@@ -17,7 +17,12 @@ class Echo {
 	@:noCompletion static var __echoSequence = -1;
 	@:noCompletion public var __id = 0;
 
-	@:noCompletion public var __componentSequence = -1;
+	public static var __inits:Map<Int, Int->(Int->Void)>;
+
+	var __removes = new haxe.ds.Vector<Int->Void>(haxe.rtti.Meta.getType(Echo).components.length);
+
+	var __componentSequence = -1;
+	var __componentMaps = new haxe.ds.Vector<Map<Int, Dynamic>>(haxe.rtti.Meta.getType(Echo).components.length);
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
@@ -32,8 +37,14 @@ class Echo {
 
 
 	public function new() {
-		//trace(haxe.rtti.Meta.getType(Echo).components);
 		__id = ++__echoSequence;
+
+		var i = 0;
+		for (key in __inits.keys()) {
+			var f = __inits[key];
+			__removes[i] = f(__id);
+			i++;
+		}
 	}
 
 
@@ -261,16 +272,8 @@ class Echo {
 	 */
 	public function remove(id:Int) {
 		poll(id);
-		for (c in haxe.rtti.Meta.getType(Echo).components) {
-			var cls = Type.resolveClass(c);
-
-			#if js
-			untyped cls.get(__id).remove(id);
-			#else
-			var map:Map<Int, Dynamic> = Reflect.callMethod(cls, Reflect.field(cls, 'get'), [ __id ]);
-			map.remove(id);
-			#end
-		}
+		//for (c in __componentMaps) c.remove(id);
+		for (r in __removes) r(id);
 	}
 
 

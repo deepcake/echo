@@ -35,3 +35,10 @@ class C2 {
         this.val = s;
     }
 }
+
+class C3 {
+    public var val:String;
+    public function new(s = 'C3') {
+        this.val = s;
+    }
+}

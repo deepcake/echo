@@ -20,7 +20,6 @@ using Lambda;
 @:final
 @:dce
 class MacroBuilder {
-	#if macro
 
 
 	static var EXCLUDE_META = ['skip', 'ignore', 'i'];
@@ -523,8 +522,23 @@ class MacroBuilder {
 				componentIndex++;
 
 				var def = macro class $componentHolderClsName {
-					static var __tl:Map<Int, Map<Int, $componentCls>> = new Map();
-					public static function get(i:Int) return __tl[i] != null ? __tl[i] : __tl[i] = new Map<Int, $componentCls>();
+					public static var __tl:Map<Int, Map<Int, $componentCls>>;
+
+					static function __init__() {
+						__tl = new Map<Int, Map<Int, $componentCls>>();
+						if (echo.Echo.__inits == null) echo.Echo.__inits = new Map<Int, Int->(Int->Void)>();
+						echo.Echo.__inits[$v{ componentIndex }] = init;
+					}
+
+					public static function init(i:Int):(Int->Void) {
+						__tl[i] = new Map<Int, $componentCls>();
+						return __tl[i].remove;
+					}
+
+					@:keep
+					inline public static function get(i:Int) {
+						return __tl[i];
+					}
 				}
 
 				traceTypeDefenition(def);
@@ -545,5 +559,4 @@ class MacroBuilder {
 		return componentIds[componentCls.followName()];
 	}
 
-	#end
 }

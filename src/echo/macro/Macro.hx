@@ -20,7 +20,6 @@ using Lambda;
 @:final
 @:dce
 class Macro {
-	#if macro
 
 	static public function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
 		return {
@@ -126,5 +125,4 @@ class Macro {
 		}
 	}
 
-	#end
 }
