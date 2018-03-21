@@ -1,5 +1,5 @@
 # Echo
-[![TravisCI Build Status](https://travis-ci.org/wimcake/echo.svg?branch=master)](https://travis-ci.org/wimcake/echo)
+[![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
 Super lightweight Entity Component System framework for Haxe. 
 Focused to be simple and perfomant.
@@ -77,9 +77,9 @@ class Render extends System {
 }
 ```
 
-[Live Example](https://wimcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/test/Example.hx](https://github.com/wimcake/echo/blob/master/test/Example.hx))
+[Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/test/Example.hx](https://github.com/deepcake/echo/blob/master/test/Example.hx))
 
-[Live Demo](https://wimcake.github.io/chickens/bin/web/) of using Echo with Luxe and Nape (source [https://github.com/wimcake/chickens](https://github.com/wimcake/chickens))
+[Live Demo](https://deepcake.github.io/chickens/bin/web/) of using Echo with Luxe and Nape (source [https://github.com/deepcake/chickens](https://github.com/deepcake/chickens))
 
 #### Overview
 * `Component` is an instance of `T:Any` class. For each `T` class, used as a component, will be generated a global `Map<Int, T>` component map.
@@ -164,7 +164,7 @@ There is also exists a few additional compiler flags:
  * `-D echo_debug` - collecting some more info for `toString()` method (note, that it uses reflection, so better to remove it in release build)
 
 #### Install
-```haxelib git echo https://github.com/wimcake/echo.git```
+```haxelib git echo https://github.com/deepcake/echo.git```
 
 #### Wip
 Work in progress, breaking changes are possible

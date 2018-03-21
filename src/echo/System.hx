@@ -2,7 +2,7 @@ package echo;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 #if !macro
 @:autoBuild(echo.macro.MacroBuilder.autoBuildSystem())

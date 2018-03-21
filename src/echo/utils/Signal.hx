@@ -5,7 +5,7 @@ import haxe.macro.Expr;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 abstract Signal<T>(Array<T>) {
 

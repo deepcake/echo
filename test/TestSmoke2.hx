@@ -7,7 +7,7 @@ import echo.*;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class TestSmoke2 extends TestCase {
 

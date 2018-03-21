@@ -9,7 +9,7 @@ using Lambda;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class Example {
 
