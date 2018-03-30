@@ -21,7 +21,7 @@ using Lambda;
 @:dce
 class Macro {
 
-	static public function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
+	public static function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
 		return {
 			meta: meta != null ? meta : [],
 			name: name,
@@ -35,7 +35,7 @@ class Macro {
 		};
 	}
 
-	static public function fvar(?meta:Metadata, ?access:Array<Access>, name:String, ?type:ComplexType, ?expr:Expr, pos:Position):Field {
+	public static function fvar(?meta:Metadata, ?access:Array<Access>, name:String, ?type:ComplexType, ?expr:Expr, pos:Position):Field {
 		return {
 			meta: meta != null ? meta : [],
 			name: name,
@@ -46,14 +46,14 @@ class Macro {
 	}
 
 
-	static public function arg(name:String, type:ComplexType):FunctionArg {
+	public static function arg(name:String, type:ComplexType):FunctionArg {
 		return {
 			name: name,
 			type: type
 		};
 	}
 
-	static public function meta(name:String, ?params:Array<Expr>, pos:Position):MetadataEntry {
+	public static function meta(name:String, ?params:Array<Expr>, pos:Position):MetadataEntry {
 		return {
 			name: name,
 			params: params != null ? params : [],
@@ -61,7 +61,7 @@ class Macro {
 		}
 	}
 
-	static public function tpath(?pack:Array<String>, name:String, ?params:Array<TypeParam>, ?sub:String):TypePath {
+	public static function tpath(?pack:Array<String>, name:String, ?params:Array<TypeParam>, ?sub:String):TypePath {
 		return {
 			pack: pack != null ? pack : [],
 			name: name,
@@ -71,7 +71,7 @@ class Macro {
 	}
 
 
-	static public inline function traceFields(clsname:String, fields:Array<Field>) {
+	public static inline function traceFields(clsname:String, fields:Array<Field>) {
 		#if echo_verbose
 			var pr = new Printer();
 			var ret = '$clsname\n';
@@ -80,17 +80,17 @@ class Macro {
 		#end
 	}
 
-	static public inline function traceTypeDefenition(def:TypeDefinition) {
+	public static inline function traceTypeDefenition(def:TypeDefinition) {
 		#if echo_verbose
 			trace(new Printer().printTypeDefinition(def));
 		#end
 	}
 
-	static public function followComplexType(cls:ComplexType) {
+	public static function followComplexType(cls:ComplexType) {
 		return ComplexTypeTools.toType(cls).follow().toComplexType();
 	}
 
-	static public function followName(cls:ComplexType):String {
+	public static function followName(cls:ComplexType):String {
 		var t = tp(followComplexType(cls));
 
 		function paramFollowName(p:TypeParam):String {
@@ -106,18 +106,18 @@ class Macro {
 		return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
 	}
 
-	static public function tp(t:ComplexType):TypePath {
+	public static function tp(t:ComplexType):TypePath {
 		return switch(t) {
 			case TPath(p): p;
 			case x: throw 'Unexpected $x';
 		}
 	}
 
-	static public function expr(cls:ComplexType, pos:Position):Expr {
+	public static function expr(cls:ComplexType, pos:Position):Expr {
 		return Context.parse(followName(cls), pos);
 	}
 
-	static public function identName(e:Expr) {
+	public static function identName(e:Expr) {
 		return switch(e.expr) {
 			case EConst(CIdent(name)): name;
 			case EField(path, name): identName(path) + '.' + name;

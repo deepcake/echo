@@ -5,7 +5,7 @@ package echo;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echo.macro.MacroBuilder.genericBuildView())
+@:genericBuild(echo.macro.ViewMacro.build())
 #end
 class View<T> { }
 

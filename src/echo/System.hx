@@ -5,7 +5,7 @@ package echo;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:autoBuild(echo.macro.MacroBuilder.autoBuildSystem())
+@:autoBuild(echo.macro.SystemMacro.build())
 #end
 class System {
 

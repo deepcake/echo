@@ -1,6 +1,6 @@
 package echo;
 #if macro
-import echo.macro.MacroBuilder;
+import echo.macro.*;
 import haxe.macro.Expr;
 using haxe.macro.Context;
 using echo.macro.Macro;
@@ -19,10 +19,10 @@ class Echo {
 
 	public static var __inits:Map<Int, Int->(Int->Void)>;
 
-	var __removes = new haxe.ds.Vector<Int->Void>(haxe.rtti.Meta.getType(Echo).components.length);
+	var __removes = new Array<Int->Void>();
 
 	var __componentSequence = -1;
-	var __componentMaps = new haxe.ds.Vector<Map<Int, Dynamic>>(haxe.rtti.Meta.getType(Echo).components.length);
+	//var __componentMaps = new haxe.ds.Vector<Map<Int, Dynamic>>(haxe.rtti.Meta.getType(Echo).components.length);
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
@@ -137,7 +137,7 @@ class Echo {
 	 */
 	macro public function hasSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
 		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] });
+		return macro $self.systemsMap.exists($v{ SystemMacro.systemIdsMap[cls.followName()] });
 	}
 
 	/**
@@ -147,7 +147,7 @@ class Echo {
 	 */
 	macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<System>> {
 		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }];
+		return macro $self.systemsMap[$v{ SystemMacro.systemIdsMap[cls.followName()] }];
 	}
 
 
@@ -184,7 +184,7 @@ class Echo {
 	 */
 	macro public function hasView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
 		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] });
+		return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[cls.followName()] });
 	}
 
 	/**
@@ -194,17 +194,17 @@ class Echo {
 	 */
 	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
 		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }];
+		return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[cls.followName()] }];
 	}
 
 	macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.followName()] }];
+		return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[viewCls.followName()] }];
 	}
 
 	macro public function hasViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
 		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[viewCls.followName()] });
+		return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[viewCls.followName()] });
 	}
 
 
@@ -293,7 +293,7 @@ class Echo {
 			.concat(
 				components
 					.map(function(c){
-						var ct = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
+						var ct = ComponentMacro.getComponentHolder(c.typeof().follow().toComplexType());
 						return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] = $c;
 					})
 			)
@@ -327,7 +327,7 @@ class Echo {
 			.concat(
 				types
 					.map(function(t){
-						var ct = echo.macro.MacroBuilder.getComponentHolder(t.identName().getType().follow().toComplexType());
+						var ct = ComponentMacro.getComponentHolder(t.identName().getType().follow().toComplexType());
 						return macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(id);
 					})
 			)
@@ -337,7 +337,7 @@ class Echo {
 			.concat(
 				types
 					.map(function(t){
-						return echo.macro.MacroBuilder.getComponentId(t.identName().getType().follow().toComplexType());
+						return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
 					})
 					.map(function(i){
 						return macro v.isRequire($v{i});
@@ -373,7 +373,7 @@ class Echo {
 	 * @return `T`
 	 */
 	macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id];
 	}
 
@@ -384,7 +384,7 @@ class Echo {
 	 * @return `Bool`
 	 */
 	macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		var ct = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
+		var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
 		return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id] != null;
 	}
 
