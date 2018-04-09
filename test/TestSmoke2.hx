@@ -68,14 +68,6 @@ class TestSmoke2 extends TestCase {
 	}
 
 
-	public function test_stats() {
-		ch.addSystem(new SmokeSystem());
-		
-		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.toString());
-		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', '$ch');
-	}
-
-
 }
 
 class SmokeSystem extends System {

@@ -19,7 +19,7 @@ using Lambda;
 class ComponentMacro {
 
 
-    public static var componentIndex:Int = 0;
+    public static var componentIndex:Int = -1;
     public static var componentIds:Map<String, Int> = new Map();
     public static var componentCache:Map<String, ComplexType> = new Map();
 
@@ -39,22 +39,16 @@ class ComponentMacro {
                 componentIndex++;
 
                 var def = macro class $componentHolderClsName {
-                    public static var __tl:Map<Int, Map<Int, $componentCls>>;
+
+                    @:keep public static var STACK:Map<Int, $componentCls>;
 
                     static function __init__() {
-                        __tl = new Map<Int, Map<Int, $componentCls>>();
-                        if (echo.Echo.__inits == null) echo.Echo.__inits = new Map<Int, Int->(Int->Void)>();
-                        echo.Echo.__inits[$v{ componentIndex }] = init;
+                        STACK = new Map();
+                        echo.Echo.__addComponentStack($v{ componentIndex }, STACK.remove);
                     }
 
-                    public static function init(i:Int):(Int->Void) {
-                        __tl[i] = new Map<Int, $componentCls>();
-                        return __tl[i].remove;
-                    }
-
-                    @:keep
-                    inline public static function get(i:Int) {
-                        return __tl[i];
+                    @:keep inline public static function get(i:Int) { // TODO resolve with i
+                        return STACK;
                     }
                 }
 

@@ -1,4 +1,5 @@
 package echo;
+
 #if macro
 import echo.macro.*;
 import haxe.macro.Expr;
@@ -14,15 +15,19 @@ using Lambda;
 class Echo {
 
 
-	@:noCompletion static var __echoSequence = -1;
-	@:noCompletion public var __id = 0;
+	static var __echoSequence = -1;
 
-	public static var __inits:Map<Int, Int->(Int->Void)>;
+	@:noCompletion public static var __componentStack:Array<Int->Void>;
 
-	var __removes = new Array<Int->Void>();
+	@:noCompletion public static function __addComponentStack(id:Int, stack:Int->Void) { // in thread-unsafe case only remove func needed
+		if (__componentStack == null) __componentStack = new Array<Int->Void>();
+		__componentStack[id] = stack;
+	}
 
-	var __componentSequence = -1;
-	//var __componentMaps = new haxe.ds.Vector<Map<Int, Dynamic>>(haxe.rtti.Meta.getType(Echo).components.length);
+
+	static var __componentSequence = -1; // some thread isolation by global id sequence
+
+	@:noCompletion public var __id:Int;
 
 	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
 	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
@@ -38,21 +43,14 @@ class Echo {
 
 	public function new() {
 		__id = ++__echoSequence;
-
-		var i = 0;
-		for (key in __inits.keys()) {
-			var f = __inits[key];
-			__removes[i] = f(__id);
-			i++;
-		}
 	}
 
 
 	#if echo_debug
 	var times:Map<Int, Float> = new Map();
 	#end
-	inline public function toString():String {
-		var ret = 'Echo ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
+	public function toString():String {
+		var ret = '#$__id ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
 		#if echo_debug
 		ret += ' : ${ times.get(-2) } ms';
@@ -272,8 +270,9 @@ class Echo {
 	 */
 	public function remove(id:Int) {
 		poll(id);
-		//for (c in __componentMaps) c.remove(id);
-		for (r in __removes) r(id);
+		for (i in 0...__componentStack.length) {
+			__componentStack[i](id);
+		}
 	}
 
 

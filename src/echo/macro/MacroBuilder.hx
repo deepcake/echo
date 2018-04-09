@@ -70,7 +70,7 @@ class MacroBuilder {
 		}
 		#end
 
-		if (!metaRegistered) {
+		/*if (!metaRegistered) {
 			Context.onGenerate(function(types) {
 
 				switch (Context.getType("echo.Echo")) {
@@ -82,7 +82,7 @@ class MacroBuilder {
 
 			});
 			metaRegistered = true;
-		}
+		}*/
 	}
 
 
