@@ -223,14 +223,6 @@ class Echo {
 	}
 
 	/**
-	 * Retrives last added id
-	 * @return `Int`
-	 */
-	public inline function last():Int {
-		return __componentSequence;
-	}
-
-	/**
 	 * Returns `true` if the id (entity) is added to the workflow, otherwise returns `false`
 	 * @param id - `Int` id (entity)
 	 * @return `Bool`

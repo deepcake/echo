@@ -93,10 +93,10 @@ class TestSystem extends TestCase {
 
 	public function test_meta_onadd_onrem_order() {
 		ch.addSystem(new MetaAddRemOrderSystem());
-		ch.addComponent(ch.id(), new CA(), new CB());
+		var id = ch.addComponent(ch.id(), new CA(), new CB());
 
-		ch.removeComponent(ch.last(), CA);
-		ch.removeComponent(ch.last(), CB);
+		ch.removeComponent(id, CA);
+		ch.removeComponent(id, CB);
 
 		assertEquals('A0!A1!B0!B1!!A0!A1!B0!B1', MetaAddRemOrderSystem.STATIC_ACTUAL);
 	}
@@ -143,11 +143,11 @@ class TestSystem extends TestCase {
 
 	public function test_meta_oneach_delta() {
 		ch.addSystem(new MetaEachSystemDelta());
-		ch.addComponent(ch.id(), new CA('A'));
+		var id = ch.addComponent(ch.id(), new CA('A'));
 		ch.update(0.9);
 
 		assertEquals(1, ch.views.length);
-		assertEquals('A_0.9A_0.9_' + ch.last(), MetaEachSystemDelta.STATIC_ACTUAL);
+		assertEquals('A_0.9A_0.9_' + id, MetaEachSystemDelta.STATIC_ACTUAL);
 	}
 
 	public function test_meta_oneach_empty() {
