@@ -18,7 +18,7 @@ using Lambda;
 class ViewMacro {
 
 
-    public static var viewIndex:Int = 0;
+    public static var viewIndex:Int = -1;
     public static var viewIdsMap:Map<String, Int> = new Map();
     public static var viewCache:Map<String, ComplexType> = new Map();
     public static var viewMasks:Map<Int, Map<Int, Bool>> = new Map();
@@ -59,6 +59,9 @@ class ViewMacro {
 
             viewIdsMap[viewClsName] = ++viewIndex;
 
+            var viewTypePath = tpath([], viewClsName, []);
+            var viewComplexType = TPath(viewTypePath);
+
             var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
                 public function new() {
                     __id = $v{ viewIndex };
@@ -66,7 +69,19 @@ class ViewMacro {
             }
 
             var iteratorTypePath = getViewIterator(components).tp();
-            def.fields.push(ffun([APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
+            def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
+
+            var ctypes = components
+                                .map(function(c) return c.cls)
+                                .concat([ macro:Int ]);
+            var cargs = components
+                                .map(function(c) return '${ getComponentHolder(c.cls).followName() }.get(echo.__id)[e]')
+                                .map(function(s) return Context.parse(s, Context.currentPos()))
+                                .concat([ macro e ]);
+            var iterBody = macro {
+                for (e in entities) f($a{ cargs });
+            };
+            def.fields.push(ffun([], [APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));
 
             // isMatch
             var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.get(echo.__id)[id] != null').join(' && '), Context.currentPos());
