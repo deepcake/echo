@@ -35,7 +35,7 @@ class ViewMacro {
 
     static function createViewType(type:haxe.macro.Type) {
         return switch(type) {
-            case TInst(_, [x]):
+            case TInst(_, [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]):
                 createViewType(x);
 
             case TType(_.get() => { type: x }, []):
@@ -43,6 +43,14 @@ class ViewMacro {
 
             case TAnonymous(_.get() => p):
                 var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
+                getView(components).toType();
+
+            case TFun(args, _):
+                var components = args.mapi(function(i, a) return { name: a.t.follow().toComplexType().tp().name.toLowerCase(), cls: a.t.follow().toComplexType() }).array();
+                getView(components).toType();
+
+            case TInst(_, types):
+                var components = types.mapi(function(i, t) return { name: t.follow().toComplexType().tp().name.toLowerCase(), cls: t.follow().toComplexType() }).array();
                 getView(components).toType();
 
             case x: throw 'Unexpected $x';
