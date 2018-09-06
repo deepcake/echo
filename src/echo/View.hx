@@ -7,7 +7,7 @@ package echo;
 #if !macro
 @:genericBuild(echo.macro.ViewMacro.build())
 #end
-class View<T> { }
+class View<T> extends ViewBase { }
 
 /**
  *

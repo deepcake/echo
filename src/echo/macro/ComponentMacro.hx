@@ -1,20 +1,13 @@
 package echo.macro;
 
-
+#if macro
 import echo.macro.Macro.*;
 import echo.macro.MacroBuilder.*;
 
-import haxe.macro.Context;
-import haxe.macro.Expr;
-import haxe.macro.Printer;
-import haxe.macro.Type.ClassField;
 import haxe.macro.Expr.ComplexType;
 
-using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using echo.macro.Macro;
-using StringTools;
-using Lambda;
 
 class ComponentMacro {
 
@@ -34,13 +27,18 @@ class ComponentMacro {
             var componentHolderClsName = getClsName('ComponentMap', componentClsName);
             var componentHolderCls = componentMapCache.get(componentClsName);
             
-            if (componentHolderCls == null) {
+            //if (componentHolderCls == null) {
+            try {
+
+                componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
+
+            } catch (err:String) {
 
                 componentIndex++;
 
                 var def = macro class $componentHolderClsName {
 
-                    @:keep public static var STACK:Map<Int, $componentCls>;
+                    public static var STACK:Map<Int, $componentCls>;
 
                     static function __init__() {
                         STACK = new Map();
@@ -71,3 +69,4 @@ class ComponentMacro {
     }
 
 }
+#end

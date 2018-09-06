@@ -1,18 +1,16 @@
 package echo.macro;
 
+#if macro
 import echo.macro.Macro.*;
 import echo.macro.MacroBuilder.*;
 import echo.macro.ComponentMacro.*;
 
-import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Printer;
 import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using echo.macro.Macro;
-using StringTools;
 using Lambda;
 
 class ViewMacro {
@@ -23,9 +21,11 @@ class ViewMacro {
     public static var viewCache:Map<String, ComplexType> = new Map();
     public static var viewMasks:Map<Int, Map<Int, Bool>> = new Map();
 
-    public static var viewIterCache:Map<String, ComplexType> = new Map();
+    //public static var viewTypeCache:Map<String, haxe.macro.Type> = new Map();
 
-    public static var viewDataCache:Map<String, ComplexType> = new Map();
+    //public static var viewIterCache:Map<String, ComplexType> = new Map();
+
+    //public static var viewDataCache:Map<String, ComplexType> = new Map();
 
 
     public static function build() {
@@ -63,7 +63,13 @@ class ViewMacro {
         
         var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
         var viewCls = viewCache.get(viewClsName);
-        if (viewCls == null) {
+
+        //if (viewCls == null) {
+        try {
+
+            viewCls = Context.getType(viewClsName).toComplexType();
+
+        } catch (err:String) {
 
             viewIdsMap[viewClsName] = ++viewIndex;
 
@@ -76,8 +82,8 @@ class ViewMacro {
                 }
             }
 
-            var iteratorTypePath = getViewIterator(components).tp();
-            def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
+            //var iteratorTypePath = getViewIterator(components).tp();
+            //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
             var ctypes = components
                                 .map(function(c) return c.cls)
@@ -116,11 +122,12 @@ class ViewMacro {
             viewCls = Context.getType(viewClsName).toComplexType();
             viewCache.set(viewClsName, viewCls);
         }
+
         return viewCls;
     }
 
 
-    public static function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+    /*public static function getViewIterator(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
         var viewDataCls = getViewData(components);
         var viewIterClsName = getClsName('ViewIterator', viewDataCls.followName());
         var viewIterCls = viewIterCache.get(viewIterClsName);
@@ -155,13 +162,20 @@ class ViewMacro {
             viewIterCache.set(viewIterClsName, viewIterCls);
         }
         return viewIterCls;
-    }
+    }*/
 
 
-    public static function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
+    /*public static function getViewData(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
         var viewDataClsName = getClsName('ViewData', getClsNameSuffixByComponents(components));
         var viewDataCls = viewDataCache.get(viewDataClsName);
+
         if (viewDataCls == null) {
+            try {
+                Context.getType(viewDataClsName);
+
+            } catch(error:String) {
+
+                trace('#view $error');
 
             var def:TypeDefinition = macro class $viewDataClsName {
                 inline public function new() { }
@@ -173,11 +187,13 @@ class ViewMacro {
             traceTypeDefenition(def);
 
             Context.defineType(def);
+            }
 
             viewDataCls = Context.getType(viewDataClsName).toComplexType();
             viewDataCache.set(viewDataClsName, viewDataCls);
         }
         return viewDataCls;
-    }
+    }*/
 
 }
+#end

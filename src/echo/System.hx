@@ -10,29 +10,29 @@ package echo;
 class System {
 
 
-	var echo:Echo;
+    var echo:Echo;
 
-	@:noCompletion public var __id = -1;
-
-
-	@:noCompletion public function activate(echo:Echo) {
-		this.echo = echo;
-		onactivate();
-	}
-
-	@:noCompletion public function deactivate() {
-		ondeactivate();
-		this.echo = null;
-	}
+    @:noCompletion public var __id = -1;
 
 
-	public function onactivate() { }
+    @:noCompletion public function activate(echo:Echo) {
+        this.echo = echo;
+        onactivate();
+    }
 
-	public function ondeactivate() { }
+    @:noCompletion public function deactivate() {
+        ondeactivate();
+        this.echo = null;
+    }
 
-	public function update(dt:Float) { }
+
+    public function onactivate() { }
+
+    public function ondeactivate() { }
+
+    public function update(dt:Float) { }
 
 
-	public function toString():String return 'System';
+    public function toString():String return 'System';
 
 }

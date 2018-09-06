@@ -1,5 +1,6 @@
 package echo.macro;
 
+#if macro
 import echo.macro.Macro.*;
 import echo.macro.MacroBuilder.*;
 import echo.macro.ViewMacro.*;
@@ -164,7 +165,9 @@ class SystemMacro {
                     return macro $i{ f.name }($a{ f.args });
                 } else {
                     //var viewName = requestView(f.components);
-                    return macro for (_id_ in $i{ f.view }.entities) $i{ f.name }($a{ f.args });
+                    return macro {
+                        for (_id_ in $i{ f.view }.entities) $i{ f.name }($a{ f.args });
+                    }
                 }
             }))
             .array();
@@ -264,3 +267,4 @@ class SystemMacro {
     }
 
 }
+#end
