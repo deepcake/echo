@@ -47,7 +47,9 @@ class Example {
 		}
 
 		// some rabbits
-		for (i in 0...RABBITS_POPULATION) rabbit(Std.random(w), Std.random(h));
+		for (i in 0...RABBITS_POPULATION) {
+			rabbit(Std.random(w), Std.random(h));
+		}
 
 		// tiger!
 		tiger(Std.random(w), Std.random(h));
@@ -174,14 +176,14 @@ class Movement extends System {
 		this.h = h;
 	}
 	override public function update(dt:Float) {
-		for (body in bodies) {
-			body.pos.x += body.vel.x * dt;
-			body.pos.y += body.vel.y * dt;
-			if (body.pos.x >= w) body.pos.x -= w;
-			if (body.pos.x < 0) body.pos.x += w;
-			if (body.pos.y >= h) body.pos.y -= h;
-			if (body.pos.y < 0) body.pos.y += h;
-		}
+		bodies.iter((pos, vel, id) -> {
+			pos.x += vel.x * dt;
+			pos.y += vel.y * dt;
+			if (pos.x >= w) pos.x -= w;
+			if (pos.x < 0) pos.x += w;
+			if (pos.y >= h) pos.y -= h;
+			if (pos.y < 0) pos.y += h;
+		});
 	}
 }
 
@@ -206,7 +208,7 @@ class Render extends System {
 	// all visuals, not required updates, just add sprite to the canvas
 	var visuals:View<{ pos:Position, spr:Sprite }>;
 	@onadded function appendVisual(pos:Position, spr:Sprite) {
-		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
 	@onremoved function removeVisual(id:Int) {
 		echo.getComponent(id, Sprite).remove();
@@ -223,25 +225,31 @@ class Interaction extends System {
 	var animals:View<{ a:Animal, pos:Position }>;
 	override public function update(dt:Float) {
 		var del = [];
+
 		// everyone with everyone
-		for (a1 in animals) for (a2 in animals) {
-			if (a1 != a2 && isInteract(a1.pos, a2.pos, 1.0)) {
+		animals.iter((a1, pos1, id1) -> {
+			animals.iter((a2, pos2, id2) -> {
 
-				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) {
-					// tiger eats rabbit
-					Example.event(a1.pos.x, a1.pos.y, 'skull');
-					del.push(a2.id);
-				}
-				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
-					// rabbits reproduces
-					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) {
-						Example.rabbit(a1.pos.x, a1.pos.y);
-						Example.event(a1.pos.x, a1.pos.y, 'heart');
+				if (id1 != id2 && isInteract(pos1, pos2, 1.0)) {
+
+					if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
+						// tiger eats rabbit
+						trace('eat $id2');
+						Example.event(pos1.x, pos1.y, 'skull');
+						del.push(id2);
 					}
+					if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
+						// rabbits reproduces
+						if (animals.entities.count(function(i) return echo.getComponent(i, Animal) == Animal.Rabbit) < Example.RABBITS_POPULATION) {
+							Example.rabbit(pos1.x, pos1.y);
+							Example.event(pos1.x, pos1.y, 'heart');
+						}
+					}
+
 				}
 
-			}
-		}
+			});
+		});
 
 		for (id in del) echo.remove(id);
 	}
