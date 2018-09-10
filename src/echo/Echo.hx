@@ -365,7 +365,9 @@ class Echo {
      */
     macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id];
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] ];
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
+        return ret;
     }
 
     /**
@@ -376,7 +378,9 @@ class Echo {
      */
     macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[$id] != null;
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] != null ];
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
+        return ret;
     }
 
 }
