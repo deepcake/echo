@@ -5,3 +5,4 @@
 -dce full
 -D analyzer-optimize
 -D echo_debug
+-D echo_report

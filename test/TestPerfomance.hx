@@ -6,7 +6,7 @@ import haxe.unit.TestCase;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class TestPerfomance extends TestCase {
 
@@ -30,31 +30,31 @@ class TestPerfomance extends TestCase {
 
 		time = Date.now().getTime();
 
-		for (i in ids) ch.setComponent(i, new A());
+		for (i in ids) ch.addComponent(i, new A());
 		stamp('A');
 
-		for (i in ids) ch.setComponent(i, new B());
+		for (i in ids) ch.addComponent(i, new B());
 		stamp('B');
 
-		for (i in ids) ch.setComponent(i, new C());
+		for (i in ids) ch.addComponent(i, new C());
 		stamp('C');
 
-		for (i in ids) ch.setComponent(i, new D());
+		for (i in ids) ch.addComponent(i, new D());
 		stamp('D');
 
-		for (i in ids) ch.setComponent(i, new E());
+		for (i in ids) ch.addComponent(i, new E());
 		stamp('E');
 
-		for (i in ids) ch.setComponent(i, new F());
+		for (i in ids) ch.addComponent(i, new F());
 		stamp('F');
 
-		for (i in ids) ch.setComponent(i, new G());
+		for (i in ids) ch.addComponent(i, new G());
 		stamp('G');
 
-		for (i in ids) ch.setComponent(i, new H());
+		for (i in ids) ch.addComponent(i, new H());
 		stamp('H');
 
-		for (i in ids) ch.setComponent(i, new I());
+		for (i in ids) ch.addComponent(i, new I());
 		stamp('I');
 
 		for (i in 0...10) {

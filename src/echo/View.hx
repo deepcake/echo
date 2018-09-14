@@ -2,12 +2,12 @@ package echo;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echo.macro.MacroBuilder.genericBuildView())
+@:genericBuild(echo.macro.ViewMacro.build())
 #end
-class View<T> { }
+class View<T> extends ViewBase { }
 
 /**
  *
@@ -43,6 +43,10 @@ class ViewBase {
 
 	@:noCompletion function isMatch(id:Int):Bool { // macro
 		// each required component exists in component map with this id
+		return false;
+	}
+
+	@:noCompletion public function isRequire(c:Int):Bool { // macro
 		return false;
 	}
 

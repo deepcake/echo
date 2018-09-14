@@ -5,7 +5,7 @@ import haxe.unit.TestCase;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class TestSignal extends TestCase {
 

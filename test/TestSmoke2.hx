@@ -7,7 +7,7 @@ import echo.*;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class TestSmoke2 extends TestCase {
 
@@ -20,7 +20,7 @@ class TestSmoke2 extends TestCase {
 
 	override public function setup() {
 		ch = new Echo();
-		for (i in 'xy'.split('')) ch.setComponent(ch.id(), new Name(i));
+		for (i in 'xy'.split('')) ch.addComponent(ch.id(), new Name(i));
 	}
 
 	public function test_workflow1() {
@@ -51,13 +51,13 @@ class TestSmoke2 extends TestCase {
 	}
 
 
-	public function test_remove_component_from_iteration_cycle() {
+	/*public function test_remove_component_from_iteration_cycle() {
 		ch.addSystem(new RemoveComponentFromIterationCycleSystem());
 		assertEquals(10, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
 		ch.update(1);
 
 		assertEquals(0, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
-	}
+	}*/
 
 	public function test_remove_component_from_meta_iteration_cycle() {
 		ch.addSystem(new RemoveComponentFromMetaIterationCycleSystem());
@@ -65,14 +65,6 @@ class TestSmoke2 extends TestCase {
 		ch.update(1);
 
 		assertEquals(0, RemoveComponentFromMetaIterationCycleSystem.viewab.entities.length);
-	}
-
-
-	public function test_stats() {
-		ch.addSystem(new SmokeSystem());
-		
-		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', ch.toString());
-		assertEquals('Echo ( 1 ) { 1 } [ 2 ]', '$ch');
 	}
 
 
@@ -167,7 +159,7 @@ class SmokeSystem3 extends System {
 
 }
 
-class RemoveComponentFromIterationCycleSystem extends System {
+/*class RemoveComponentFromIterationCycleSystem extends System {
 
 	static public var OUT = '';
 	public function new() OUT = '';
@@ -176,14 +168,14 @@ class RemoveComponentFromIterationCycleSystem extends System {
 
 	override function onactivate() {
 		var ids = [ for(i in 0...10) echo.id() ];
-		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+		for (id in ids) echo.addComponent(id, new Name('A'), new Greeting('B'));
 	}
 
 	override function update(dt:Float) {
 		for (i in viewab) echo.removeComponent(i.id, Name);
 	}
 
-}
+}*/
 
 class RemoveComponentFromMetaIterationCycleSystem extends System {
 
@@ -194,7 +186,7 @@ class RemoveComponentFromMetaIterationCycleSystem extends System {
 
 	override function onactivate() {
 		var ids = [ for(i in 0...10) echo.id() ];
-		for (id in ids) echo.setComponent(id, new Name('A'), new Greeting('B'));
+		for (id in ids) echo.addComponent(id, new Name('A'), new Greeting('B'));
 	}
 
 	@u function remove(i:Int, n:Name, g:Greeting) {

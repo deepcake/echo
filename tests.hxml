@@ -1,0 +1,5 @@
+-lib hx3compat
+-cp test
+-main Main
+-dce full
+-D analyzer-optimize

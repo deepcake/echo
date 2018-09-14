@@ -1,78 +1,37 @@
+sudo: required
+dist: trusty
+
 language: haxe
 
-# TravisCI by default run on linux.
-# Let's enable both linux and mac builds because why not?
 os:
   - linux
   - osx
 
-# Let's use OSX 10.10, which is the oldest version that homebrew provides bottles for.
-# https://docs.travis-ci.com/user/osx-ci-environment/
-osx_image: xcode6.4
-
-# Test with Haxe 3.4.2 and Haxe development.
+# you can specify futher versions as found at http://haxe.org/website-content/downloads/versions.json
 haxe:
-  - "3.4.2"
+  - "3.4.4"
   - development
-
+  
 matrix:
-  # Allow Haxe development to fail.
   allow_failures:
     - haxe: development
 
-addons:
-  # This is the preferred way to install apt packages.
-  # However, it only allow some but not all packages.
-  # Alternatively, we can use `sudo apt-get install ...` in the `install:` section.
-  # http://docs.travis-ci.com/user/apt/#Adding-APT-Packages
-  apt:
-    packages:
-      # C++ (for rebuilding hxcpp)
-      - gcc-multilib
-      - g++-multilib
-      # Python
-      - python3
-      # PHP
-      - php5-cli
-      # C#
-      - mono-devel
-      - mono-mcs
-
 install:
-  # os-specific config
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-      export DISPLAY=:99.0;
-      export AUDIODEV=null;
-    elif [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      brew uninstall --force brew-cask;
-      brew update;
-      brew install mono;
-      brew install phantomjs;
-      brew install python3;
-    fi
-  # Install haxelibs
-  - if [ "${TRAVIS_HAXE_VERSION}" = "development" ]; then
-      haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp.git;
-      pushd $(haxelib path hxcpp | head -1);
-        pushd tools/hxcpp; haxe compile.hxml; popd;
-        pushd project; neko build.n; popd;
-      popd;
-    else
-      haxelib install hxcpp;
-    fi
-  - haxelib install hxjava
-  - haxelib install hxcs
-  - haxelib list
+  - haxelib install travix
+  # to always use the latest version of travix comment out the previous line and uncomment the next
+  # - haxelib git travix https://github.com/back2dos/travix && pushd . && cd $(haxelib config)travix/git && haxe build-neko.hxml && popd
+  - haxelib run travix install
 
 script:
-  - haxe build-interp-dce.hxml
-  - haxe build-interp-dce-shorten.hxml
-#  - haxe build-neko.hxml         && neko bin/Main.n
-  - haxe build-js.hxml           && node bin/Main.js
-#                                 && haxe phantomjs/run.hxml bin/Main.js
-  - haxe build-java.hxml         && java -jar bin/Main.jar
-#  - haxe build-php.hxml          && php bin/index.php
-#  - haxe build-cs.hxml           && mono bin/bin/Main.exe
-#  - haxe build-flash.hxml -D fdb && haxe flash/run.hxml bin/Main.swf
-  - haxe build-cpp.hxml          && ./bin/Main
-#  - haxe build-python.hxml       && python3 bin/Main.py
+  - haxelib run travix interp
+  - haxelib run travix neko
+  - haxelib run travix python
+  - haxelib run travix node
+  # - haxelib run travix js
+  # - haxelib run travix flash
+  - haxelib run travix java
+  - haxelib run travix cpp
+  - haxelib run travix cs
+  # - haxelib run travix php
+  - haxelib run travix php7
+  # - haxelib run travix lua
