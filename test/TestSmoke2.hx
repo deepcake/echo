@@ -51,13 +51,13 @@ class TestSmoke2 extends TestCase {
 	}
 
 
-	public function test_remove_component_from_iteration_cycle() {
+	/*public function test_remove_component_from_iteration_cycle() {
 		ch.addSystem(new RemoveComponentFromIterationCycleSystem());
 		assertEquals(10, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
 		ch.update(1);
 
 		assertEquals(0, RemoveComponentFromIterationCycleSystem.viewab.entities.length);
-	}
+	}*/
 
 	public function test_remove_component_from_meta_iteration_cycle() {
 		ch.addSystem(new RemoveComponentFromMetaIterationCycleSystem());
@@ -159,7 +159,7 @@ class SmokeSystem3 extends System {
 
 }
 
-class RemoveComponentFromIterationCycleSystem extends System {
+/*class RemoveComponentFromIterationCycleSystem extends System {
 
 	static public var OUT = '';
 	public function new() OUT = '';
@@ -175,7 +175,7 @@ class RemoveComponentFromIterationCycleSystem extends System {
 		for (i in viewab) echo.removeComponent(i.id, Name);
 	}
 
-}
+}*/
 
 class RemoveComponentFromMetaIterationCycleSystem extends System {
 

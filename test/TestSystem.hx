@@ -131,7 +131,7 @@ class TestSystem extends TestCase {
 		assertEquals('A#B%--!', MetaEachSystemDifferentView.STATIC_ACTUAL);
 	}
 
-	public function test_meta_oneach4() {
+	/*public function test_meta_oneach4() {
 		ch.addSystem(new MetaEachSystem4());
 		ch.addComponent(ch.id(), new CA('A'), new CB('B'));
 		ch.addComponent(ch.id(), new CA('#'), new CB('%'));
@@ -139,7 +139,7 @@ class TestSystem extends TestCase {
 
 		assertEquals(1, ch.views.length);
 		assertEquals('AB!#%!A!B!#!%!', MetaEachSystem4.STATIC_ACTUAL);
-	}
+	}*/
 
 	public function test_meta_oneach_delta() {
 		ch.addSystem(new MetaEachSystemDelta());
@@ -323,7 +323,7 @@ class MetaEachSystemDifferentView extends System {
 	override public function update(dt:Float) STATIC_ACTUAL += '!';
 }
 
-class MetaEachSystem4 extends System {
+/*class MetaEachSystem4 extends System {
 	static public var STATIC_ACTUAL = '';
 	public function new() STATIC_ACTUAL = '';
 
@@ -334,7 +334,7 @@ class MetaEachSystem4 extends System {
 	}
 
 	var viewab:echo.View<{a:CA, b:CB}>;
-}
+}*/
 
 class MetaEachSystemDelta extends System {
 	static public var STATIC_ACTUAL = '';

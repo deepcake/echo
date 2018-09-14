@@ -122,12 +122,25 @@ class TestComponentTypes extends TestCase {
 		assertEquals(EOne, ch.getComponent(id, EnumComponent));
 	}
 
+	public function test_interface() {
+		var view = new View<{ c:ISimpleComponent }>();
+		ch.addView(view);
+
+		ch.addComponent(id, (new SimpleComponent('A'):ISimpleComponent), new SimpleComponent('B'));
+
+		assertEquals(1, view.entities.length);
+		assertEquals('A', ch.getComponent(id, ISimpleComponent).getValue());
+	}
+
 }
 
-class SimpleComponent {
+class SimpleComponent implements ISimpleComponent {
 	public var val = '';
 	public function new(v:String) {
 		val = v;
+	}
+	public function getValue() {
+		return val;
 	}
 }
 
@@ -159,3 +172,7 @@ typedef TypeParamComponent = Array<Int>; // only way ?
 typedef AnonymousViewParam = { var a:SimpleComponent; }
 
 typedef AnonymousViewParamExtended = { > AnonymousViewParam, var b:EnumComponent; }
+
+interface ISimpleComponent {
+	function getValue():String;
+}

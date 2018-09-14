@@ -21,9 +21,10 @@ class Main {
 
 		r.add(new TestViewOp());
 		r.add(new TestSystem());
-		r.add(new TestSmoke1());
 		r.add(new TestSmoke2());
-		r.add(new TestPerfomance());
+		r.add(new TestSmoke3());
+
+		//r.add(new TestPerfomance());
 
 		var ret = r.run();
 

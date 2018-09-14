@@ -63,6 +63,8 @@ class TestViewOp extends haxe.unit.TestCase {
             if (id % 5 == 0) ch.removeComponent(id, C2);
         }
 
+        ch.update(0);
+
         assertEquals(100, ch.entities.length);
         assertEquals(50, va_.entities.length);
         assertEquals(80, v_b.entities.length);
@@ -77,6 +79,8 @@ class TestViewOp extends haxe.unit.TestCase {
         for (id in ids) {
             if (id % 2 == 0) ch.removeComponent(id, C1, C2);
         }
+
+        ch.update(0);
 
         assertEquals(100, ch.entities.length);
         assertEquals(50, va_.entities.length);
@@ -116,6 +120,8 @@ class TestViewOp extends haxe.unit.TestCase {
 
         for (id in ids) if (id % 2 == 0) ch.poll(id);
 
+        ch.update(0);
+
         assertEquals(50, ch.entities.length);
         assertEquals(50, va_.entities.length);
         assertEquals(50, v_b.entities.length);
@@ -129,6 +135,8 @@ class TestViewOp extends haxe.unit.TestCase {
 
         for (id in ids) if (id % 2 == 0) ch.remove(id);
 
+        ch.update(0);
+
         assertEquals(50, ch.entities.length);
         assertEquals(50, va_.entities.length);
         assertEquals(50, v_b.entities.length);
@@ -138,7 +146,7 @@ class TestViewOp extends haxe.unit.TestCase {
     }
 
 
-    public function test_iter_remove() {
+    /*public function test_iter_remove() {
         var ids = [ for (i in 0...100) ch.addComponent(ch.id(), new C1(), new C2()) ];
 
         for (v in vab) if (v.id % 2 == 0) ch.removeComponent(v.id, C1);
@@ -147,7 +155,7 @@ class TestViewOp extends haxe.unit.TestCase {
         assertEquals(50, va_.entities.length);
         assertEquals(100, v_b.entities.length);
         assertEquals(50, vab.entities.length);
-    }
+    }*/
 
 
     public function test_add_signal() {
@@ -161,6 +169,8 @@ class TestViewOp extends haxe.unit.TestCase {
         var ids = createQwerty();
         ids.reverse();
         ids.iter(function(id:Int) ch.removeComponent(id, C1));
+
+        ch.update(0);
 
         assertEquals('QWERTY', aout);
         assertEquals('YTREWQ', rout);
@@ -181,6 +191,8 @@ class TestViewOp extends haxe.unit.TestCase {
         var ids = createQwerty();
         ids.reverse();
         ids.iter(function(id:Int) ch.removeComponent(id, C1));
+
+        ch.update(0);
 
         assertEquals('', aout);
         assertEquals('', rout);
