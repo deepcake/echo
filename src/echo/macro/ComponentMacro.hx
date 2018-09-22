@@ -8,6 +8,8 @@ import haxe.macro.Expr.ComplexType;
 
 using haxe.macro.Context;
 using echo.macro.Macro;
+using haxe.macro.ComplexTypeTools;
+using Lambda;
 
 class ComponentMacro {
 
@@ -20,47 +22,59 @@ class ComponentMacro {
     public static var componentMapNames:Array<String> = [];
 
 
-    public static function getComponentHolder(componentCls:ComplexType):ComplexType {
-            gen();
+    // componentHolderClsName / componentHolderType
+    static var componentHolderTypeCache = new Map<String, haxe.macro.Type>();
 
-            var componentClsName = componentCls.followName();
-            var componentHolderClsName = getClsName('ComponentMap', componentClsName);
-            var componentHolderCls = componentMapCache.get(componentClsName);
-            
-            //if (componentHolderCls == null) {
-            try {
 
-                componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
+    public static function createComponentHolderType(componentCls:ComplexType) {
+        var componentClsName = componentCls.followName();
+        var componentHolderClsName = getClsName('ComponentMap', componentClsName);
+        var componentHolderType = componentHolderTypeCache.get(componentHolderClsName);
 
-            } catch (err:String) {
+        //if (componentHolderType == null) {
+        try {
 
-                componentIndex++;
+            componentHolderType = Context.getType(componentHolderClsName);
 
-                var def = macro class $componentHolderClsName {
+        } catch (err:String) {
 
-                    public static var STACK:Map<Int, $componentCls>;
+            trace('not found $componentHolderClsName');
 
-                    static function __init__() {
-                        STACK = new Map();
-                        echo.Echo.__addComponentStack($v{ componentIndex }, STACK.remove);
-                    }
+            ++componentIndex;
 
-                    @:keep inline public static function get(i:Int) { // TODO resolve with i
-                        return STACK;
-                    }
+            var def = macro class $componentHolderClsName {
+                public static var STACK:Map<Int, $componentCls>;
+                static function __init__() {
+                    STACK = new Map();
+                    echo.Echo.__addComponentStack($v{ componentIndex }, STACK.remove);
                 }
-
-                traceTypeDefenition(def);
-
-                Context.defineType(def);
-
-                componentHolderCls = Context.getType(componentHolderClsName).toComplexType();
-                componentIds[componentClsName] = componentIndex;
-                componentCache[componentClsName] = componentCls;
-                componentMapCache[componentClsName] = componentHolderCls;
-                componentMapNames.push(componentHolderClsName);
+                @:keep inline public static function get(i:Int) { // TODO resolve with i
+                    return STACK;
+                }
             }
-            return componentHolderCls;
+
+            Context.defineType(def);
+
+            //componentHolderType = Context.getType(componentHolderClsName);
+            var componentHolderCls = TPath(tpath([], componentHolderClsName, []));
+            componentHolderType = componentHolderCls.toType();
+
+            componentHolderTypeCache.set(componentHolderClsName, componentHolderType);
+
+            componentIds[componentClsName] = componentIndex;
+            componentCache[componentClsName] = componentCls;
+            componentMapCache[componentClsName] = componentHolderCls;
+            componentMapNames.push(componentHolderClsName);
+
+        }
+
+        return componentHolderType;
+    }
+
+
+    public static function getComponentHolder(componentCls:ComplexType):ComplexType {
+        gen();
+        return createComponentHolderType(componentCls).toComplexType();
     }
 
     public static function getComponentId(componentCls:ComplexType):Int {
