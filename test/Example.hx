@@ -106,7 +106,7 @@ class Example {
 		}
 		echo.addComponent(echo.id(),
 			new Position(x, y),
-			spr,
+			new Sprite(code),
 			new Timeout(3.0));
 	}
 
