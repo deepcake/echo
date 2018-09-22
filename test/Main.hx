@@ -4,7 +4,7 @@ import haxe.unit.TestRunner;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class Main {
 
@@ -12,13 +12,19 @@ class Main {
 		var r = new TestRunner();
 
 		r.add(new TestSignal());
-		r.add(new TestComponent());
 		r.add(new TestComponentTypes());
-		r.add(new TestView());
+		r.add(new TestComponentOp());
+		r.add(new TestIdOp());
+
+		r.add(new TestEchoOp());
+		r.add(new TestMeta());
+
+		r.add(new TestViewOp());
 		r.add(new TestSystem());
-		r.add(new TestSmoke1());
 		r.add(new TestSmoke2());
-		r.add(new TestPerfomance());
+		r.add(new TestSmoke3());
+
+		//r.add(new TestPerfomance());
 
 		var ret = r.run();
 

@@ -1,6 +1,7 @@
 package echo;
+
 #if macro
-import echo.macro.MacroBuilder;
+import echo.macro.*;
 import haxe.macro.Expr;
 using haxe.macro.Context;
 using echo.macro.Macro;
@@ -9,282 +10,377 @@ using Lambda;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class Echo {
 
 
-	@:noCompletion static public var __IDSEQUENCE = 0;
+    static var __echoSequence = -1;
+
+    @:noCompletion public static var __componentStack:Array<Int->Void>;
+
+    @:noCompletion public static function __addComponentStack(id:Int, stack:Int->Void) { // in thread-unsafe case only remove func needed
+        if (__componentStack == null) __componentStack = new Array<Int->Void>();
+        __componentStack[id] = stack;
+    }
 
 
-	@:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
-	@:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
-	@:noCompletion public var systemsMap:Map<Int, System> = new Map();
+    static var __componentSequence = -1; // some thread isolation by global id sequence
 
-	/** List of added ids (entities) */
-	public var entities(default, null):List<Int> = new List();
-	/** List of added views */
-	public var views(default, null):List<View.ViewBase> = new List();
-	/** List of added systems */
-	public var systems(default, null):List<System> = new List();
+    @:noCompletion public var __id:Int;
 
+    @:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
+    @:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
+    @:noCompletion public var systemsMap:Map<Int, System> = new Map();
 
-	public function new() { }
-
-
-	#if echo_debug
-		var updateStats:Map<Int, Float> = new Map();
-		var timestamp = haxe.Timer.stamp();
-	#end
-	inline public function toString():String {
-		var ret = 'Echo' + ' ( ${systems.length} )' + ' { ${views.length} }' + ' [ ${entities.length} ]'; // TODO add version or something
-		#if echo_debug
-			ret += '\n    since last update : ' + updateStats.get(-10) + ' ms';
-			ret += '\n    echo total update : ' + updateStats.get(-100) + ' ms';
-			for (s in systems) {
-				ret += '\n        ( ' + Type.getClassName(Type.getClass(s)) + ' ) : ' + updateStats.get(s.__id) + ' ms';
-			}
-			for (v in views) {
-				ret += '\n    { ' + Type.getClassName(Type.getClass(v)) + ' } [ ${v.entities.length} ]';
-			}
-		#end
-		return ret;
-	}
+    /** List of added ids (entities) */
+    public var entities(default, null):List<Int> = new List();
+    /** List of added views */
+    public var views(default, null):List<View.ViewBase> = new List();
+    /** List of added systems */
+    public var systems(default, null):List<System> = new List();
 
 
-	/**
-	 *  @param dt - delta time
-	 */
-	public function update(dt:Float) {
-		#if echo_debug
-			updateStats.set(-10, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
-			var updateTimestamp = haxe.Timer.stamp();
-		#end
-		for (s in systems) {
-			#if echo_debug
-				timestamp = haxe.Timer.stamp();
-			#end
-			s.update(dt);
-			#if echo_debug
-				updateStats.set(s.__id, Std.int((haxe.Timer.stamp() - timestamp) * 1000));
-			#end
-		}
-		#if echo_debug
-			timestamp = haxe.Timer.stamp();
-			updateStats.set(-100, Std.int((timestamp - updateTimestamp) * 1000));
-		#end
-	}
+    public function new() {
+        __id = ++__echoSequence;
+    }
 
 
-	// System
+    #if echo_debug
+    var times:Map<Int, Float> = new Map();
+    #end
+    public function toString():String {
+        var ret = '#$__id ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
-	public function addSystem(s:System) {
-		if (!systemsMap.exists(s.__id)) {
-			systemsMap[s.__id] = s;
-			systems.add(s);
-			s.activate(this);
-		}
-	}
+        #if echo_debug
+        ret += ' : ${ times.get(-2) } ms'; // total
+        for (s in systems) {
+            ret += '\n        ($s) : ${ times.get(s.__id) } ms';
+        }
+        for (v in views) {
+            ret += '\n    {$v} [${v.entities.length}]';
+        }
+        #end
 
-	public function removeSystem(s:System) {
-		if (systemsMap.exists(s.__id)) {
-			s.deactivate();
-			systemsMap.remove(s.__id);
-			systems.remove(s);
-		}
-	}
-
-	macro public function hasSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
-		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.systemsMap.exists($v{ MacroBuilder.systemIdsMap[cls.followName()] });
-	}
-
-	macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<System>> {
-		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.systemsMap[$v{ MacroBuilder.systemIdsMap[cls.followName()] }];
-	}
+        return ret;
+    }
 
 
-	// View
+    /**
+     * Update
+     * @param dt - delta time
+     */
+    public function update(dt:Float) {
+        #if echo_debug
+        var engineUpdateStartTimestamp = Date.now().getTime();
+        #end
 
-	public function addView(v:View.ViewBase) {
-		if (!viewsMap.exists(v.__id)) {
-			viewsMap[v.__id] = v;
-			views.add(v);
-			v.activate(this);
-		}
-	}
+        for (s in systems) {
+            #if echo_debug
+            var systemUpdateStartTimestamp = Date.now().getTime();
+            #end
 
-	public function removeView(v:View.ViewBase) {
-		if (viewsMap.exists(v.__id)) {
-			v.deactivate();
-			viewsMap.remove(v.__id);
-			views.remove(v);
-		}
-	}
+            s.update(dt);
 
-	macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
-		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[cls.followName()] }];
-	}
+            #if echo_debug
+            times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
+            #end
+        }
 
-	macro public function hasView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
-		var cls = type.identName().getType().follow().toComplexType();
-		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[cls.followName()] });
-	}
+        #if echo_debug
+        times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
+        #end
+    }
 
-	macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
-		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-		return macro $self.viewsMap[$v{ MacroBuilder.viewIdsMap[viewCls.followName()] }];
-	}
-
-	macro public function hasViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
-		var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-		return macro $self.viewsMap.exists($v{ MacroBuilder.viewIdsMap[viewCls.followName()] });
-	}
+    /**
+    * Removes all views, systems and ids (entities)
+     */
+    public function dispose() {
+        for (v in views) removeView(v);
+        for (s in systems) removeSystem(s);
+        for (e in entities) remove(e);
+    }
 
 
-	// Entity
+    // System
 
-	/**
-	 *  Creates new id (entity) and adds it to the workflow, and return it
-	 *  Equals to call `next()` and then `add()`
-	 *  @return Int
-	 */
-	public function id():Int {
-		var id = next();
-		entitiesMap.set(id, id);
-		entities.add(id);
-		return id;
-	}
+    /**
+     * Adds system to the workflow
+     * @param s `System` instance
+     */
+    public function addSystem(s:System) {
+        if (!systemsMap.exists(s.__id)) {
+            systemsMap[s.__id] = s;
+            systems.add(s);
+            s.activate(this);
+        }
+    }
 
-	/**
-	 *  Creates new id (entity) without adding it ot the workflow (so it will not be collected by views)
-	 *  @return Int
-	 */
-	public inline function next():Int {
-		return ++__IDSEQUENCE;
-	}
+    /**
+     * Removes system from the workflow
+     * @param s `System` instance
+     */
+    public function removeSystem(s:System) {
+        if (systemsMap.exists(s.__id)) {
+            s.deactivate();
+            systemsMap.remove(s.__id);
+            systems.remove(s);
+        }
+    }
 
-	/**
-	 *  Gets last added id
-	 *  @return Int
-	 */
-	public inline function last():Int {
-		return __IDSEQUENCE;
-	}
+    /**
+     * Returns `true` if system with passed `type` was been added to the workflow, otherwise returns `false`
+     * @param type `Class<T>` system type
+     * @return `Bool`
+     */
+    macro public function hasSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
+        var cls = type.identName().getType().follow().toComplexType();
+        return macro $self.systemsMap.exists($v{ SystemMacro.systemIdsMap[cls.followName()] });
+    }
 
-	/**
-	 *  Return true if the id (entity) is added to the workflow, otherwise false returned
-	 *  @param id - the id (entity)
-	 *  @return Bool
-	 */
-	public inline function has(id:Int):Bool {
-		return entitiesMap.exists(id);
-	}
-
-	/**
-	 *  Adds the id (entity) to the workflow
-	 *  @param id - the id (entity)
-	 */
-	public inline function add(id:Int) {
-		if (!this.has(id)) {
-			entitiesMap.set(id, id);
-			entities.add(id);
-			for (v in views) v.addIfMatch(id);
-		}
-	}
-
-	/**
-	 *  Removes the id (entity) from the workflow without removing its components
-	 *  @param id - the id (entity)
-	 */
-	public inline function poll(id:Int) {
-		if (this.has(id)) {
-			for (v in views) v.removeIfMatch(id);
-			entitiesMap.remove(id);
-			entities.remove(id);
-		}
-	}
-
-	/**
-	 *  Removes the id (entity) from the workflow and removes all it components
-	 *  @param id - the id (entity)
-	 */
-	macro public function remove(self:Expr, id:ExprOf<Int>) {
-		var esafe = macro var _id_ = $id;
-		var exprs = [
-			for (hCls in echo.macro.MacroBuilder.componentCache) {
-				macro ${ hCls.expr() }.__MAP.remove(_id_);
-			}
-		];
-		return macro {
-			$esafe;
-			$self.poll(_id_);
-			$b{exprs};
-		}
-	}
+    /**
+     * Retrives a system from the workflow by its type. If system with passed type will be not founded, `null` will be returned
+     * @param type `Class<T>` system type
+     * @return `System`
+     */
+    macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<System>> {
+        var cls = type.identName().getType().follow().toComplexType();
+        return macro $self.systemsMap[$v{ SystemMacro.systemIdsMap[cls.followName()] }];
+    }
 
 
-	// Component
+    // View
 
-	/**
-	 *  Adds/sets a components to the id
-	 *  @param id - the id (entity)
-	 *  @param components - one or many at once
-	 */
-	macro inline public function setComponent(self:Expr, id:ExprOf<Int>, components:Array<Expr>) {
-		var esafe = macro var _id_ = $id; // TODO opt ( if EConst - safe is unnesessary )
-		var exprs = [
-			for (c in components) {
-				var hCls = echo.macro.MacroBuilder.getComponentHolder(c.typeof().follow().toComplexType());
-				macro ${ hCls.expr() }.__MAP[_id_] = $c;
-			}
-		];
-		return macro {
-			$esafe;
-			$b{exprs};
-			if ($self.has(_id_)) for (_v_ in $self.views) _v_.addIfMatch(_id_);
-		}
-	}
+    /**
+     * Adds view to the workflow
+     * @param v `View<T>` instance
+     */
+    public function addView(v:View.ViewBase) {
+        if (!viewsMap.exists(v.__id)) {
+            viewsMap[v.__id] = v;
+            views.add(v);
+            v.activate(this);
+        }
+    }
 
-	/**
-	 *  Removes a component from the id (entity) by its type
-	 *  @param id - the id (entity)
-	 *  @param type - component type
-	 */
-	macro inline public function removeComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>) {
-		var esafe = macro var _id_ = $id;
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro {
-			$esafe;
-			if (${ hCls.expr() }.__MAP.exists(_id_)) {
-				if ($self.has(_id_)) for (_v_ in $self.views) if (_v_.testcomponent(${ hCls.expr() }.__ID)) _v_.removeIfMatch(_id_);
-				${ hCls.expr() }.__MAP.remove(_id_);
-			}
-		}
-	}
+    /**
+     * Removes view to the workflow
+     * @param v `View<T>` instance
+     */
+    public function removeView(v:View.ViewBase) {
+        if (viewsMap.exists(v.__id)) {
+            v.deactivate();
+            viewsMap.remove(v.__id);
+            views.remove(v);
+        }
+    }
 
-	/**
-	 *  Gets a component from the id (entity) by its type
-	 *  @param id - the id (entity)
-	 *  @param type - component type
-	 *  @return T
-	 */
-	macro inline public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP[$id];
-	}
+    /**
+     * Returns `true` if view with passed `type` was been added to the workflow, otherwise returns `false`
+     * @param type `Class<T>` view type
+     * @return `Bool`
+     */
+    macro public function hasView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
+        var cls = type.identName().getType().follow().toComplexType();
+        return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[cls.followName()] });
+    }
 
-	/**
-	 *  Return true if the id (entity) has a component with this type, otherwise flase returned
-	 *  @param id - the id (entity)
-	 *  @param type - component type
-	 *  @return Bool
-	 */
-	macro inline public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		var hCls = echo.macro.MacroBuilder.getComponentHolder(type.identName().getType().follow().toComplexType());
-		return macro ${ hCls.expr() }.__MAP.exists($id);
-	}
+    /**
+     * Retrives a view from the workflow by its type. If view with passed type will be not found, `null` will be returned
+     * @param type `Class<T>` view type
+     * @return `View<T>`
+     */
+    macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
+        var cls = type.identName().getType().follow().toComplexType();
+        return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[cls.followName()] }];
+    }
+
+    macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
+        var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
+        return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[viewCls.followName()] }];
+    }
+
+    macro public function hasViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
+        var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
+        return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[viewCls.followName()] });
+    }
+
+
+    // Entity
+
+    /**
+     * Creates a new id (entity)
+     * @param add - immediate adds created id to the workflow if `true`, otherwise not. Default `true`
+     * @return created `Int` id
+     */
+    public function id(add:Bool = true):Int {
+        var id = ++__componentSequence;
+        if (add) {
+            entitiesMap.set(id, id);
+            entities.add(id);
+        }
+        return id;
+    }
+
+    /**
+     * Returns `true` if the id (entity) is added to the workflow, otherwise returns `false`
+     * @param id - `Int` id (entity)
+     * @return `Bool`
+     */
+    public inline function has(id:Int):Bool {
+        return entitiesMap.exists(id);
+    }
+
+    /**
+     * Adds the id (entity) to the workflow
+     * @param id - `Int` id (entity)
+     */
+    public inline function push(id:Int) {
+        if (!this.has(id)) {
+            entitiesMap.set(id, id);
+            entities.add(id);
+            for (v in views) v.addIfMatch(id);
+        }
+    }
+
+    /**
+     * Removes the id (entity) from the workflow with saving all it's components. 
+     * The id can be pushed back to the workflow
+     * @param id - `Int` id (entity)
+     */
+    public inline function poll(id:Int) {
+        if (this.has(id)) {
+            for (v in views) v.removeIfMatch(id);
+            entitiesMap.remove(id);
+            entities.remove(id);
+        }
+    }
+
+    /**
+     * Removes the id (entity) from the workflow and removes all it components
+     * @param id - `Int` id (entity)
+     */
+    public function remove(id:Int) {
+        poll(id);
+        for (i in 0...__componentStack.length) {
+            __componentStack[i](id);
+        }
+    }
+
+
+    // Component
+
+    /**
+     * Adds specified components to the id (entity).
+     * If component with same type is already added to the id, it will be replaced.
+     * @param id - `Int` id (entity)
+     * @param components - comma separated list of components of `Any` type
+     * @return `Int` id
+     */
+    macro public function addComponent(self:Expr, id:ExprOf<Int>, components:Array<ExprOf<Any>>):ExprOf<Int> {
+        var argExpr = macro $id;
+
+        var componentExprs = new List<Expr>()
+            .concat(
+                components
+                    .map(function(c){
+                        var ct = ComponentMacro.getComponentHolder(c.typeof().follow().toComplexType());
+                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] = $c;
+                    })
+            )
+            .array();
+
+        var exprs = new List<Expr>()
+            .concat(componentExprs)
+            .concat([ macro if ($self.has(id)) for (v in $self.views) v.addIfMatch(id) ])
+            .concat([ macro return id ])
+            .array();
+
+        var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+
+        #if echo_verbose
+        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        #end
+
+        return ret;
+    }
+
+    /**
+     * Removes a components from the id (entity) by its type
+     * @param id - `Int` id (entity)
+     * @param types - comma separated `Class<Any>` types of components to be removed
+     * @return `Int` id
+     */
+    macro public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>):ExprOf<Int> {
+        var argExpr = macro $id;
+
+        var componentExprs = new List<Expr>()
+            .concat(
+                types
+                    .map(function(t){
+                        var ct = ComponentMacro.getComponentHolder(t.identName().getType().follow().toComplexType());
+                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(id);
+                    })
+            )
+            .array();
+
+        var requireExprs = new List<Expr>()
+            .concat(
+                types
+                    .map(function(t){
+                        return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
+                    })
+                    .map(function(i){
+                        return macro v.isRequire($v{i});
+                    })
+            )
+            .array();
+
+        var requireCond = requireExprs.slice(1)
+            .fold(function(e:Expr, r:Expr){
+                return macro $r || $e;
+            }, requireExprs.length > 0 ? requireExprs[0] : null);
+
+        var exprs = new List<Expr>()
+            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) v.removeIfMatch(id) ])
+            .concat(componentExprs)
+            .concat([ macro return id ])
+            .array();
+
+        var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+
+        #if echo_verbose
+        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        #end
+
+        return ret;
+    }
+
+    /**
+     * Retrives a component from the id (entity) by its type.
+     * If component with passed type is not added to the id, `null` will be returned.
+     * @param id - `Int` id (entity)
+     * @param type - `Class<T>` type of component to be retrieved
+     * @return `T`
+     */
+    macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
+        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] ];
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
+        return ret;
+    }
+
+    /**
+     * Returns `true` if the id (entity) has a component with passed type, otherwise returns false
+     * @param id - `Int` id (entity)
+     * @param type - `Class<T>` type of component
+     * @return `Bool`
+     */
+    macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
+        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] != null ];
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
+        return ret;
+    }
 
 }

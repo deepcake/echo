@@ -9,11 +9,11 @@ using Lambda;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 class Example {
 
-	static public var RABBITS_POPULATION = 15;
+	static public var RABBITS_POPULATION = 64;
 	static public var MAX_WIDTH = 60;
 	static public var MAX_HEIGHT = 40;
 
@@ -35,6 +35,7 @@ class Example {
 		echo.addSystem(new Movement(w, h));
 		echo.addSystem(new Interaction());
 		echo.addSystem(new Render(w, h, size, canvas));
+		echo.addSystem(new InteractionEvent());
 
 		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
@@ -46,36 +47,38 @@ class Example {
 		}
 
 		// some rabbits
-		for (i in 0...RABBITS_POPULATION) rabbit(Std.random(w), Std.random(h));
+		for (i in 0...RABBITS_POPULATION) {
+			rabbit(Std.random(w), Std.random(h));
+		}
 
 		// tiger!
 		tiger(Std.random(w), Std.random(h));
 
 
 		Browser.window.setInterval(function() {
-			echo.update(.100);
+			echo.update(.050);
 			stat.innerHTML = echo.toString();
-		}, 100);
+		}, 50);
 	}
 
 
 	static function grass(x:Float, y:Float) {
 		var codes = [ '&#x1F33E', '&#x1F33F' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function tree(x:Float, y:Float) {
 		var codes = [ '&#x1F332', '&#x1F333' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function flower(x:Float, y:Float) {
 		var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
-		echo.setComponent(echo.id(),
+		echo.addComponent(echo.id(),
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
@@ -84,7 +87,7 @@ class Example {
 		var pos = new Position(x, y);
 		var vel = randomVelocity(1);
 		var spr = new Sprite('&#x1F407;');
-		echo.setComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
+		echo.addComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
 	}
 
 	static public function tiger(x:Float, y:Float) {
@@ -92,7 +95,19 @@ class Example {
 		var vel = randomVelocity(10);
 		var spr = new Sprite('&#x1F405;');
 		spr.style.fontSize = '200%';
-		echo.setComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+		echo.addComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+	}
+
+	static public function event(x:Float, y:Float, type:String) {
+		var code = switch(type) {
+			case 'heart': '&#x1F498;';
+			case 'skull': '&#x1F480;';
+			default: '';
+		}
+		echo.addComponent(echo.id(),
+			new Position(x, y),
+			new Sprite(code),
+			new Timeout(3.0));
 	}
 
 	static public function randomVelocity(speed:Float) {
@@ -141,6 +156,14 @@ enum Animal {
 	Tiger;
 }
 
+class Timeout {
+	public var timeout:Float;
+	public var t:Float;
+	public function new(t:Float) {
+		this.t = timeout = t;
+	}
+}
+
 
 // Systems
 
@@ -153,14 +176,14 @@ class Movement extends System {
 		this.h = h;
 	}
 	override public function update(dt:Float) {
-		for (body in bodies) {
-			body.pos.x += body.vel.x * dt;
-			body.pos.y += body.vel.y * dt;
-			if (body.pos.x >= w) body.pos.x -= w;
-			if (body.pos.x < 0) body.pos.x += w;
-			if (body.pos.y >= h) body.pos.y -= h;
-			if (body.pos.y < 0) body.pos.y += h;
-		}
+		bodies.iter((pos, vel, id) -> {
+			pos.x += vel.x * dt;
+			pos.y += vel.y * dt;
+			if (pos.x >= w) pos.x -= w;
+			if (pos.x < 0) pos.x += w;
+			if (pos.y >= h) pos.y -= h;
+			if (pos.y < 0) pos.y += h;
+		});
 	}
 }
 
@@ -185,7 +208,7 @@ class Render extends System {
 	// all visuals, not required updates, just add sprite to the canvas
 	var visuals:View<{ pos:Position, spr:Sprite }>;
 	@onadded function appendVisual(pos:Position, spr:Sprite) {
-		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
+		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
 	@onremoved function removeVisual(id:Int) {
 		echo.getComponent(id, Sprite).remove();
@@ -202,25 +225,47 @@ class Interaction extends System {
 	var animals:View<{ a:Animal, pos:Position }>;
 	override public function update(dt:Float) {
 		var del = [];
+
 		// everyone with everyone
-		for (a1 in animals) for (a2 in animals) {
-			if (a1 != a2 && samecell(a1.pos, a2.pos)) {
-				if (a1.a == Animal.Tiger && a2.a == Animal.Rabbit) {
-					// tiger eats rabbit
-					del.push(a2.id);
-				}
-				if (a1.a == Animal.Rabbit && a2.a == Animal.Rabbit) {
-					// rabbits reproduce
-					if (animals.count(function(a) return a.a == Animal.Rabbit) < Example.RABBITS_POPULATION) {
-						Example.rabbit(a1.pos.x, a1.pos.y);
+		animals.iter((a1, pos1, id1) -> {
+			animals.iter((a2, pos2, id2) -> {
+
+				if (id1 != id2 && isInteract(pos1, pos2, 1.0)) {
+
+					if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
+						// tiger eats rabbit
+						trace('eat $id2');
+						Example.event(pos1.x, pos1.y, 'skull');
+						del.push(id2);
 					}
+					if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
+						// rabbits reproduces
+						if (animals.entities.count(function(i) return echo.getComponent(i, Animal) == Animal.Rabbit) < Example.RABBITS_POPULATION) {
+							Example.rabbit(pos1.x, pos1.y);
+							Example.event(pos1.x, pos1.y, 'heart');
+						}
+					}
+
 				}
-			}
-		}
+
+			});
+		});
 
 		for (id in del) echo.remove(id);
 	}
-	function samecell(pos1:Position, pos2:Position) {
-		return Std.int(pos1.x) == Std.int(pos2.x) && Std.int(pos1.y) == Std.int(pos2.y);
+
+	function isInteract(pos1:Position, pos2:Position, radius:Float) {
+		return Math.abs(pos1.x - pos2.x) < radius && Math.abs(pos1.y - pos2.y) < radius;
+	}
+}
+
+class InteractionEvent extends System {
+	@u inline function action(id:Int, dt:Float, t:Timeout, s:Sprite) {
+		s.style.opacity = '${t.t / t.timeout}';
+		t.t -= dt;
+		if (t.t <= .0) {
+			s.style.opacity = '.0';
+			echo.remove(id);
+		}
 	}
 }

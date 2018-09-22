@@ -2,12 +2,12 @@ package echo;
 
 /**
  * ...
- * @author https://github.com/wimcake
+ * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echo.macro.MacroBuilder.genericBuildView())
+@:genericBuild(echo.macro.ViewMacro.build())
 #end
-class View<T> { }
+class View<T> extends ViewBase { }
 
 /**
  *
@@ -27,7 +27,7 @@ class ViewBase {
 	public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
 	/** List of matched ids (entities) */
-	public var entities(default, null):Array<Int> = []; // additional array for sorting purposes
+	public var entities(default, null):List<Int> = new List();
 
 
 	@:noCompletion public function activate(echo:Echo) {
@@ -41,13 +41,12 @@ class ViewBase {
 	}
 
 
-	@:noCompletion function test(id:Int):Bool { // macro
-		// each component map exists(e)
+	@:noCompletion function isMatch(id:Int):Bool { // macro
+		// each required component exists in component map with this id
 		return false;
 	}
 
-	@:noCompletion public function testcomponent(c:Int):Bool { // macro
-		// this view has a component
+	@:noCompletion public function isRequire(c:Int):Bool { // macro
 		return false;
 	}
 
@@ -58,7 +57,7 @@ class ViewBase {
 
 	inline function add(id:Int) {
 		entitiesMap.set(id, id);
-		entities.push(id);
+		entities.add(id);
 		onAdded.dispatch(id);
 	}
 
@@ -70,11 +69,14 @@ class ViewBase {
 
 
 	@:noCompletion public function addIfMatch(id:Int) {
-		if (!exists(id) && test(id)) add(id);
+		if (!exists(id) && isMatch(id)) add(id);
 	}
 
 	@:noCompletion public function removeIfMatch(id:Int) {
 		if (exists(id)) remove(id);
 	}
+
+
+	public function toString():String return 'ViewBase';
 
 }
