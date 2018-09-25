@@ -42,15 +42,54 @@ class ComponentMacro {
 
             ++componentIndex;
 
-            var def = macro class $componentHolderClsName {
-                public static var STACK:Map<Int, $componentCls>;
+            var componentContainerTypePath = tpath([], componentHolderClsName, []);
+            var componentContainerComplexType = TPath(componentContainerTypePath);
+
+            var def = macro class $componentHolderClsName implements echo.macro.IComponentContainer {
+                // echo id => cc inst
+                //static var componentContainers:Map<Int, $componentContainerComplexType>;
+                static var componentContainer:$componentContainerComplexType;
+
                 static function __init__() {
-                    STACK = new Map();
-                    echo.Echo.__addComponentStack($v{ componentIndex }, STACK.remove);
+                    //componentContainers = new Map();
+                    echo.Echo.__addComponentContainerInitializer($v{ componentIndex }, init);
                 }
-                @:keep inline public static function get(i:Int) { // TODO resolve with i
-                    return STACK;
+
+                static function init(eid:Int):echo.macro.IComponentContainer {
+                    //componentContainers[eid] = new $componentContainerTypePath();
+                    //return componentContainers[eid];
+                    if (componentContainer == null) componentContainer = new $componentContainerTypePath();
+                    return componentContainer;
                 }
+
+                static function terminate(eid:Int):Void {
+                }
+
+                inline public static function inst(eid:Int) {
+                    //return componentContainers[eid];
+                    return componentContainer;
+                }
+
+                // cid => c inst
+                var components:Map<Int, $componentCls>;
+
+                public function new() {
+                    components = new Map();
+                }
+
+                inline public function get(cid:Int) {
+                    return components[cid];
+                }
+
+                inline public function set(cid:Int, c:$componentCls) {
+                    components[cid] = c;
+                }
+
+                inline public function remove(cid:Int) {
+                    components.remove(cid);
+                }
+
+
             }
 
             Context.defineType(def);

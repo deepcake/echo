@@ -32,7 +32,7 @@ class TestComponentOp extends haxe.unit.TestCase {
 
     function getComponentMap(clsname:String):Map<Int, Dynamic> {
         var cls = Type.resolveClass(clsname);
-        return cast Reflect.callMethod(cls, Reflect.field(cls, 'get'), [ ch.__id ]);
+        return cast Reflect.field(Reflect.callMethod(cls, Reflect.field(cls, 'inst'), [ ch.__id ]), 'components');
     }
 
     function getComponentCount(cname:String):Int {

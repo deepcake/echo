@@ -89,7 +89,7 @@ class ViewMacro {
                                 .map(function(c) return c.cls)
                                 .concat([ macro:Int ]);
             var cargs = components
-                                .map(function(c) return '${ getComponentHolder(c.cls).followName() }.get(echo.__id)[e]')
+                                .map(function(c) return '${ getComponentHolder(c.cls).followName() }.inst(echo.__id).get(e)')
                                 .map(function(s) return Context.parse(s, Context.currentPos()))
                                 .concat([ macro e ]);
             var iterBody = macro {
@@ -98,7 +98,7 @@ class ViewMacro {
             def.fields.push(ffun([], [APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));
 
             // isMatch
-            var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.get(echo.__id)[id] != null').join(' && '), Context.currentPos());
+            var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentHolder(c.cls).followName()}.inst(echo.__id).get(id) != null').join(' && '), Context.currentPos());
             def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
             // isRequire

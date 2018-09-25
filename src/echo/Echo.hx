@@ -17,15 +17,18 @@ class Echo {
 
     static var __echoSequence = -1;
 
-    @:noCompletion public static var __componentStack:Array<Int->Void>;
+    static var componentContainerInitializers:Array<Int->echo.macro.IComponentContainer>;
 
-    @:noCompletion public static function __addComponentStack(id:Int, stack:Int->Void) { // in thread-unsafe case only remove func needed
-        if (__componentStack == null) __componentStack = new Array<Int->Void>();
-        __componentStack[id] = stack;
+    public static function __addComponentContainerInitializer(ccId:Int, initializer:Int->echo.macro.IComponentContainer) {
+        if (componentContainerInitializers == null) componentContainerInitializers = [];
+        componentContainerInitializers[ccId] = initializer;
     }
 
 
     static var __componentSequence = -1; // some thread isolation by global id sequence
+
+
+    var componentContainers:Array<echo.macro.IComponentContainer> = [];
 
     @:noCompletion public var __id:Int;
 
@@ -43,6 +46,9 @@ class Echo {
 
     public function new() {
         __id = ++__echoSequence;
+        for (initializer in componentContainerInitializers) {
+            componentContainers.push(initializer(__id));
+        }
     }
 
 
@@ -262,8 +268,8 @@ class Echo {
      */
     public function remove(id:Int) {
         poll(id);
-        for (i in 0...__componentStack.length) {
-            __componentStack[i](id);
+        for (i in 0...componentContainers.length) {
+            componentContainers[i].remove(id);
         }
     }
 
@@ -285,7 +291,7 @@ class Echo {
                 components
                     .map(function(c){
                         var ct = ComponentMacro.getComponentHolder(c.typeof().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] = $c;
+                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).set(id, $c);
                     })
             )
             .array();
@@ -319,7 +325,7 @@ class Echo {
                 types
                     .map(function(t){
                         var ct = ComponentMacro.getComponentHolder(t.identName().getType().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(id);
+                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).remove(id);
                     })
             )
             .array();
@@ -365,7 +371,7 @@ class Echo {
      */
     macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] ];
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }
@@ -378,7 +384,7 @@ class Echo {
      */
     macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] != null ];
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) != null ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }
