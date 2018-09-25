@@ -46,32 +46,34 @@ class ComponentMacro {
             var componentContainerComplexType = TPath(componentContainerTypePath);
 
             var def = macro class $componentHolderClsName implements echo.macro.IComponentContainer {
-                // echo id => cc inst
-                //static var componentContainers:Map<Int, $componentContainerComplexType>;
-                static var componentContainer:$componentContainerComplexType;
 
-                static function __init__() {
-                    //componentContainers = new Map();
-                    echo.Echo.__addComponentContainerInitializer($v{ componentIndex }, init);
+                static var componentContainers:Map<Int, $componentContainerComplexType>; // echo id => cc inst
+                //static var componentContainer:$componentContainerComplexType;
+
+                @:access(echo.Echo) static function __init__() {
+                    componentContainers = new Map();
+                    echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
                 }
 
-                static function init(eid:Int):echo.macro.IComponentContainer {
-                    //componentContainers[eid] = new $componentContainerTypePath();
-                    //return componentContainers[eid];
-                    if (componentContainer == null) componentContainer = new $componentContainerTypePath();
-                    return componentContainer;
+                static function create(eid:Int):echo.macro.IComponentContainer {
+                    componentContainers[eid] = new $componentContainerTypePath();
+                    return componentContainers[eid];
+                    // if (componentContainer == null) componentContainer = new $componentContainerTypePath();
+                    // return componentContainer;
                 }
 
-                static function terminate(eid:Int):Void {
+                static function destroy(eid:Int):Void {
+                    componentContainers.remove(eid);
+                    //componentContainer = null;
                 }
 
                 inline public static function inst(eid:Int) {
-                    //return componentContainers[eid];
-                    return componentContainer;
+                    return componentContainers[eid];
+                    //return componentContainer;
                 }
 
-                // cid => c inst
-                var components:Map<Int, $componentCls>;
+
+                var components:Map<Int, $componentCls>; // cid => c inst
 
                 public function new() {
                     components = new Map();
@@ -88,7 +90,6 @@ class ComponentMacro {
                 inline public function remove(cid:Int) {
                     components.remove(cid);
                 }
-
 
             }
 

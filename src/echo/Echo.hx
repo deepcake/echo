@@ -17,11 +17,14 @@ class Echo {
 
     static var __echoSequence = -1;
 
-    static var componentContainerInitializers:Array<Int->echo.macro.IComponentContainer>;
+    static var componentContainerCtors:Array<Int->echo.macro.IComponentContainer>;
+    static var componentContainerDtors:Array<Int->Void>;
 
-    public static function __addComponentContainerInitializer(ccId:Int, initializer:Int->echo.macro.IComponentContainer) {
-        if (componentContainerInitializers == null) componentContainerInitializers = [];
-        componentContainerInitializers[ccId] = initializer;
+    static function __initComponentContainer(ccid:Int, ctor:Int->echo.macro.IComponentContainer, dtor:Int->Void) {
+        if (componentContainerCtors == null) componentContainerCtors = [];
+        componentContainerCtors[ccid] = ctor;
+        if (componentContainerDtors == null) componentContainerDtors = [];
+        componentContainerDtors[ccid] = dtor;
     }
 
 
@@ -46,8 +49,8 @@ class Echo {
 
     public function new() {
         __id = ++__echoSequence;
-        for (initializer in componentContainerInitializers) {
-            componentContainers.push(initializer(__id));
+        for (ctor in componentContainerCtors) {
+            componentContainers.push(ctor(__id));
         }
     }
 
@@ -105,6 +108,9 @@ class Echo {
         for (v in views) removeView(v);
         for (s in systems) removeSystem(s);
         for (e in entities) remove(e);
+        for (dtor in componentContainerDtors) {
+            dtor(__id);
+        }
     }
 
 
