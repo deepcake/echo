@@ -46,13 +46,13 @@ class Echo {
     }
 
 
-    #if echo_debug
+    #if echo_profiling
     var times:Map<Int, Float> = new Map();
     #end
     public function toString():String {
         var ret = '#$__id ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
-        #if echo_debug
+        #if echo_profiling
         ret += ' : ${ times.get(-2) } ms'; // total
         for (s in systems) {
             ret += '\n        ($s) : ${ times.get(s.__id) } ms';
@@ -71,23 +71,23 @@ class Echo {
      * @param dt - delta time
      */
     public function update(dt:Float) {
-        #if echo_debug
+        #if echo_profiling
         var engineUpdateStartTimestamp = Date.now().getTime();
         #end
 
         for (s in systems) {
-            #if echo_debug
+            #if echo_profiling
             var systemUpdateStartTimestamp = Date.now().getTime();
             #end
 
             s.update(dt);
 
-            #if echo_debug
+            #if echo_profiling
             times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
             #end
         }
 
-        #if echo_debug
+        #if echo_profiling
         times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
     }
