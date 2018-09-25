@@ -20,7 +20,7 @@ class ComponentMacro {
     static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
 
     public static var componentIds:Map<String, Int> = new Map();
-    public static var componentContainerNames:Array<String> = [];
+    public static var componentNames:Array<String> = [];
 
 
     public static function createComponentContainerType(componentCls:ComplexType) {
@@ -98,7 +98,7 @@ class ComponentMacro {
 
             componentIds[componentClsName] = componentIndex;
 
-            componentContainerNames.push(componentContainerClsName);
+            componentNames.push(componentClsName);
 
         }
 
