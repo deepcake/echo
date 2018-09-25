@@ -296,7 +296,7 @@ class Echo {
             .concat(
                 components
                     .map(function(c){
-                        var ct = ComponentMacro.getComponentHolder(c.typeof().follow().toComplexType());
+                        var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
                         return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).set(id, $c);
                     })
             )
@@ -330,7 +330,7 @@ class Echo {
             .concat(
                 types
                     .map(function(t){
-                        var ct = ComponentMacro.getComponentHolder(t.identName().getType().follow().toComplexType());
+                        var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
                         return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).remove(id);
                     })
             )
@@ -376,7 +376,7 @@ class Echo {
      * @return `T`
      */
     macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
+        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
@@ -389,7 +389,7 @@ class Echo {
      * @return `Bool`
      */
     macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
+        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) != null ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;

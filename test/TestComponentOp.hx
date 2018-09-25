@@ -30,13 +30,13 @@ class TestComponentOp extends haxe.unit.TestCase {
     }
 
 
-    function getComponentMap(clsname:String):Map<Int, Dynamic> {
+    function getComponentContainer(clsname:String):Map<Int, Dynamic> {
         var cls = Type.resolveClass(clsname);
         return cast Reflect.field(Reflect.callMethod(cls, Reflect.field(cls, 'inst'), [ ch.__id ]), 'components');
     }
 
     function getComponentCount(cname:String):Int {
-        return { iterator: getComponentMap('ComponentMap_data_$cname').iterator }.count();
+        return { iterator: getComponentContainer('ComponentContainer_data_$cname').iterator }.count();
     }
 
 

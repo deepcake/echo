@@ -110,7 +110,7 @@ class SystemMacro {
             return switch (a.type) {
                 case macro:Float: macro dt;
                 case macro:Int: macro _id_;
-                default: macro ${ getComponentHolder(a.type.followComplexType()).expr(Context.currentPos()) }.inst(echo.__id).get(_id_);
+                default: macro ${ getComponentContainer(a.type.followComplexType()).expr(Context.currentPos()) }.inst(echo.__id).get(_id_);
             }
         };
 
