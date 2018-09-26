@@ -30,23 +30,23 @@ class ViewBase {
 	public var entities(default, null):List<Int> = new List();
 
 
-	@:noCompletion public function activate(echo:Echo) {
+	@:allow(echo.Echo) function activate(echo:Echo) {
 		this.echo = echo;
 		for (e in echo.entities) addIfMatch(e);
 	}
 
-	@:noCompletion public function deactivate() {
+	@:allow(echo.Echo) function deactivate() {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
 		this.echo = null;
 	}
 
 
-	@:noCompletion function isMatch(id:Int):Bool { // macro
+	function isMatch(id:Int):Bool { // macro
 		// each required component exists in component map with this id
 		return false;
 	}
 
-	@:noCompletion public function isRequire(c:Int):Bool { // macro
+	function isRequire(c:Int):Bool { // macro
 		return false;
 	}
 
@@ -68,11 +68,11 @@ class ViewBase {
 	}
 
 
-	@:noCompletion public function addIfMatch(id:Int) {
+	@:allow(echo.Echo) function addIfMatch(id:Int) {
 		if (!exists(id) && isMatch(id)) add(id);
 	}
 
-	@:noCompletion public function removeIfMatch(id:Int) {
+	@:allow(echo.Echo) function removeIfMatch(id:Int) {
 		if (exists(id)) remove(id);
 	}
 

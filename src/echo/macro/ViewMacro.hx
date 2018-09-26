@@ -95,18 +95,18 @@ class ViewMacro {
             var iterBody = macro {
                 for (e in entities) f($a{ cargs });
             };
-            def.fields.push(ffun([], [APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));
+            def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));
 
             // isMatch
             var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentContainer(c.cls).followName()}.inst(echo.__id).get(id) != null').join(' && '), Context.currentPos());
-            def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
+            def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
             // isRequire
-            def.fields.push(ffun([meta(':noCompletion', Context.currentPos())], [APublic, AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __mask[c] != null, Context.currentPos()));
+            def.fields.push(ffun([AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __mask[c] != null, Context.currentPos()));
 
             // mask
             var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
-            def.fields.push(fvar([meta(':noCompletion', Context.currentPos())], [AStatic], '__mask', null, maskBody, Context.currentPos()));
+            def.fields.push(fvar([AStatic], '__mask', null, maskBody, Context.currentPos()));
 
             // toString
             var stringBody = getClsNameSuffix(components.map(function(c) return c.cls), false);

@@ -304,7 +304,7 @@ class Echo {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if ($self.has(id)) for (v in $self.views) v.addIfMatch(id) ])
+            .concat([ macro if ($self.has(id)) for (v in $self.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -343,7 +343,7 @@ class Echo {
                         return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
                     })
                     .map(function(i){
-                        return macro v.isRequire($v{i});
+                        return macro @:privateAccess v.isRequire($v{i});
                     })
             )
             .array();
@@ -354,7 +354,7 @@ class Echo {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
