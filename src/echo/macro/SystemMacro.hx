@@ -187,8 +187,10 @@ class SystemMacro {
                         var viewType = viewCls.tp();
                         var viewId = viewIdsMap[viewCls.followName()];
                         return [
-                            macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
-                            macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
+                            //macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
+                            //macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
+                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(echo.__id),
+                            macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView($i{ v.name })
                         ];
                     })
                     .flatten()

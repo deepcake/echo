@@ -28,6 +28,17 @@ class Echo {
     }
 
 
+    static var viewCtors:Array<Int->View.ViewBase>;
+    static var viewDtors:Array<Int->Void>;
+
+    static function __initView(vid:Int, ctor:Int->View.ViewBase, dtor:Int->Void) {
+        if (viewCtors == null) viewCtors = [];
+        viewCtors[vid] = ctor;
+        if (viewDtors == null) viewDtors = [];
+        viewDtors[vid] = dtor;
+    }
+
+
     static var __componentSequence = -1; // some thread isolation by global id sequence
 
 
@@ -51,6 +62,9 @@ class Echo {
         __id = ++__echoSequence;
         for (ctor in componentContainerCtors) {
             componentContainers.push(ctor(__id));
+        }
+        for (ctor in viewCtors) {
+            ctor(__id); // push on activate
         }
     }
 
@@ -109,6 +123,9 @@ class Echo {
         for (s in systems) removeSystem(s);
         for (e in entities) remove(e);
         for (dtor in componentContainerDtors) {
+            dtor(__id);
+        }
+        for (dtor in viewDtors) {
             dtor(__id);
         }
     }
