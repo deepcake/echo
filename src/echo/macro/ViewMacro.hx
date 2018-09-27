@@ -107,20 +107,50 @@ class ViewMacro {
             //var iteratorTypePath = getViewIterator(components).tp();
             //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echo, this.entities.iterator()), Context.currentPos()));
 
+            function ccref(ct:ComplexType) {
+                return getComponentContainer(ct).shortName().toLowerCase();
+            }
+
+            // def cc
+            components.mapi(function(i, c) {
+                var name = ccref(c.cls);
+                def.fields.push(fvar([APublic], name, getComponentContainer(c.cls), null, Context.currentPos()));
+            });
+
+            // activate
+            var activateExprs = new List<Expr>()
+                .concat(
+                    components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = ${ getComponentContainer(c.cls).expr(Context.currentPos()) }.inst(echo.__id))
+                )
+                .concat(
+                    [ macro super.activate(echo) ]
+                )
+                .array();
+            def.fields.push(ffun([AOverride], 'activate', [arg('echo', macro:echo.Echo)], macro:Void, macro $b{ activateExprs }, Context.currentPos()));
+
+            // deact
+            var deactivateExprs = new List<Expr>()
+                .concat(
+                    components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = null)
+                )
+                .concat(
+                    [ macro super.deactivate() ]
+                )
+                .array();
+            def.fields.push(ffun([AOverride], 'deactivate', [], macro:Void, macro $b{ deactivateExprs }, Context.currentPos()));
+
+            // iter
             var ctypes = components
                                 .map(function(c) return c.cls)
                                 .concat([ macro:Int ]);
             var cargs = components
-                                .map(function(c) return '${ getComponentContainer(c.cls).followName() }.inst(echo.__id).get(e)')
-                                .map(function(s) return Context.parse(s, Context.currentPos()))
+                                .map(function(c) return macro $i{ ccref(c.cls) }.get(e))
                                 .concat([ macro e ]);
-            var iterBody = macro {
-                for (e in entities) f($a{ cargs });
-            };
+            var iterBody = macro for (e in entities) f($a{ cargs });
             def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));
 
             // isMatch
-            var testBody = Context.parse('return ' + components.map(function(c) return '${getComponentContainer(c.cls).followName()}.inst(echo.__id).get(id) != null').join(' && '), Context.currentPos());
+            var testBody = Context.parse('return ' + components.map(function(c) return '${ccref(c.cls)}.get(id) != null').join(' && '), Context.currentPos());
             def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, testBody, Context.currentPos()));
 
             // isRequire

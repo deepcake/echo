@@ -112,6 +112,39 @@ class Macro {
         return Context.parse(followName(cls), pos);
     }
 
+    public static function underscoredFullName(cls:ComplexType) {
+        var t = tp(followComplexType(cls));
+        var name = '';
+
+        name += t.pack.join('_');
+
+        name += '_' + t.name;
+
+        if (t.sub != null) {
+            name += '_' + t.sub;
+        }
+
+        if (t.params != null) {
+
+            for (p in t.params) {
+                switch (p) {
+                    case TPType(paramComplexType):
+                        name += '_' + underscoredFullName(paramComplexType);
+                    case x:
+                        trace('Unexpected type param: $x');
+                }
+            }
+
+        }
+
+        return name;
+    }
+
+    public static function shortName(cls:ComplexType) {
+        var t = tp(followComplexType(cls));
+        return t.sub == null ? t.name : t.sub;
+    }
+
     #end
 
     public static function tp(t:ComplexType):TypePath {
