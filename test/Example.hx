@@ -176,7 +176,7 @@ class Movement extends System {
 		this.h = h;
 	}
 	override public function update(dt:Float) {
-		bodies.iter((pos, vel, id) -> {
+		bodies.iter((id, pos, vel) -> {
 			pos.x += vel.x * dt;
 			pos.y += vel.y * dt;
 			if (pos.x >= w) pos.x -= w;
@@ -207,15 +207,15 @@ class Render extends System {
 
 	// all visuals, not required updates, just add sprite to the canvas
 	var visuals:View<{ pos:Position, spr:Sprite }>;
-	@onadded function appendVisual(pos:Position, spr:Sprite) {
+	@onadded inline function appendVisual(pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
-	@onremoved function removeVisual(id:Int) {
+	@onremoved inline function removeVisual(id:Int) {
 		echo.getComponent(id, Sprite).remove();
 	}
 
 	// dynamic visuals only (with Velocity component)
-	@update function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
+	@update inline function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
 	}
 }
@@ -227,8 +227,8 @@ class Interaction extends System {
 		var del = [];
 
 		// everyone with everyone
-		animals.iter((a1, pos1, id1) -> {
-			animals.iter((a2, pos2, id2) -> {
+		animals.iter((id1, a1, pos1) -> {
+			animals.iter((id2, a2, pos2) -> {
 
 				if (id1 != id2 && isInteract(pos1, pos2, 1.0)) {
 
