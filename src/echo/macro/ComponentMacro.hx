@@ -35,7 +35,7 @@ class ComponentMacro {
 
         } catch (err:String) {
 
-            trace('not found $componentContainerClsName');
+            //trace('not found $componentContainerClsName');
 
             ++componentIndex;
 
