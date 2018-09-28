@@ -32,9 +32,15 @@ class TestSmoke3 extends TestCase {
         e.addView(v);
         e.addComponent(e.id(), "hello");
 
-        v.iter((s, _) -> trace(s));
-        v2.iter((s, _) -> trace(s));
-        v3.iter((s, _) -> trace(s));
+        #if haxe-ver >= 4.000
+        v.iter((_, s) -> trace(s));
+        v2.iter((_, s) -> trace(s));
+        v3.iter((_, s) -> trace(s));
+        #else
+        v.iter(function(_, s) trace(s));
+        v2.iter(function(_, s) trace(s));
+        v3.iter(function(_, s) trace(s));
+        #end
 
         //for (i in v2) i.
 
