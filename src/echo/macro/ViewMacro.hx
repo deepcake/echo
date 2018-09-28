@@ -133,8 +133,8 @@ class ViewMacro {
             var signalTypeParamComplexType = TFunction([ macro:Int ].concat(components.map(function(c) return c.cls)), macro:Void);
             var signalTypePath = tpath(['echo', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
             var signalComplexType = macro:echo.utils.Signal<$signalTypeParamComplexType>;
-            def.fields.push(fvar([AFinal, APublic], 'onAdded', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
-            def.fields.push(fvar([AFinal, APublic], 'onRemoved', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
+            def.fields.push(fvar([#if haxe-ver >= 4.000 AFinal, #end APublic], 'onAdded', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
+            def.fields.push(fvar([#if haxe-ver >= 4.000 AFinal, #end APublic], 'onRemoved', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
 
             // add/remove
             var callArgs = [ macro id ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(id)));
