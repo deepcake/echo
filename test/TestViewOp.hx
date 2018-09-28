@@ -115,10 +115,10 @@ class TestViewOp extends haxe.unit.TestCase {
         assertEquals(0, va_removed);
     }
 
-    public function test_mapping_poll() {
+    public function test_mapping_pull() {
         var ids = [ for (i in 0...100) ch.addComponent(ch.id(), new C1(), new C2()) ];
 
-        for (id in ids) if (id % 2 == 0) ch.poll(id);
+        for (id in ids) if (id % 2 == 0) ch.pull(id);
 
         ch.update(0);
 

@@ -277,7 +277,7 @@ class Echo {
      * The id can be pushed back to the workflow
      * @param id - `Int` id (entity)
      */
-    public inline function poll(id:Int) {
+    public inline function pull(id:Int) {
         if (this.has(id)) {
             for (v in views) v.removeIfMatch(id);
             entitiesMap.remove(id);
@@ -290,7 +290,7 @@ class Echo {
      * @param id - `Int` id (entity)
      */
     public function remove(id:Int) {
-        poll(id);
+        pull(id);
         for (i in 0...componentContainers.length) {
             componentContainers[i].remove(id);
         }

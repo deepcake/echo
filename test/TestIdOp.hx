@@ -80,27 +80,27 @@ class TestIdOp extends haxe.unit.TestCase {
     }
 
 
-    public function test_poll_1_of_0() {
+    public function test_pull_1_of_0() {
         var ids = [ for(i in 0...createCount) add(false) ];
-        ch.poll(ids[1]);
+        ch.pull(ids[1]);
         assertEquals(beforeCount, ch.entities.length);
         assertEquals('A0-A1-A2', ids.map(getAbstractString).join('-'));
         assertEquals(componentCount + createCount, getComponentCount());
     }
 
-    public function test_poll_1_of_3() {
+    public function test_pull_1_of_3() {
         var ids = [ for(i in 0...createCount) add() ];
-        ch.poll(ids[1]);
+        ch.pull(ids[1]);
         assertEquals(beforeCount + createCount - 1, ch.entities.length);
         assertEquals('A0-A1-A2', ids.map(getAbstractString).join('-'));
         assertEquals(componentCount + createCount, getComponentCount());
     }
 
-    public function test_poll_3_of_3() {
+    public function test_pull_3_of_3() {
         var ids = [ for(i in 0...createCount) add() ];
-        ch.poll(ids[0]);
-        ch.poll(ids[1]);
-        ch.poll(ids[2]);
+        ch.pull(ids[0]);
+        ch.pull(ids[1]);
+        ch.pull(ids[2]);
         assertEquals(beforeCount + createCount - 3, ch.entities.length);
         assertEquals('A0-A1-A2', ids.map(getAbstractString).join('-'));
         assertEquals(componentCount + createCount, getComponentCount());
@@ -134,9 +134,9 @@ class TestIdOp extends haxe.unit.TestCase {
     }
 
 
-    public function test_poll_then_push() {
+    public function test_pull_then_push() {
         var id = add();
-        ch.poll(id);
+        ch.pull(id);
         ch.push(id);
         assertEquals(beforeCount + 1, ch.entities.length);
         assertEquals('A0', ch.getComponent(id, AbstractString));
