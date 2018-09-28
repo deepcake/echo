@@ -20,9 +20,9 @@ class TestViewOp extends haxe.unit.TestCase {
         return 'qwerty'.split('').map(function(s:String) return ch.addComponent(ch.id(add), new C1('$s'.toUpperCase()), new C2()));
     }
 
-    function onAddA(id:Int) va_added++;
+    function onAddA(id:Int, _) va_added++;
 
-    function onRemoveA(id:Int) va_removed++;
+    function onRemoveA(id:Int, _) va_removed++;
 
 
     override public function setup() {
@@ -161,8 +161,8 @@ class TestViewOp extends haxe.unit.TestCase {
     public function test_add_signal() {
         var aout = '';
         var rout = '';
-        var af = function(id:Int) aout += ch.getComponent(id, C1).val;
-        var rf = function(id:Int) rout += ch.getComponent(id, C1).val;
+        var af = function(id:Int, _, _) aout += ch.getComponent(id, C1).val;
+        var rf = function(id:Int, _, _) rout += ch.getComponent(id, C1).val;
         vab.onAdded.add(af);
         vab.onRemoved.add(rf);
 
@@ -180,8 +180,8 @@ class TestViewOp extends haxe.unit.TestCase {
     public function test_add_signal_then_remove_signal() {
         var aout = '';
         var rout = '';
-        var af = function(id:Int) aout += ch.getComponent(id, C1).val;
-        var rf = function(id:Int) rout += ch.getComponent(id, C1).val;
+        var af = function(id:Int, _, _) aout += ch.getComponent(id, C1).val;
+        var rf = function(id:Int, _ ,_) rout += ch.getComponent(id, C1).val;
         vab.onAdded.add(af);
         vab.onRemoved.add(rf);
 
@@ -202,8 +202,8 @@ class TestViewOp extends haxe.unit.TestCase {
     public function test_add_signal_then_remove_view() {
         var aout = '';
         var rout = '';
-        var af = function(id:Int) aout += ch.getComponent(id, C1).val;
-        var rf = function(id:Int) rout += ch.getComponent(id, C1).val;
+        var af = function(id:Int, _, _) aout += ch.getComponent(id, C1).val;
+        var rf = function(id:Int, _, _) rout += ch.getComponent(id, C1).val;
         vab.onAdded.add(af);
         vab.onRemoved.add(rf);
 

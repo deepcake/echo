@@ -62,15 +62,17 @@ class SystemMacro {
             switch (field.kind) {
                 case FVar(cls, e) if (e == null):
                     var viewCls = cls.followComplexType();
-                    if (viewCache.exists(viewCls.followName())) {
-                        return { name: field.name, cls: viewCls };
+                    var viewClsName = viewCls.followName();
+                    if (viewDataCache.exists(viewClsName)) {
+                        return { name: field.name, cls: viewCls, components: viewDataCache.get(viewClsName).components };
                     }
 
                 case FVar(_, _.expr => ENew(t, _)):
                     var viewCls = TPath(t).followComplexType();
-                    if (viewCache.exists(viewCls.followName())) {
-                        field.kind = FVar(viewCls, null);
-                        return { name: field.name, cls: viewCls };
+                    var viewClsName = viewCls.followName();
+                    if (viewDataCache.exists(viewClsName)) {
+                        field.kind = FVar(viewCls, null); // TODO only if exists ?
+                        return { name: field.name, cls: viewCls, components: viewDataCache.get(viewClsName).components };
                     }
 
                 default:
@@ -94,25 +96,37 @@ class SystemMacro {
 
             if (view == null) {
                 var viewName = viewClsName.toLowerCase();
-                var viewCls = getViewGenericComplexType(components);
+                var viewCls = getView(components);
+
                 fields.push(fvar(viewName, viewCls, Context.currentPos()));
-                view = { name: viewName, cls: viewCls };
+
+                view = { name: viewName, cls: viewCls, components: viewDataCache.get(viewClsName).components };
                 views.push(view);
             }
 
-            return view.name;
+            return view;
         }
 
 
         function notNull(e:Dynamic) return e != null;
 
-        function argToArg(a) {
+        function argToCallArg(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Float: macro dt;
-                case macro:Int: macro _id_;
-                default: macro ${ getComponentContainer(a.type.followComplexType()).expr(Context.currentPos()) }.inst(echo.__id).get(_id_);
+                case macro:Int: macro id;
+                default: macro $i{ a.name };
             }
-        };
+        }
+
+        function componentToViewArg(c:{ name:String, cls:ComplexType }, args:Array<FunctionArg>) {
+            var copmonentClsName = c.cls.followName();
+            var a = args.find(function(a) return a.type.followName() == copmonentClsName);
+            if (a != null) {
+                return arg(a.name, a.type);
+            } else {
+                return arg(c.name, c.cls);
+            }
+        }
 
         function argToComponent(a) {
             return switch (a.type) {
@@ -123,9 +137,9 @@ class SystemMacro {
 
         function addViewByMetaAndComponents(components:Array<{ name:String, cls:ComplexType }>, m:MetadataEntry) {
             return switch (m.params) {
-                case [ _.expr => EConst(CString(x)) ]: x;
-                case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)].name;
-                case [] if (components.length == 0 && views.length > 0): views[0].name;
+                case [ _.expr => EConst(CString(x)) ]: views.find(function(v) return v.name == x);
+                case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)];
+                case [] if (components.length == 0 && views.length > 0): views[0];
                 case [] if (components.length > 0): requestView(components);
                 default: null;
             }
@@ -137,12 +151,15 @@ class SystemMacro {
                 var func = extFunc(f);
                 if (func == null) return null; // skip if not a func
 
-                var funcName = f.name;
-                var funcArgs = func.args.map(argToArg).filter(notNull);
                 var components = func.args.map(argToComponent).filter(notNull);
-                var view = addViewByMetaAndComponents(components, getMeta(f, meta));
 
-                return { name: funcName, args: funcArgs, components: components, view: view };
+                var view = addViewByMetaAndComponents(components, getMeta(f, meta));
+                var viewArgs = view != null ? [ arg('id', macro:Int) ].concat(view.components.map(componentToViewArg.bind(_, func.args))) : [];
+
+                var funcName = f.name;
+                var funcArgs = func.args.map(argToCallArg).filter(notNull);
+
+                return { name: funcName, args: funcArgs, components: components, view: view, viewargs: viewArgs };
             }
             return null;
         }
@@ -155,7 +172,7 @@ class SystemMacro {
 
         afuncs.concat(rfuncs).iter(function(f) {
             //fields.push(ffun([], [], '__${f.name}', [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ f.args }), Context.currentPos()));
-            fields.push(fvar([], [], '__${f.name}', macro:Int->Void, null, Context.currentPos()));
+            fields.push(fvar([], [], '__${f.name}', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
 
 
@@ -164,10 +181,8 @@ class SystemMacro {
                 if (f.components.length == 0) {
                     return macro $i{ f.name }($a{ f.args });
                 } else {
-                    //var viewName = requestView(f.components);
-                    return macro {
-                        for (_id_ in $i{ f.view }.entities) $i{ f.name }($a{ f.args });
-                    }
+                    var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                    return macro $i{ f.view.name }.iter($fwrapper);
                 }
             }))
             .array();
@@ -177,7 +192,8 @@ class SystemMacro {
             .concat(
                 afuncs.concat(rfuncs)
                     .map(function(f){
-                        return macro $i{'__${f.name}'} = function(_id_:Int) $i{ f.name }($a{ f.args });
+                        var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                        return macro $i{'__${f.name}'} = $fwrapper;
                     })
             )
             .concat(
@@ -197,18 +213,19 @@ class SystemMacro {
             )
             .concat(
                 afuncs.map(function(f){
-                    return macro $i{ f.view }.onAdded.add($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}' });
                 })
             )
             .concat(
                 rfuncs.map(function(f){
-                    return macro $i{ f.view }.onRemoved.add($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}' });
                 })
             )
             .concat([ macro onactivate() ])
             .concat(
                 afuncs.map(function(f){
-                    return macro for (i in $i{ f.view }.entities) $i{ '__${f.name}' }(i);
+                    var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                    return macro $i{ f.view.name }.iter($fwrapper);
                 })
             )
             .array();
@@ -217,12 +234,12 @@ class SystemMacro {
             .concat([ macro ondeactivate() ])
             .concat(
                 afuncs.map(function(f){
-                    return macro $i{ f.view }.onAdded.remove($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}' });
                 })
             )
             .concat(
                 rfuncs.map(function(f){
-                    return macro $i{ f.view }.onRemoved.remove($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}' });
                 })
             )
             .concat(
