@@ -20,22 +20,22 @@ class Echo {
     static var componentContainerCtors:Array<Int->echo.macro.IComponentContainer>;
     static var componentContainerDtors:Array<Int->Void>;
 
-    static function __initComponentContainer(ccid:Int, ctor:Int->echo.macro.IComponentContainer, dtor:Int->Void) {
+    static function __initComponentContainer(ccid:Int, cctor:Int->echo.macro.IComponentContainer, cdtor:Int->Void) {
         if (componentContainerCtors == null) componentContainerCtors = [];
-        componentContainerCtors[ccid] = ctor;
+        componentContainerCtors.push(cctor);
         if (componentContainerDtors == null) componentContainerDtors = [];
-        componentContainerDtors[ccid] = dtor;
+        componentContainerDtors.push(cdtor);
     }
 
 
     static var viewCtors:Array<Int->View.ViewBase>;
     static var viewDtors:Array<Int->Void>;
 
-    static function __initView(vid:Int, ctor:Int->View.ViewBase, dtor:Int->Void) {
+    static function __initView(vid:Int, vctor:Int->View.ViewBase, vdtor:Int->Void) {
         if (viewCtors == null) viewCtors = [];
-        viewCtors[vid] = ctor;
+        viewCtors.push(vctor);
         if (viewDtors == null) viewDtors = [];
-        viewDtors[vid] = dtor;
+        viewDtors.push(vdtor);
     }
 
 

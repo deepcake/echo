@@ -64,7 +64,7 @@ class ComponentMacro {
                     //componentContainer = null;
                 }
 
-                inline public static function inst(eid:Int) {
+                @:keep inline public static function inst(eid:Int) {
                     return componentContainers[eid];
                     //return componentContainer;
                 }

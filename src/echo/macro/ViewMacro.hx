@@ -98,7 +98,7 @@ class ViewMacro {
                     views.remove(eid);
                 }
 
-                inline public static function inst(eid:Int):$viewComplexType {
+                @:keep inline public static function inst(eid:Int):$viewComplexType {
                     return views[eid];
                 }
 
