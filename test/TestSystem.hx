@@ -171,18 +171,18 @@ class TestSystem extends TestCase {
 		assertEquals('AR', ASystem.STATIC_ACTUAL);
 	}
 
-	public function test_view_reuse2() {
-		ASystem.STATIC_ACTUAL = '';
-		ch.addView(new echo.View<{ a:CA }>());
-		ch.getViewByTypes(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
-		ch.addSystem(new ASystemReuse());
+	// public function test_view_reuse2() {
+	// 	ASystem.STATIC_ACTUAL = '';
+	// 	ch.addView(new echo.View<{ a:CA }>());
+	// 	ch.getViewByTypes(CA).onAdded.add(function(id) ASystem.STATIC_ACTUAL += '!');
+	// 	ch.addSystem(new ASystemReuse());
 
-		ch.addComponent(ch.id(), new CA(''));
-		ch.update(0);
+	// 	ch.addComponent(ch.id(), new CA(''));
+	// 	ch.update(0);
 
-		assertEquals(1, ch.views.length);
-		assertEquals('!R', ASystem.STATIC_ACTUAL);
-	}
+	// 	assertEquals(1, ch.views.length);
+	// 	assertEquals('!R', ASystem.STATIC_ACTUAL);
+	// }
 
 	public function test_meta_oneach_type_param() {
 		ch.addSystem(new MetaEachSystemTypeParam());

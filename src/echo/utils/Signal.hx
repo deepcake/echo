@@ -30,27 +30,27 @@ abstract Signal<T>(Array<T>) {
 		for (i in 0...this.length) this[i] = null;
 	}
 
-	@:noCompletion public inline function del(i:Int) {
+	inline function del(i:Int) {
 		this.splice(i, 1);
 	}
-	@:noCompletion public inline function len():Int {
+	inline function len():Int {
 		return this.length;
 	}
-	@:noCompletion public inline function get(i:Int):T {
+	inline function get(i:Int):T {
 		return this[i];
 	}
 
 	macro public function dispatch(self:Expr, args:Array<Expr>) {
 		return macro {
 			var i = 0;
-			var l = $self.len();
+			var l = @:privateAccess $self.len();
 			while (i < l) {
-				var listener = $self.get(i);
+				var listener = @:privateAccess $self.get(i);
 				if (listener != null) {
 					listener($a{args});
 					i++;
 				}else {
-					$self.del(i);
+					@:privateAccess $self.del(i);
 					l--;
 				}
 			}

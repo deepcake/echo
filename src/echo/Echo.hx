@@ -17,15 +17,32 @@ class Echo {
 
     static var __echoSequence = -1;
 
-    @:noCompletion public static var __componentStack:Array<Int->Void>;
+    static var componentContainerCtors:Array<Int->echo.macro.IComponentContainer>;
+    static var componentContainerDtors:Array<Int->Void>;
 
-    @:noCompletion public static function __addComponentStack(id:Int, stack:Int->Void) { // in thread-unsafe case only remove func needed
-        if (__componentStack == null) __componentStack = new Array<Int->Void>();
-        __componentStack[id] = stack;
+    static function __initComponentContainer(ccid:Int, cctor:Int->echo.macro.IComponentContainer, cdtor:Int->Void) {
+        if (componentContainerCtors == null) componentContainerCtors = [];
+        componentContainerCtors.push(cctor);
+        if (componentContainerDtors == null) componentContainerDtors = [];
+        componentContainerDtors.push(cdtor);
+    }
+
+
+    static var viewCtors:Array<Int->View.ViewBase>;
+    static var viewDtors:Array<Int->Void>;
+
+    static function __initView(vid:Int, vctor:Int->View.ViewBase, vdtor:Int->Void) {
+        if (viewCtors == null) viewCtors = [];
+        viewCtors.push(vctor);
+        if (viewDtors == null) viewDtors = [];
+        viewDtors.push(vdtor);
     }
 
 
     static var __componentSequence = -1; // some thread isolation by global id sequence
+
+
+    var componentContainers:Array<echo.macro.IComponentContainer> = [];
 
     @:noCompletion public var __id:Int;
 
@@ -43,16 +60,22 @@ class Echo {
 
     public function new() {
         __id = ++__echoSequence;
+        for (ctor in componentContainerCtors) {
+            componentContainers.push(ctor(__id));
+        }
+        for (ctor in viewCtors) {
+            ctor(__id); // push on activate
+        }
     }
 
 
-    #if echo_debug
+    #if echo_profiling
     var times:Map<Int, Float> = new Map();
     #end
     public function toString():String {
         var ret = '#$__id ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
-        #if echo_debug
+        #if echo_profiling
         ret += ' : ${ times.get(-2) } ms'; // total
         for (s in systems) {
             ret += '\n        ($s) : ${ times.get(s.__id) } ms';
@@ -71,23 +94,23 @@ class Echo {
      * @param dt - delta time
      */
     public function update(dt:Float) {
-        #if echo_debug
+        #if echo_profiling
         var engineUpdateStartTimestamp = Date.now().getTime();
         #end
 
         for (s in systems) {
-            #if echo_debug
+            #if echo_profiling
             var systemUpdateStartTimestamp = Date.now().getTime();
             #end
 
             s.update(dt);
 
-            #if echo_debug
+            #if echo_profiling
             times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
             #end
         }
 
-        #if echo_debug
+        #if echo_profiling
         times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
     }
@@ -99,6 +122,12 @@ class Echo {
         for (v in views) removeView(v);
         for (s in systems) removeSystem(s);
         for (e in entities) remove(e);
+        for (dtor in componentContainerDtors) {
+            dtor(__id);
+        }
+        for (dtor in viewDtors) {
+            dtor(__id);
+        }
     }
 
 
@@ -248,7 +277,7 @@ class Echo {
      * The id can be pushed back to the workflow
      * @param id - `Int` id (entity)
      */
-    public inline function poll(id:Int) {
+    public inline function pull(id:Int) {
         if (this.has(id)) {
             for (v in views) v.removeIfMatch(id);
             entitiesMap.remove(id);
@@ -261,9 +290,9 @@ class Echo {
      * @param id - `Int` id (entity)
      */
     public function remove(id:Int) {
-        poll(id);
-        for (i in 0...__componentStack.length) {
-            __componentStack[i](id);
+        pull(id);
+        for (i in 0...componentContainers.length) {
+            componentContainers[i].remove(id);
         }
     }
 
@@ -284,15 +313,15 @@ class Echo {
             .concat(
                 components
                     .map(function(c){
-                        var ct = ComponentMacro.getComponentHolder(c.typeof().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] = $c;
+                        var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
+                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).set(id, $c);
                     })
             )
             .array();
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if ($self.has(id)) for (v in $self.views) v.addIfMatch(id) ])
+            .concat([ macro if ($self.has(id)) for (v in $self.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -318,8 +347,8 @@ class Echo {
             .concat(
                 types
                     .map(function(t){
-                        var ct = ComponentMacro.getComponentHolder(t.identName().getType().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.get($self.__id).remove(id);
+                        var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
+                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).remove(id);
                     })
             )
             .array();
@@ -331,7 +360,7 @@ class Echo {
                         return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
                     })
                     .map(function(i){
-                        return macro v.isRequire($v{i});
+                        return macro @:privateAccess v.isRequire($v{i});
                     })
             )
             .array();
@@ -342,7 +371,7 @@ class Echo {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
@@ -364,8 +393,8 @@ class Echo {
      * @return `T`
      */
     macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] ];
+        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }
@@ -377,8 +406,8 @@ class Echo {
      * @return `Bool`
      */
     macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var ct = ComponentMacro.getComponentHolder(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.get($self.__id)[id] != null ];
+        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) != null ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }

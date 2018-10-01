@@ -62,8 +62,8 @@ class MacroBuilder {
 
                 var ret = 'ECHO BUILD REPORT :';
                 
-                ret += '\n    COMPONENTS [${componentMapCache.count()}] :';
-                ret += '\n        ' + sortedlist({ iterator: function() return componentMapCache.keys() }.mapi(function(i, k) return '$k [${ componentIds.get(k) }]').array()).join('\n        ');
+                ret += '\n    COMPONENTS [${componentNames.length}] :';
+                ret += '\n        ' + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join('\n        ');
                 ret += '\n    VIEWS [${viewCache.count()}] :';
                 ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k [${ viewIdsMap.get(k) }]').array()).join('\n        ');
                 trace('\n$ret');
