@@ -47,18 +47,13 @@ class Example {
 }
 
 // Components
-class Sprite {
-  // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
-}
-class Vec2 {
-  // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
-}
-@:forward 
-abstract Velocity(Vec2) { 
+class Sprite { } // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
+class Vec2 { } // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
+
+@:forward abstract Velocity(Vec2) { 
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
-@:forward 
-abstract Position(Vec2) {
+@:forward abstract Position(Vec2) {
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
@@ -69,24 +64,37 @@ class Movement extends System {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
-  // suitable View<{ pos:Position, vel:Velocity }> will be created under the hood
-  // but you can define a View manually
-  var positions:View<{ vel:Velocity }>;
+
+  // all suitable View<{ pos:Position, vel:Velocity }> will be created under the hood
+  // but it is also possible to define a View manually
+  var velocities:View<{ vel:Velocity }>;
+
+  @u function printAllVelocities() {
+    velocities.iter((id, v) -> trace(v));
+    // or
+    for (entity in velocities) {
+      trace(velocities.vel.get(entity));
+      // or
+      trace(echo.getComponent(entity, Velocity));
+    }
+  }
 }
 
 class Render extends System {
 
-  var scene:Array<Sprite>;
+  var scene:Array<Sprite> = [];
 
+  // or @added
   @a function onEntityWithSpriteComponentAdded(s:Sprite) {
-    sprites.push(s);
+    scene.push(s);
   }
+  // or @removed
   @r function onEntityWithSpriteComponentRemoved(s:Sprite, id:Int) {
-    sprites.remove(s);
+    scene.remove(s);
     trace('Oh My God! They Killed $id!');
   }
 
-  // execution order of @update-functions is the same of definition order
+  // execution order of @update-functions is the same definition order
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
