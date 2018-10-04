@@ -82,25 +82,33 @@ class ViewMacro {
 
             var def:TypeDefinition = macro class $viewClsName extends echo.View.ViewBase {
 
-                static var views:Map<Int, $viewComplexType>; // echo id => v inst
+                #if echo_multi_instance
 
+                static var views:Map<Int, $viewComplexType>; // echo id => v inst
                 @:access(echo.Echo) static function __init__() {
                     views = new Map();
                     echo.Echo.__initView($v{ viewIndex }, create, destroy);
                 }
-
                 static function create(eid:Int):$viewComplexType {
                     views[eid] = new $viewTypePath();
                     return views[eid];
                 }
-
                 static function destroy(eid:Int):Void {
                     views.remove(eid);
                 }
-
                 @:keep inline public static function inst(eid:Int):$viewComplexType {
                     return views[eid];
                 }
+
+                #else
+
+                static var instance = new $viewTypePath();
+
+                @:keep inline public static function inst(eid:Int):$viewComplexType {
+                    return instance;
+                }
+
+                #end
 
                 // instance
 

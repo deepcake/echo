@@ -27,7 +27,7 @@ class Echo {
         componentContainerDtors.push(cdtor);
     }
 
-
+    #if echo_multi_instance
     static var viewCtors:Array<Int->View.ViewBase>;
     static var viewDtors:Array<Int->Void>;
 
@@ -37,6 +37,7 @@ class Echo {
         if (viewDtors == null) viewDtors = [];
         viewDtors.push(vdtor);
     }
+    #end
 
 
     static var __componentSequence = -1; // some thread isolation by global id sequence
@@ -63,9 +64,11 @@ class Echo {
         for (ctor in componentContainerCtors) {
             componentContainers.push(ctor(__id));
         }
+        #if echo_multi_instance
         for (ctor in viewCtors) {
             ctor(__id); // push on activate
         }
+        #end
     }
 
 
@@ -119,15 +122,17 @@ class Echo {
     * Removes all views, systems and ids (entities)
      */
     public function dispose() {
-        for (v in views) removeView(v);
-        for (s in systems) removeSystem(s);
         for (e in entities) remove(e);
+        for (s in systems) removeSystem(s);
+        for (v in views) removeView(v);
         for (dtor in componentContainerDtors) {
             dtor(__id);
         }
+        #if echo_multi_instance
         for (dtor in viewDtors) {
             dtor(__id);
         }
+        #end
     }
 
 

@@ -44,30 +44,42 @@ class ComponentMacro {
 
             var def = macro class $componentContainerClsName implements echo.macro.IComponentContainer {
 
-                static var componentContainers:Map<Int, $componentContainerComplexType>; // echo id => cc inst
-                //static var componentContainer:$componentContainerComplexType;
+                #if echo_multi_instance
 
+                static var componentContainers:Map<Int, $componentContainerComplexType>; // echo id => cc inst
                 @:access(echo.Echo) static function __init__() {
                     componentContainers = new Map();
                     echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
                 }
-
                 static function create(eid:Int):echo.macro.IComponentContainer {
                     componentContainers[eid] = new $componentContainerTypePath();
                     return componentContainers[eid];
-                    // if (componentContainer == null) componentContainer = new $componentContainerTypePath();
-                    // return componentContainer;
                 }
-
                 static function destroy(eid:Int):Void {
                     componentContainers.remove(eid);
-                    //componentContainer = null;
                 }
-
                 @:keep inline public static function inst(eid:Int) {
                     return componentContainers[eid];
-                    //return componentContainer;
                 }
+
+                #else
+
+                static var componentContainer:$componentContainerComplexType;
+                @:access(echo.Echo) static function __init__() {
+                    echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
+                }
+                static function create(eid:Int):echo.macro.IComponentContainer {
+                    if (componentContainer == null) componentContainer = new $componentContainerTypePath();
+                    return componentContainer;
+                }
+                static function destroy(eid:Int):Void {
+                    componentContainer = null;
+                }
+                @:keep inline public static function inst(eid:Int) {
+                    return componentContainer;
+                }
+
+                #end
 
 
                 var components:Map<Int, $componentCls>; // cid => c inst
