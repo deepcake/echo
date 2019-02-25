@@ -21,7 +21,7 @@ class Pool<T> {
 		if (max > 0 && max < cache.length) cache.push(item);
 	}
 
-	public inline function poll():T {
+	public inline function pop():T {
 		return cache.length > 0 ? cache.pop() : constructor();
 	}
 

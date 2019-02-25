@@ -42,62 +42,36 @@ class ComponentMacro {
             var componentContainerTypePath = tpath([], componentContainerClsName, []);
             var componentContainerComplexType = TPath(componentContainerTypePath);
 
-            var def = macro class $componentContainerClsName implements echo.macro.IComponentContainer {
+            var def = macro class $componentContainerClsName implements echo.macro.IComponentContainer<$componentCls> {
 
-                #if echo_multi_instance
+                static var instance = new $componentContainerTypePath();
 
-                static var componentContainers:Map<Int, $componentContainerComplexType>; // echo id => cc inst
-                @:access(echo.Echo) static function __init__() {
-                    componentContainers = new Map();
-                    echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
-                }
-                static function create(eid:Int):echo.macro.IComponentContainer {
-                    componentContainers[eid] = new $componentContainerTypePath();
-                    return componentContainers[eid];
-                }
-                static function destroy(eid:Int):Void {
-                    componentContainers.remove(eid);
-                }
-                @:keep inline public static function inst(eid:Int) {
-                    return componentContainers[eid];
+                @:keep inline public static function inst():$componentContainerComplexType {
+                    return instance;
                 }
 
-                #else
+                // instance
 
-                static var componentContainer:$componentContainerComplexType;
-                @:access(echo.Echo) static function __init__() {
-                    echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
-                }
-                static function create(eid:Int):echo.macro.IComponentContainer {
-                    if (componentContainer == null) componentContainer = new $componentContainerTypePath();
-                    return componentContainer;
-                }
-                static function destroy(eid:Int):Void {
-                    componentContainer = null;
-                }
-                @:keep inline public static function inst(eid:Int) {
-                    return componentContainer;
-                }
-
-                #end
-
-
-                var components:Map<Int, $componentCls>; // cid => c inst
+                var components = new Map<Int, $componentCls>();
 
                 public function new() {
-                    components = new Map();
+                    @:privateAccess echo.Echo.regComponentContainer(this);
                 }
 
-                inline public function get(cid:Int) {
-                    return components[cid];
+                inline public function add(id:Int, c:$componentCls) {
+                    components[id] = c;
                 }
 
-                inline public function set(cid:Int, c:$componentCls) {
-                    components[cid] = c;
+                inline public function get(id:Int) {
+                    return components[id];
                 }
 
-                inline public function remove(cid:Int) {
-                    components.remove(cid);
+                inline public function remove(id:Int) {
+                    components.remove(id);
+                }
+
+                inline public function exists(id:Int) {
+                    return components.exists(id);
                 }
 
             }

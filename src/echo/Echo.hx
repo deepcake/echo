@@ -17,33 +17,23 @@ class Echo {
 
     static var __echoSequence = -1;
 
-    static var componentContainerCtors:Array<Int->echo.macro.IComponentContainer>;
-    static var componentContainerDtors:Array<Int->Void>;
 
-    static function __initComponentContainer(ccid:Int, cctor:Int->echo.macro.IComponentContainer, cdtor:Int->Void) {
-        if (componentContainerCtors == null) componentContainerCtors = [];
-        componentContainerCtors.push(cctor);
-        if (componentContainerDtors == null) componentContainerDtors = [];
-        componentContainerDtors.push(cdtor);
+    static var __componentSequence = -1;
+
+
+    static var componentContainers:Array<echo.macro.IComponentContainer<Dynamic>> = [];
+
+    static function regComponentContainer(cc:echo.macro.IComponentContainer<Dynamic>) {
+        componentContainers.push(cc);
     }
 
-    #if echo_multi_instance
-    static var viewCtors:Array<Int->View.ViewBase>;
-    static var viewDtors:Array<Int->Void>;
 
-    static function __initView(vid:Int, vctor:Int->View.ViewBase, vdtor:Int->Void) {
-        if (viewCtors == null) viewCtors = [];
-        viewCtors.push(vctor);
-        if (viewDtors == null) viewDtors = [];
-        viewDtors.push(vdtor);
+    static var instance = new Echo();
+
+    @:keep inline public static function inst() {
+        return instance;
     }
-    #end
 
-
-    static var __componentSequence = -1; // some thread isolation by global id sequence
-
-
-    var componentContainers:Array<echo.macro.IComponentContainer> = [];
 
     @:noCompletion public var __id:Int;
 
@@ -61,14 +51,6 @@ class Echo {
 
     public function new() {
         __id = ++__echoSequence;
-        for (ctor in componentContainerCtors) {
-            componentContainers.push(ctor(__id));
-        }
-        #if echo_multi_instance
-        for (ctor in viewCtors) {
-            ctor(__id); // push on activate
-        }
-        #end
     }
 
 
@@ -125,14 +107,6 @@ class Echo {
         for (e in entities) remove(e);
         for (s in systems) removeSystem(s);
         for (v in views) removeView(v);
-        for (dtor in componentContainerDtors) {
-            dtor(__id);
-        }
-        #if echo_multi_instance
-        for (dtor in viewDtors) {
-            dtor(__id);
-        }
-        #end
     }
 
 
@@ -312,14 +286,12 @@ class Echo {
      * @return `Int` id
      */
     macro public function addComponent(self:Expr, id:ExprOf<Int>, components:Array<ExprOf<Any>>):ExprOf<Int> {
-        var argExpr = macro $id;
-
         var componentExprs = new List<Expr>()
             .concat(
                 components
                     .map(function(c){
                         var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).set(id, $c);
+                        return macro ${ ct.expr(Context.currentPos()) }.inst().set(id, $c);
                     })
             )
             .array();
@@ -330,7 +302,7 @@ class Echo {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
 
         #if echo_verbose
         trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
@@ -346,14 +318,12 @@ class Echo {
      * @return `Int` id
      */
     macro public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>):ExprOf<Int> {
-        var argExpr = macro $id;
-
         var componentExprs = new List<Expr>()
             .concat(
                 types
                     .map(function(t){
                         var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst($self.__id).remove(id);
+                        return macro ${ ct.expr(Context.currentPos()) }.inst().remove(id);
                     })
             )
             .array();
@@ -381,7 +351,7 @@ class Echo {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Int) $b{exprs} )($argExpr);
+        var ret = macro ( function(id:Int) $b{exprs} )($id);
 
         #if echo_verbose
         trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
@@ -399,7 +369,7 @@ class Echo {
      */
     macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) ];
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }
@@ -412,7 +382,7 @@ class Echo {
      */
     macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst($self.__id).get(id) != null ];
+        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
         var ret = macro ( function(id:Int) $b{exprs} )($id);
         return ret;
     }
