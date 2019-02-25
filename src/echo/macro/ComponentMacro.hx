@@ -52,18 +52,18 @@ class ComponentMacro {
 
                 // instance
 
-                var components = new Map<Int, $componentCls>();
+                var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
 
                 public function new() {
                     @:privateAccess echo.Echo.regComponentContainer(this);
                 }
 
                 inline public function add(id:Int, c:$componentCls) {
-                    components[id] = c;
+                    components.add(id, c);
                 }
 
                 inline public function get(id:Int) {
-                    return components[id];
+                    return components.get(id);
                 }
 
                 inline public function remove(id:Int) {
@@ -104,3 +104,51 @@ class ComponentMacro {
 
 }
 #end
+
+abstract ArrayComponentContainer<T>(Array<T>) {
+
+    public inline function new() this = new Array<T>();
+
+    public inline function add(id:Int, c:T) {
+        this[id] = c;
+    }
+
+    public inline function get(id:Int):T {
+        return this[id];
+    }
+
+    public inline function remove(id:Int) {
+        this[id] = null;
+    }
+
+    public inline function exists(id:Int) {
+        return this[id] != null;
+    }
+
+}
+
+abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
+
+    public function new() this = new haxe.ds.IntMap<T>();
+
+    public inline function add(id:Int, c:T) {
+        this.set(id, c);
+    }
+
+    public inline function get(id:Int):T {
+        return this.get(id);
+    }
+
+    public inline function remove(id:Int) {
+        this.remove(id);
+    }
+
+    public inline function exists(id:Int) {
+        return this.exists(id);
+    }
+
+}
+
+// TODO change cc by compilier flag
+
+typedef ComponentContainer<T> = IntMapComponentContainer<T>;
