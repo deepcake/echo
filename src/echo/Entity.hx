@@ -11,9 +11,39 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
-    inline public function new() {
+    public inline function new(immediate = true) {
         this = ++ @:privateAccess Echo.__componentSequence;
+        if (immediate) activate();
     }
+
+
+    public function activate() {
+        if (!activated()) {
+            Echo.inst().entitiesMap.set(this, this);
+            Echo.inst().entities.add(this);
+            for (v in Echo.inst().views) @:privateAccess v.addIfMatch(this);
+        }
+    }
+
+    public function deactivate() {
+        if (activated()) {
+            for (v in Echo.inst().views) @:privateAccess v.removeIfMatch(this);
+            Echo.inst().entitiesMap.remove(this);
+            Echo.inst().entities.remove(this);
+        }
+    }
+
+    public function activated():Bool {
+        return Echo.inst().entitiesMap.exists(this);
+    }
+
+    public function destroy() {
+        deactivate();
+        for (cc in @:privateAccess Echo.componentContainers) {
+            cc.remove(this);
+        }
+    }
+
 
     /**
      * Adds specified components to the id (entity).
@@ -22,7 +52,7 @@ abstract Entity(Int) from Int to Int {
      * @param components - comma separated list of components of `Any` type
      * @return `Int` id
      */
-    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<Int> {
+    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<Entity> {
         var componentExprs = new List<Expr>()
             .concat(
                 components
@@ -39,7 +69,7 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Int) $b{exprs} )($self);
+        var ret = macro ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
@@ -54,7 +84,7 @@ abstract Entity(Int) from Int to Int {
      * @param types - comma separated `Class<Any>` types of components to be removed
      * @return `Int` id
      */
-    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Int> {
+    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Entity> {
         var componentExprs = new List<Expr>()
             .concat(
                 types
@@ -88,7 +118,7 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Int) $b{exprs} )($self);
+        var ret = macro ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
@@ -107,7 +137,12 @@ abstract Entity(Int) from Int to Int {
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
-        var ret = macro ( function(id:Int) $b{exprs} )($self);
+        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+
+        #if echo_verbose
+        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        #end
+
         return ret;
     }
 
@@ -120,7 +155,12 @@ abstract Entity(Int) from Int to Int {
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
-        var ret = macro ( function(id:Int) $b{exprs} )($self);
+        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+
+        #if echo_verbose
+        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        #end
+
         return ret;
     }
 
