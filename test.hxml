@@ -1,0 +1,7 @@
+-cp src
+-cp test
+-x Run
+-lib buddy
+-D echo_verbose
+-D echo_profiling
+-D echo_report
