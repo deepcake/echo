@@ -8,55 +8,51 @@ class Run extends buddy.SingleSuite {
     public function new() {
         describe("when echo", {
 
-            describe("when to entity", {
+            describe("when init empty entity", {
 
-                var e1 = new Entity();
+                var e = new Entity();
 
-                describe("when add empty component", {
-                    it("add empty", {
-                        e1.add();
+                describe("then when add a Void component", {
+                    beforeAll(e.add());
+
+                    it("should not exists a String component", {
+                        e.exists(String).should.be(false);
                     });
-                    it("should not exists String component", {
-                        e1.exists(String).should.be(false);
-                    });
-                    it("should not have String component", {
-                        e1.get(String).should.be(null);
+                    it("should not have a String component", {
+                        e.get(String).should.be(null);
                     });
                 });
 
-                describe("when add String component", {
-                    it("add", {
-                        e1.add("123");
+                describe("then when add a String component", {
+                    beforeAll(e.add("123"));
+
+                    it("should exists a String component", {
+                        e.exists(String).should.be(true);
                     });
-                    it("should exists String component", {
-                        e1.exists(String).should.be(true);
-                    });
-                    it("should have String component", {
-                        e1.get(String).should.be("123");
+                    it("should have a String component", {
+                        e.get(String).should.be("123");
                     });
                 });
 
-                describe("when add String component again", {
-                    it("add again", {
-                        e1.add("123456");
+                describe("then when add a second String component", {
+                    beforeAll(e.add("hello"));
+
+                    it("should exists a String component", {
+                        e.exists(String).should.be(true);
                     });
-                    it("should exists String component", {
-                        e1.exists(String).should.be(true);
-                    });
-                    it("should have String component", {
-                        e1.get(String).should.be("123456");
+                    it("should have a second String component", {
+                        e.get(String).should.be("hello");
                     });
                 });
 
-                describe("when remove String component", {
-                    it("remove", {
-                        e1.remove(String);
+                describe("then when remove a String component", {
+                    beforeAll(e.remove(String));
+
+                    it("should not exists a String component", {
+                        e.exists(String).should.be(false);
                     });
-                    it("should not exists String component", {
-                        e1.exists(String).should.be(false);
-                    });
-                    it("should not have String component", {
-                        e1.get(String).should.be(null);
+                    it("should not have a String component", {
+                        e.get(String).should.be(null);
                     });
                 });
 
