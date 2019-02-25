@@ -8,9 +8,11 @@ class Run extends buddy.SingleSuite {
     public function new() {
         describe("when echo", {
 
+            var e:Entity;
+
             describe("when init empty entity", {
 
-                var e = new Entity();
+                beforeAll(e = new Entity());
 
                 describe("then when add a Void component", {
                     beforeAll(e.add());
@@ -35,13 +37,13 @@ class Run extends buddy.SingleSuite {
                 });
 
                 describe("then when add a second String component", {
-                    beforeAll(e.add("hello"));
+                    beforeAll(e.add("321"));
 
                     it("should exists a String component", {
                         e.exists(String).should.be(true);
                     });
                     it("should have a second String component", {
-                        e.get(String).should.be("hello");
+                        e.get(String).should.be("321");
                     });
                 });
 
@@ -56,14 +58,75 @@ class Run extends buddy.SingleSuite {
                     });
                 });
 
+                afterAll(Echo.inst().dispose());
+
+            });
+
+
+            describe("when init entity with a few components", {
+
+                var a = new ArrayComponent();
+
+                beforeAll(e = new Entity().add(a, "a", 8));
+
+                it("should contains all of them", {
+                    e.exists(ArrayComponent).should.be(true);
+                    e.exists(String).should.be(true);
+                    e.exists(Int).should.be(true);
+                });
+
+                it("should have all of them", {
+                    e.get(ArrayComponent).should.be(a);
+                    e.get(String).should.be("a");
+                    e.get(Int).should.be(8);
+                });
+
+                describe("then when reset all of components", {
+
+                    var b = new ArrayComponent();
+
+                    beforeAll(e.add(b, "b", 9));
+
+                    it("should contains all of them", {
+                        e.exists(ArrayComponent).should.be(true);
+                        e.exists(String).should.be(true);
+                        e.exists(Int).should.be(true);
+                    });
+
+                    it("should have all of new components", {
+                        e.get(ArrayComponent).should.be(b);
+                        e.get(String).should.be("b");
+                        e.get(Int).should.be(9);
+                    });
+
+                });
+
+                describe("then when remove all of components", {
+
+                    beforeAll(e.remove(ArrayComponent, String, Int));
+
+                    it("should not contains all of them", {
+                        e.exists(ArrayComponent).should.be(false);
+                        e.exists(String).should.be(false);
+                        e.exists(Int).should.be(false);
+                    });
+
+                    it("should not have all of new components", {
+                        e.get(ArrayComponent).should.be(null);
+                        e.get(String).should.be(null);
+                        e.get(Int).should.be(null);
+                    });
+
+                });
+
+                afterAll(Echo.inst().dispose());
+
             });
 
 
             describe("when init slow entity with a component", {
 
-                beforeAll(Echo.inst().dispose());
-
-                var e = new Entity(false).add(new ArrayComponent());
+                beforeAll(e = new Entity(false).add(new ArrayComponent()));
 
                 it("should not be immediate added to the flow", {
                     Echo.inst().entities.length.should.be(0);
@@ -119,6 +182,8 @@ class Run extends buddy.SingleSuite {
                     });
                 });
 
+                afterAll(Echo.inst().dispose());
+
             });
 
         });
@@ -126,6 +191,6 @@ class Run extends buddy.SingleSuite {
 }
 
 @:forward
-abstract ArrayComponent(Array<String>) {
-    public function new() this = new Array<String>();
+abstract ArrayComponent(Array<String>) from Array<String> to Array<String> {
+    public function new() this = [ "hello" ];
 }
