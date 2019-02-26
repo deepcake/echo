@@ -92,6 +92,7 @@ class ViewMacro {
 
                 public function new() {
                     __id = $v{ viewIndex };
+                    activate();
                 }
 
                 inline function exists(id:Int):Bool {
@@ -150,13 +151,13 @@ class ViewMacro {
             // activate
             var activateExprs = new List<Expr>()
                 .concat(
-                    components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = ${ getComponentContainer(c.cls).expr(Context.currentPos()) }.inst(echo.__id))
+                    components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = ${ getComponentContainer(c.cls).expr(Context.currentPos()) }.inst())
                 )
                 .concat(
-                    [ macro super.activate(echo) ]
+                    [ macro super.activate() ]
                 )
                 .array();
-            def.fields.push(ffun([AOverride], 'activate', [arg('echo', macro:echo.Echo)], macro:Void, macro $b{ activateExprs }, Context.currentPos()));
+            def.fields.push(ffun([AOverride], 'activate', [], macro:Void, macro $b{ activateExprs }, Context.currentPos()));
 
             // deact
             var deactivateExprs = new List<Expr>()

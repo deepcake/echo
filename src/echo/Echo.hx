@@ -106,7 +106,7 @@ class Echo {
     public function dispose() {
         for (e in entities) remove(e);
         for (s in systems) removeSystem(s);
-        for (v in views) removeView(v);
+        for (v in views) v.deactivate();
     }
 
 
@@ -120,7 +120,7 @@ class Echo {
         if (!systemsMap.exists(s.__id)) {
             systemsMap[s.__id] = s;
             systems.add(s);
-            s.activate(this);
+            s.activate();
         }
     }
 
@@ -136,72 +136,23 @@ class Echo {
         }
     }
 
-    /**
-     * Returns `true` if system with passed `type` was been added to the workflow, otherwise returns `false`
-     * @param type `Class<T>` system type
-     * @return `Bool`
-     */
-    macro public function hasSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
-        var cls = type.identName().getType().follow().toComplexType();
-        return macro $self.systemsMap.exists($v{ SystemMacro.systemIdsMap[cls.followName()] });
-    }
-
-    /**
-     * Retrives a system from the workflow by its type. If system with passed type will be not founded, `null` will be returned
-     * @param type `Class<T>` system type
-     * @return `System`
-     */
-    macro public function getSystem<T:System>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<System>> {
-        var cls = type.identName().getType().follow().toComplexType();
-        return macro $self.systemsMap[$v{ SystemMacro.systemIdsMap[cls.followName()] }];
-    }
-
 
     // View
 
-    /**
-     * Adds view to the workflow
-     * @param v `View<T>` instance
-     */
-    public function addView(v:View.ViewBase) {
+    function addView(v:View.ViewBase) {
         if (!viewsMap.exists(v.__id)) {
             viewsMap[v.__id] = v;
             views.add(v);
-            v.activate(this);
         }
     }
 
-    /**
-     * Removes view to the workflow
-     * @param v `View<T>` instance
-     */
-    public function removeView(v:View.ViewBase) {
+    function removeView(v:View.ViewBase) {
         if (viewsMap.exists(v.__id)) {
-            v.deactivate();
             viewsMap.remove(v.__id);
             views.remove(v);
         }
     }
 
-    /**
-     * Returns `true` if view with passed `type` was been added to the workflow, otherwise returns `false`
-     * @param type `Class<T>` view type
-     * @return `Bool`
-     */
-    macro public function hasView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Bool> {
-        var cls = type.identName().getType().follow().toComplexType();
-        return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[cls.followName()] });
-    }
-
-    /**
-     * Retrives a view from the workflow by its type. If view with passed type will be not found, `null` will be returned
-     * @param type `Class<T>` view type
-     * @return `View<T>`
-     */
-    macro public function getView<T:View.ViewBase>(self:Expr, type:ExprOf<Class<T>>):ExprOf<Null<View.ViewBase>> {
-        var cls = type.identName().getType().follow().toComplexType();
-        return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[cls.followName()] }];
-    }
 
     macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
         var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));

@@ -16,7 +16,6 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-	var echo:Echo;
 	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
 	@:noCompletion public var __id = -1;
@@ -30,14 +29,14 @@ class ViewBase {
 	public var entities(default, null):List<Int> = new List();
 
 
-	@:allow(echo.Echo) function activate(echo:Echo) {
-		this.echo = echo;
-		for (e in echo.entities) addIfMatch(e);
+	public function activate() {
+		@:privateAccess Echo.inst().addView(this);
+		for (e in Echo.inst().entities) addIfMatch(e);
 	}
 
-	@:allow(echo.Echo) function deactivate() {
+	public function deactivate() {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
-		this.echo = null;
+		@:privateAccess Echo.inst().removeView(this);
 	}
 
 

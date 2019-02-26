@@ -188,7 +188,6 @@ class SystemMacro {
             .array();
 
         var activateExprs = new List<Expr>()
-            .concat([ macro this.echo = echo ])
             .concat(
                 afuncs.concat(rfuncs)
                     .map(function(f){
@@ -203,10 +202,8 @@ class SystemMacro {
                         var viewType = viewCls.tp();
                         var viewId = viewIdsMap[viewCls.followName()];
                         return [
-                            //macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
-                            //macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
-                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(echo.__id),
-                            macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView($i{ v.name })
+                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(),
+                            macro $i{ v.name }.activate()
                         ];
                     })
                     .flatten()
@@ -248,7 +245,6 @@ class SystemMacro {
                         return macro $i{'__${f.name}'} = null;
                     })
             )
-            .concat([ macro this.echo = null ])
             .array();
 
 
@@ -274,8 +270,8 @@ class SystemMacro {
             }
         }
 
-        fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], 'activate', [], null, macro $b{activateExprs}, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], 'deactivate', [], null, macro $b{deactivateExprs}, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));
