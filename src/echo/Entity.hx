@@ -65,10 +65,10 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
         return ret;
@@ -114,10 +114,10 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
         return ret;
@@ -133,10 +133,10 @@ abstract Entity(Int) from Int to Int {
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
-        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
         return ret;
@@ -151,10 +151,10 @@ abstract Entity(Int) from Int to Int {
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
-        var ret = macro ( function(id:Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:Entity) $b{exprs} )($self);
 
         #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
+        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
         return ret;
