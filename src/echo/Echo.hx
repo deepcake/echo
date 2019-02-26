@@ -15,9 +15,6 @@ using Lambda;
 class Echo {
 
 
-    static var __echoSequence = -1;
-
-
     static var __componentSequence = -1;
 
 
@@ -35,30 +32,26 @@ class Echo {
     }
 
 
-    @:noCompletion public var __id:Int;
-
-    @:noCompletion public var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
+    @:noCompletion public var entitiesMap:Map<Entity, Int> = new Map(); // map (id : id)
     @:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
     @:noCompletion public var systemsMap:Map<Int, System> = new Map();
 
     /** List of added ids (entities) */
-    public var entities(default, null):List<Int> = new List();
+    public var entities(default, null):List<Entity> = new List();
     /** List of added views */
     public var views(default, null):List<View.ViewBase> = new List();
     /** List of added systems */
     public var systems(default, null):List<System> = new List();
 
 
-    public function new() {
-        __id = ++__echoSequence;
-    }
+    public function new() { }
 
 
     #if echo_profiling
     var times:Map<Int, Float> = new Map();
     #end
     public function toString():String {
-        var ret = '#$__id ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
         #if echo_profiling
         ret += ' : ${ times.get(-2) } ms'; // total
@@ -104,7 +97,7 @@ class Echo {
     * Removes all views, systems and ids (entities)
      */
     public function dispose() {
-        for (e in entities) remove(e);
+        for (e in entities) e.destroy();
         for (s in systems) removeSystem(s);
         for (v in views) v.deactivate();
     }
@@ -167,175 +160,21 @@ class Echo {
 
     // Entity
 
-    /**
-     * Creates a new id (entity)
-     * @param add - immediate adds created id to the workflow if `true`, otherwise not. Default `true`
-     * @return created `Int` id
-     */
-    public function id(add:Bool = true):Int {
-        var id = ++__componentSequence;
-        if (add) {
-            entitiesMap.set(id, id);
-            entities.add(id);
-        }
-        return id;
-    }
-
-    /**
-     * Returns `true` if the id (entity) is added to the workflow, otherwise returns `false`
-     * @param id - `Int` id (entity)
-     * @return `Bool`
-     */
-    public inline function has(id:Int):Bool {
-        return entitiesMap.exists(id);
-    }
-
-    /**
-     * Adds the id (entity) to the workflow
-     * @param id - `Int` id (entity)
-     */
-    public inline function push(id:Int) {
-        if (!this.has(id)) {
+    @:allow(echo.Entity) function addEntity(id:Int) {
+        if (!entitiesMap.exists(id)) {
             entitiesMap.set(id, id);
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
     }
 
-    /**
-     * Removes the id (entity) from the workflow with saving all it's components. 
-     * The id can be pushed back to the workflow
-     * @param id - `Int` id (entity)
-     */
-    public inline function pull(id:Int) {
-        if (this.has(id)) {
+    @:allow(echo.Entity) function removeEntity(id:Int) {
+        if (entitiesMap.exists(id)) {
             for (v in views) v.removeIfMatch(id);
             entitiesMap.remove(id);
             entities.remove(id);
         }
     }
 
-    /**
-     * Removes the id (entity) from the workflow and removes all it components
-     * @param id - `Int` id (entity)
-     */
-    public function remove(id:Int) {
-        pull(id);
-        for (i in 0...componentContainers.length) {
-            componentContainers[i].remove(id);
-        }
-    }
-
-
-    // Component
-
-    /**
-     * Adds specified components to the id (entity).
-     * If component with same type is already added to the id, it will be replaced.
-     * @param id - `Int` id (entity)
-     * @param components - comma separated list of components of `Any` type
-     * @return `Int` id
-     */
-    macro public function addComponent(self:Expr, id:ExprOf<Int>, components:Array<ExprOf<Any>>):ExprOf<Int> {
-        var componentExprs = new List<Expr>()
-            .concat(
-                components
-                    .map(function(c){
-                        var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst().set(id, $c);
-                    })
-            )
-            .array();
-
-        var exprs = new List<Expr>()
-            .concat(componentExprs)
-            .concat([ macro if ($self.has(id)) for (v in $self.views) @:privateAccess v.addIfMatch(id) ])
-            .concat([ macro return id ])
-            .array();
-
-        var ret = macro ( function(id:Int) $b{exprs} )($id);
-
-        #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
-        #end
-
-        return ret;
-    }
-
-    /**
-     * Removes a components from the id (entity) by its type
-     * @param id - `Int` id (entity)
-     * @param types - comma separated `Class<Any>` types of components to be removed
-     * @return `Int` id
-     */
-    macro public function removeComponent(self:Expr, id:ExprOf<Int>, types:Array<ExprOf<Class<Any>>>):ExprOf<Int> {
-        var componentExprs = new List<Expr>()
-            .concat(
-                types
-                    .map(function(t){
-                        var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst().remove(id);
-                    })
-            )
-            .array();
-
-        var requireExprs = new List<Expr>()
-            .concat(
-                types
-                    .map(function(t){
-                        return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
-                    })
-                    .map(function(i){
-                        return macro @:privateAccess v.isRequire($v{i});
-                    })
-            )
-            .array();
-
-        var requireCond = requireExprs.slice(1)
-            .fold(function(e:Expr, r:Expr){
-                return macro $r || $e;
-            }, requireExprs.length > 0 ? requireExprs[0] : null);
-
-        var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if ($self.has(id)) for (v in $self.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
-            .concat(componentExprs)
-            .concat([ macro return id ])
-            .array();
-
-        var ret = macro ( function(id:Int) $b{exprs} )($id);
-
-        #if echo_verbose
-        trace(new haxe.macro.Printer().printExpr(ret), @:pos Context.currentPos());
-        #end
-
-        return ret;
-    }
-
-    /**
-     * Retrives a component from the id (entity) by its type.
-     * If component with passed type is not added to the id, `null` will be returned.
-     * @param id - `Int` id (entity)
-     * @param type - `Class<T>` type of component to be retrieved
-     * @return `T`
-     */
-    macro public function getComponent<T>(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<T>>):ExprOf<T> {
-        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
-        var ret = macro ( function(id:Int) $b{exprs} )($id);
-        return ret;
-    }
-
-    /**
-     * Returns `true` if the id (entity) has a component with passed type, otherwise returns false
-     * @param id - `Int` id (entity)
-     * @param type - `Class<T>` type of component
-     * @return `Bool`
-     */
-    macro public function hasComponent(self:Expr, id:ExprOf<Int>, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
-        var ret = macro ( function(id:Int) $b{exprs} )($id);
-        return ret;
-    }
 
 }

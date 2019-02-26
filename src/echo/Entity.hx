@@ -17,31 +17,27 @@ abstract Entity(Int) from Int to Int {
     }
 
 
-    public function activate() {
-        if (!activated()) {
-            Echo.inst().entitiesMap.set(this, this);
-            Echo.inst().entities.add(this);
-            for (v in Echo.inst().views) @:privateAccess v.addIfMatch(this);
-        }
+    public inline function activate() {
+        Echo.inst().addEntity(this);
     }
 
-    public function deactivate() {
-        if (activated()) {
-            for (v in Echo.inst().views) @:privateAccess v.removeIfMatch(this);
-            Echo.inst().entitiesMap.remove(this);
-            Echo.inst().entities.remove(this);
-        }
+    public inline function deactivate() {
+        Echo.inst().removeEntity(this);
     }
 
-    public function activated():Bool {
+    public inline function activated():Bool {
         return Echo.inst().entitiesMap.exists(this);
+    }
+
+    public function removeAll() {
+        for (cc in @:privateAccess Echo.componentContainers) {
+            cc.remove(this);
+        }
     }
 
     public function destroy() {
         deactivate();
-        for (cc in @:privateAccess Echo.componentContainers) {
-            cc.remove(this);
-        }
+        removeAll();
     }
 
 
@@ -65,7 +61,7 @@ abstract Entity(Int) from Int to Int {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if (Echo.inst().has(id)) for (v in Echo.inst().views) @:privateAccess v.addIfMatch(id) ])
+            .concat([ macro if (id.activated()) for (v in Echo.inst().views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -113,7 +109,7 @@ abstract Entity(Int) from Int to Int {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (Echo.inst().has(id)) for (v in Echo.inst().views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if (id.activated()) for (v in Echo.inst().views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
