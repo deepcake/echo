@@ -16,7 +16,7 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
+	var entitiesMap:Map<Entity, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
 	@:noCompletion public var __id = -1;
 
@@ -26,7 +26,7 @@ class ViewBase {
 	//public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
 	/** List of matched ids (entities) */
-	public var entities(default, null):List<Int> = new List();
+	public var entities(default, null):List<Entity> = new List();
 
 
 	public function activate() {

@@ -117,11 +117,11 @@ class ViewMacro {
             }
 
             // signals
-            var signalTypeParamComplexType = TFunction([ macro:Int ].concat(components.map(function(c) return c.cls)), macro:Void);
+            var signalTypeParamComplexType = TFunction([ macro:echo.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
             var signalTypePath = tpath(['echo', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
             var signalComplexType = macro:echo.utils.Signal<$signalTypeParamComplexType>;
-            def.fields.push(fvar([#if haxe-ver >= 4.000 AFinal, #end APublic], 'onAdded', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
-            def.fields.push(fvar([#if haxe-ver >= 4.000 AFinal, #end APublic], 'onRemoved', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
+            def.fields.push(fvar([#if haxe4 AFinal, #end APublic], 'onAdded', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
+            def.fields.push(fvar([#if haxe4 AFinal, #end APublic], 'onRemoved', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
 
             // add/remove
             var callArgs = [ macro id ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(id)));
@@ -171,7 +171,7 @@ class ViewMacro {
             def.fields.push(ffun([AOverride], 'deactivate', [], macro:Void, macro $b{ deactivateExprs }, Context.currentPos()));
 
             // iter
-            var ctypes = [ macro:Int ].concat(components.map(function(c) return c.cls));
+            var ctypes = [ macro:echo.Entity ].concat(components.map(function(c) return c.cls));
             var cargs = [ macro e ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(e)));
             var iterBody = macro for (e in entities) f($a{ cargs });
             def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', TFunction(ctypes, macro:Void))], macro:Void, macro $iterBody, Context.currentPos()));

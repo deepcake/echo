@@ -42,16 +42,6 @@ class MacroBuilder {
     }
 
     public static function gen() {
-        /*Context.onMacroContextReused(function() {
-            #if echo_verbose 
-            trace('macro context reused');
-            #end
-
-            reportRegistered = false;
-            metaRegistered = false;
-            return true;
-        });*/
-
         #if echo_report
         if (!reportRegistered) {
             Context.onGenerate(function(types) {
