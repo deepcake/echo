@@ -113,7 +113,7 @@ class SystemMacro {
         function argToCallArg(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Float: macro dt;
-                case macro:Int, macro:echo.Entity: macro id;
+                case macro:Int, macro:Entity, macro:echo.Entity: macro id;
                 default: macro $i{ a.name };
             }
         }
@@ -130,7 +130,7 @@ class SystemMacro {
 
         function argToComponent(a) {
             return switch (a.type) {
-                case macro:echo.Entity, macro:Int, macro:Float: null;
+                case macro:echo.Entity, macro:Entity, macro:Int, macro:Float: null;
                 default: { name: a.name, cls: a.type.followComplexType() };
             }
         };
