@@ -8,8 +8,8 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 #### Wip
 
 #### Overview
-* `Component` is an instance of `T:Any` class. For each `T` class, used as a component, generate a global `Map<Int, T>` component map.
-* `Entity` in this case is just the `Int` _id_, used as a key in a global component maps, and combination of components, stored with this _id_.
+* `Component` is an instance of `T:Any` class. A global component map will be generated for each `T` class, used as a component.
+* `Entity` is an abstract over the `Int` _id_, used as a key in a global component map.
 * `View` is a collection of all suitable _ids_ that was added to _the workflow_.
 * `System` is a place for some logic over views;
 
@@ -46,10 +46,9 @@ class Example {
   }
 }
 
-// Components
 class Sprite { } // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
-class Vec2 { } // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
-
+class Vec2 { }
+// abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
 @:forward abstract Velocity(Vec2) { 
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
@@ -59,47 +58,44 @@ class Vec2 { } // abstracts can be used to create different ComponentClass'es fr
 
 // Systems
 class Movement extends System {
-  // @update-function will be called for each entity that contains required components
+  // @update-function will be called for each entity that contains required components 
+  // all views for that will be defined and initialized under the hood
+  // any types are supposed, except Float (reserved for delta time) and Int/Entity (reserved for Entity id) - it will be ignored
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, id:Int) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
 
-  // all suitable View<{ pos:Position, vel:Velocity }> will be created under the hood
-  // but it is also possible to define a View manually
+  // it is also possible to define a View manually (initialization is still not needed) for additional abilities like counting entities
   var velocities:View<{ vel:Velocity }>;
 
-  @u function printAllVelocities() {
-    velocities.iter((id, v) -> trace(v));
-    // or
-    for (entity in velocities) {
-      trace(velocities.vel.get(entity));
-      // or
-      trace(echo.getComponent(entity, Velocity));
-    }
+  // @update-function without components will be called just once per system update
+  @update function printAllVelocities() {
+    trace('we have a ${ velocities.entities.length } count of entities with velocity component!');
   }
 }
 
 class Render extends System {
-
   var scene:Array<Sprite> = [];
-
-  // or @added
+  // @a, @u and @r is a shortcuts for @added, @update and @removed
+  // @added/@removed-functions will be called before and after a suitable entity is added to/removed from the view
   @a function onEntityWithSpriteComponentAdded(s:Sprite) {
     scene.push(s);
   }
-  // or @removed
-  @r function onEntityWithSpriteComponentRemoved(s:Sprite, id:Int) {
+  @r function onEntityWithSpriteComponentRemoved(s:Sprite, entity:Entity) {
     scene.remove(s);
-    trace('Oh My God! They Killed $id!');
+    trace('Oh My God! They removed $entity!');
   }
 
-  // execution order of @update-functions is the same definition order
+  // execution order of @update-functions is the same to definition order, so it possible to do some preparations before iterate over entities
+  // @update-function without components actually can receive a Float delta time
+  @u inline function beforeSpritePositionsUpdated(dt:Float) {
+    trace('starting update sprite positions!')
+  }
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  // @update-function without components will be called just once per update
   @u inline function afterSpritePositionsUpdated() {
     scene.sort(function(s1, s2) return s2.y - s1.y);
   }
