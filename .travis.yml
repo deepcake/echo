@@ -10,6 +10,7 @@ os:
 # you can specify futher versions as found at http://haxe.org/website-content/downloads/versions.json
 haxe:
   - "3.4.7"
+  - "4.0.0-rc.1"
   - development
   
 matrix:
@@ -27,11 +28,12 @@ script:
   - haxelib run travix neko
   - haxelib run travix python
   - haxelib run travix node
-  # - haxelib run travix js
-  # - haxelib run travix flash
-  # - haxelib run travix java
+  - haxelib run travix js
+  - haxelib run travix flash
+  - haxelib run travix java
   - haxelib run travix cpp
-  # - haxelib run travix cs
-  # - haxelib run travix php
+  - haxelib run travix cs
+  - haxelib run travix php
   - haxelib run travix php7
+  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl; fi
   # - haxelib run travix lua
