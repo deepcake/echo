@@ -59,37 +59,39 @@ class EntityTest extends buddy.BuddySuite {
                 beforeAll(Echo.inst().dispose());
 
                 var a = new ArrayComponent();
+                var i8 = new IntComponent(8);
 
-                beforeAll(e = new Entity().add(a, "a", 8));
+                beforeAll(e = new Entity().add(a, "a", i8));
 
                 it("should exists all of components", {
                     e.exists(ArrayComponent).should.be(true);
                     e.exists(String).should.be(true);
-                    e.exists(Int).should.be(true);
+                    e.exists(IntComponent).should.be(true);
                 });
 
                 it("should get all of components", {
                     e.get(ArrayComponent).should.be(a);
                     e.get(String).should.be("a");
-                    e.get(Int).should.be(8);
+                    e.get(IntComponent).should.be(i8);
                 });
 
                 describe("Then re-set all of components at once", {
 
                     var b = new ArrayComponent();
+                    var i9 = new IntComponent(9);
 
-                    beforeAll(e.add(b, "b", 9));
+                    beforeAll(e.add(b, "b", i9));
 
                     it("should exists all of components", {
                         e.exists(ArrayComponent).should.be(true);
                         e.exists(String).should.be(true);
-                        e.exists(Int).should.be(true);
+                        e.exists(IntComponent).should.be(true);
                     });
 
                     it("should get all of new components", {
                         e.get(ArrayComponent).should.be(b);
                         e.get(String).should.be("b");
-                        e.get(Int).should.be(9);
+                        e.get(IntComponent).should.be(i9);
                     });
 
                 });
@@ -101,13 +103,13 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists all of components", {
                         e.exists(ArrayComponent).should.be(false);
                         e.exists(String).should.be(false);
-                        e.exists(Int).should.be(false);
+                        e.exists(IntComponent).should.be(false);
                     });
 
                     it("should not get all of components", {
                         e.get(ArrayComponent).should.be(null);
                         e.get(String).should.be(null);
-                        e.get(Int).should.be(null);
+                        e.get(IntComponent).should.be(null);
                     });
 
                 });
@@ -165,4 +167,8 @@ class EntityTest extends buddy.BuddySuite {
 
 abstract ArrayComponent(Array<String>) {
     public function new() this = [ "hello" ];
+}
+
+abstract IntComponent(Null<Int>) {
+    public function new(value:Int) this = value;
 }

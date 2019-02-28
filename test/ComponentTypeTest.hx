@@ -102,7 +102,7 @@ abstract AbstractObjectComponent(ObjectComponent) {
     public function new(v:String) this = new ObjectComponent(v);
 }
 
-abstract AbstractPrimitive(Int) from Int to Int {
+abstract AbstractPrimitive(Null<Int>) from Null<Int> to Null<Int> {
     public function new(i:Int) this = i;
 }
 
@@ -113,7 +113,7 @@ enum EnumComponent {
 }
 
 @:enum 
-abstract EnumAbstractComponent(Int) from Int to Int {
+abstract EnumAbstractComponent(Null<Int>) from Null<Int> to Null<Int> {
     var EA1 = 1;
     var EA2 = 2;
 }
