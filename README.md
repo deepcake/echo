@@ -2,8 +2,8 @@
 [![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
 Super lightweight Entity Component System framework for Haxe. 
-Focused to be simple and fast.
-Initially created to know the power of macros.
+Initially created to learn the power of macros. 
+Focused to be simple and fast. 
 Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
 
 #### Wip
@@ -57,27 +57,31 @@ class Vec2 { }
 
 // Systems
 class Movement extends System {
-  // @update-function will be called for each entity that contains required components 
-  // all views for that will be defined and initialized under the hood
-  // any types are supposed, except Float (reserved for delta time) and Int/Entity (reserved for Entity id) - it will be ignored
+  // @update-function will be called for each entity that contains required components;
+  // all views for that will be defined and initialized under the hood;
+  // any types are supposed to be a component, 
+  // except Float (reserved for delta time) and Int/Entity (reserved for Entity id);
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, id:Int) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
 
-  // it is also possible to define a View manually (initialization is still not needed) for additional abilities like counting entities
+  // it is also possible to define a View manually (initialization is still not needed) 
+  // for additional abilities like counting entities;
   var velocities:View<{ vel:Velocity }>;
 
-  // @update-function without components will be called just once per system update
-  @update function printAllVelocities() {
+  // @update-function without components will be called just once per system update;
+  @update function printVelocitiesCount() {
     trace('we have a ${ velocities.entities.length } count of entities with velocity component!');
+    // another way to iterate over entities
+    velocities.iter((entity, velocity) -> trace('${entity} has velocity ${velocity}'));
   }
 }
 
 class Render extends System {
   var scene:Array<Sprite> = [];
-  // @a, @u and @r is a shortcuts for @added, @update and @removed
-  // @added/@removed-functions will be called before and after a suitable entity is added to/removed from the view
+  // @a, @u and @r is a shortcuts for @added, @update and @removed;
+  // @added/@removed-functions will be called before/after an entity is added/removed from the view;
   @a function onEntityWithSpriteComponentAdded(s:Sprite) {
     scene.push(s);
   }
@@ -86,16 +90,17 @@ class Render extends System {
     trace('Oh My God! They removed $entity!');
   }
 
-  // execution order of @update-functions is the same to definition order, so it possible to do some preparations before iterate over entities
-  // @update-function without components actually can receive a Float delta time
-  @u inline function beforeSpritePositionsUpdated(dt:Float) {
+  // execution order of @update-functions is the same to definition order, 
+  // so it possible to do some preparations before iterate over entities;
+  @u inline function beforeSpritePositionsUpdated() {
     trace('starting update sprite positions!')
   }
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  @u inline function afterSpritePositionsUpdated() {
+  
+  @u inline function afterSpritePositionsUpdated(dt:Float) {
     scene.sort(function(s1, s2) return s2.y - s1.y);
   }
 }
