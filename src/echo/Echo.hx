@@ -25,32 +25,25 @@ class Echo {
     }
 
 
-    static var instance = new Echo();
-
-    @:keep inline public static function inst() {
-        return instance;
-    }
-
-
-    @:noCompletion public var entitiesMap:Map<Entity, Int> = new Map(); // map (id : id)
-    @:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
-    @:noCompletion public var systemsMap:Map<Int, System> = new Map();
+    static var entitiesMap:Map<Entity, Int> = new Map(); // map (id : id)
+    static var viewsMap:Map<Int, View.ViewBase> = new Map();
+    static var systemsMap:Map<Int, System> = new Map();
 
     /** List of added entities */
-    public var entities(default, null):List<Entity> = new List();
+    public static var entities(default, null):List<Entity> = new List();
     /** List of added views */
-    public var views(default, null):List<View.ViewBase> = new List();
+    public static var views(default, null):List<View.ViewBase> = new List();
     /** List of added systems */
-    public var systems(default, null):List<System> = new List();
+    public static var systems(default, null):List<System> = new List();
 
 
-    public function new() { }
+    function new() { }
 
 
     #if echo_profiling
-    var times:Map<Int, Float> = new Map();
+    static var times:Map<Int, Float> = new Map();
     #end
-    public function toString():String {
+    public static function toString():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
         #if echo_profiling
@@ -71,7 +64,7 @@ class Echo {
      * Update
      * @param dt - delta time
      */
-    public function update(dt:Float) {
+    public static function update(dt:Float) {
         #if echo_profiling
         var engineUpdateStartTimestamp = Date.now().getTime();
         #end
@@ -97,7 +90,7 @@ class Echo {
     /**
     * Removes all views, systems and entities
      */
-    public function dispose() {
+    public static function dispose() {
         for (e in entities) e.destroy();
         for (s in systems) removeSystem(s);
         for (v in views) v.deactivate();
@@ -110,7 +103,7 @@ class Echo {
      * Adds system to the workflow
      * @param s `System` instance
      */
-    public function addSystem(s:System) {
+    public static function addSystem(s:System) {
         if (!systemsMap.exists(s.__id)) {
             systemsMap[s.__id] = s;
             systems.add(s);
@@ -122,7 +115,7 @@ class Echo {
      * Removes system from the workflow
      * @param s `System` instance
      */
-    public function removeSystem(s:System) {
+    public static function removeSystem(s:System) {
         if (systemsMap.exists(s.__id)) {
             s.deactivate();
             systemsMap.remove(s.__id);
@@ -133,14 +126,14 @@ class Echo {
 
     // View
 
-    function addView(v:View.ViewBase) {
+    static function addView(v:View.ViewBase) {
         if (!viewsMap.exists(v.__id)) {
             viewsMap[v.__id] = v;
             views.add(v);
         }
     }
 
-    function removeView(v:View.ViewBase) {
+    static function removeView(v:View.ViewBase) {
         if (viewsMap.exists(v.__id)) {
             viewsMap.remove(v.__id);
             views.remove(v);
@@ -150,7 +143,7 @@ class Echo {
 
     // Entity
 
-    @:allow(echo.Entity) function id(immediate:Bool):Int {
+    @:allow(echo.Entity) static function id(immediate:Bool):Int {
         var id = ++__componentSequence;
         if (immediate) {
             entitiesMap.set(id, id);
@@ -159,16 +152,20 @@ class Echo {
         return id;
     }
 
-    @:allow(echo.Entity) function addEntity(id:Int) {
-        if (!entitiesMap.exists(id)) {
+    @:allow(echo.Entity) static inline function exists(id:Int) {
+        return entitiesMap.exists(id);
+    }
+
+    @:allow(echo.Entity) static function add(id:Int) {
+        if (!exists(id)) {
             entitiesMap.set(id, id);
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
     }
 
-    @:allow(echo.Entity) function removeEntity(id:Int) {
-        if (entitiesMap.exists(id)) {
+    @:allow(echo.Entity) static function remove(id:Int) {
+        if (exists(id)) {
             for (v in views) v.removeIfMatch(id);
             entitiesMap.remove(id);
             entities.remove(id);

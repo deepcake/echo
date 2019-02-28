@@ -18,8 +18,6 @@ class Example {
 	static public var MAX_WIDTH = 60;
 	static public var MAX_HEIGHT = 40;
 
-	static var echo:Echo;
-
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
 		var stat = Browser.document.createPreElement();
@@ -32,11 +30,10 @@ class Example {
 		var h = Browser.window.innerHeight / size > MAX_HEIGHT ? MAX_HEIGHT : Math.floor(Browser.window.innerHeight / size);
 
 
-		echo = Echo.inst();
-		echo.addSystem(new Movement(w, h));
-		echo.addSystem(new Interaction());
-		echo.addSystem(new Render(w, h, size, canvas));
-		echo.addSystem(new InteractionEvent());
+		Echo.addSystem(new Movement(w, h));
+		Echo.addSystem(new Interaction());
+		Echo.addSystem(new Render(w, h, size, canvas));
+		Echo.addSystem(new InteractionEvent());
 
 		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
@@ -57,8 +54,8 @@ class Example {
 
 
 		Browser.window.setInterval(function() {
-			echo.update(.050);
-			stat.innerHTML = echo.toString();
+			Echo.update(.050);
+			stat.innerHTML = Echo.toString();
 		}, 50);
 	}
 

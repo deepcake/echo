@@ -13,7 +13,7 @@ class ViewTest extends buddy.BuddySuite {
             describe("When add entities", {
 
                 beforeAll({
-                    Echo.inst().addSystem(s);
+                    Echo.addSystem(s);
 
                     s.a.onAdded.add(function(id, a) addCounter++);
                     s.a.onRemoved.add(function(id, a) removeCounter++);
@@ -46,7 +46,7 @@ class ViewTest extends buddy.BuddySuite {
             describe("When remove components", {
 
                 beforeAll({
-                    for(e in Echo.inst().entities) {
+                    for(e in Echo.entities) {
                         e.remove(A);
                     }
                 });
@@ -69,7 +69,7 @@ class ViewTest extends buddy.BuddySuite {
             describe("When remove entities", {
 
                 beforeAll({
-                    for(e in Echo.inst().entities) {
+                    for(e in Echo.entities) {
                         e.destroy();
                     }
                 });
@@ -91,8 +91,8 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("When views defined with the same signatures", {
-                beforeAll(Echo.inst().dispose());
-                beforeAll(Echo.inst().addSystem(new SameViewSystem()));
+                beforeAll(Echo.dispose());
+                beforeAll(Echo.addSystem(new SameViewSystem()));
                 it("should not define doublicates", {
                     SameViewSystem.ab.should.be(SameViewSystem.ba);
                     SameViewSystem.ab.should.be(SameViewSystem.ab1);
@@ -100,7 +100,7 @@ class ViewTest extends buddy.BuddySuite {
                     SameViewSystem.ab.should.be(SameViewSystem.ab3);
                 });
                 it("should not add doublicates to the flow", {
-                    Echo.inst().views.length.should.be(1);
+                    Echo.views.length.should.be(1);
                 });
             });
 

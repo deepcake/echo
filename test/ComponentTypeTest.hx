@@ -8,14 +8,14 @@ class ComponentTypeTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Components of different types", {
 
-            beforeAll(Echo.inst().dispose());
+            beforeAll(Echo.dispose());
 
             var e = new Entity();
             var s = new ComponentTypeSystem();
 
             beforeAll({
                 e.activate();
-                Echo.inst().addSystem(s);
+                Echo.addSystem(s);
             });
 
             describe("When add an ObjectComponent", {

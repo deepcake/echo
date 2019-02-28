@@ -11,19 +11,19 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
-    public inline function new(immediate = true) this = Echo.inst().id(immediate);
+    public inline function new(immediate = true) this = Echo.id(immediate);
 
 
     public inline function activate() {
-        Echo.inst().addEntity(this);
+        Echo.add(this);
     }
 
     public inline function deactivate() {
-        Echo.inst().removeEntity(this);
+        Echo.remove(this);
     }
 
     public inline function activated():Bool {
-        return Echo.inst().entitiesMap.exists(this);
+        return Echo.exists(this);
     }
 
     public function removeAll() {
@@ -58,7 +58,7 @@ abstract Entity(Int) from Int to Int {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if (id.activated()) for (v in Echo.inst().views) @:privateAccess v.addIfMatch(id) ])
+            .concat([ macro if (id.activated()) for (v in Echo.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -106,7 +106,7 @@ abstract Entity(Int) from Int to Int {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (id.activated()) for (v in Echo.inst().views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if (id.activated()) for (v in Echo.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();

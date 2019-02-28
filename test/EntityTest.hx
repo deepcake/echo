@@ -11,10 +11,10 @@ class EntityTest extends buddy.BuddySuite {
             var e:Entity;
 
             describe("When init immediate Entity", {
-                beforeAll(Echo.inst().dispose());
+                beforeAll(Echo.dispose());
                 beforeAll(e = new Entity());
 
-                it("should be immediate added to the flow", Echo.inst().entities.length.should.be(1));
+                it("should be immediate added to the flow", Echo.entities.length.should.be(1));
                 it("should be activated", e.activated().should.be(true));
 
                 describe("Then add a Void component", {
@@ -56,7 +56,7 @@ class EntityTest extends buddy.BuddySuite {
 
 
             describe("When init immediate Entity and then add a few components at once", {
-                beforeAll(Echo.inst().dispose());
+                beforeAll(Echo.dispose());
 
                 var a = new ArrayComponent();
                 var i8 = new IntComponent(8);
@@ -117,44 +117,44 @@ class EntityTest extends buddy.BuddySuite {
 
 
             describe("When init non immediate Entity and then add a component", {
-                beforeAll(Echo.inst().dispose());
+                beforeAll(Echo.dispose());
                 beforeAll(e = new Entity(false).add(new ArrayComponent()));
 
-                it("should not be immediate added to the flow", Echo.inst().entities.length.should.be(0));
+                it("should not be immediate added to the flow", Echo.entities.length.should.be(0));
                 it("should exists a component", e.exists(ArrayComponent).should.be(true));
                 it("should be deactivated", e.activated().should.be(false));
 
                 describe("Then activate", {
                     beforeAll(e.activate());
-                    it("should be added to the flow", Echo.inst().entities.length.should.be(1));
+                    it("should be added to the flow", Echo.entities.length.should.be(1));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
                     it("should be activated", e.activated().should.be(true));
                 });
 
                 describe("Then deactivate", {
                     beforeAll(e.deactivate());
-                    it("should be removed from the flow", Echo.inst().entities.length.should.be(0));
+                    it("should be removed from the flow", Echo.entities.length.should.be(0));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
                     it("should be deactivated", e.activated().should.be(false));
                 });
 
                 describe("Then activate after deactivate", {
                     beforeAll(e.activate());
-                    it("should be added to the flow", Echo.inst().entities.length.should.be(1));
+                    it("should be added to the flow", Echo.entities.length.should.be(1));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
                     it("should be activated", e.activated().should.be(true));
                 });
 
                 describe("Then destroy", {
                     beforeAll(e.destroy());
-                    it("should be removed from the flow", Echo.inst().entities.length.should.be(0));
+                    it("should be removed from the flow", Echo.entities.length.should.be(0));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should be deactivated", e.activated().should.be(false));
                 });
 
                 describe("Then activate after destroy", {
                     beforeAll(e.activate());
-                    it("should be added to the flow", Echo.inst().entities.length.should.be(1));
+                    it("should be added to the flow", Echo.entities.length.should.be(1));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should be activated", e.activated().should.be(true));
                 });

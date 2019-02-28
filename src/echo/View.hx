@@ -30,13 +30,13 @@ class ViewBase {
 
 
 	public function activate() {
-		@:privateAccess Echo.inst().addView(this);
-		for (e in Echo.inst().entities) addIfMatch(e);
+		@:privateAccess Echo.addView(this);
+		for (e in Echo.entities) addIfMatch(e);
 	}
 
 	public function deactivate() {
 		while (entities.length > 0) entitiesMap.remove(entities.pop());
-		@:privateAccess Echo.inst().removeView(this);
+		@:privateAccess Echo.removeView(this);
 	}
 
 
