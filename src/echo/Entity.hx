@@ -11,10 +11,7 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
-    public inline function new(immediate = true) {
-        this = ++ @:privateAccess Echo.__componentSequence;
-        if (immediate) activate();
-    }
+    public inline function new(immediate = true) this = Echo.inst().id(immediate);
 
 
     public inline function activate() {

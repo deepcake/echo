@@ -36,7 +36,7 @@ class Echo {
     @:noCompletion public var viewsMap:Map<Int, View.ViewBase> = new Map();
     @:noCompletion public var systemsMap:Map<Int, System> = new Map();
 
-    /** List of added ids (entities) */
+    /** List of added entities */
     public var entities(default, null):List<Entity> = new List();
     /** List of added views */
     public var views(default, null):List<View.ViewBase> = new List();
@@ -93,8 +93,9 @@ class Echo {
         #end
     }
 
+
     /**
-    * Removes all views, systems and ids (entities)
+    * Removes all views, systems and entities
      */
     public function dispose() {
         for (e in entities) e.destroy();
@@ -147,18 +148,16 @@ class Echo {
     }
 
 
-    macro public function getViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Null<View.ViewBase>> {
-        var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-        return macro $self.viewsMap[$v{ ViewMacro.viewIdsMap[viewCls.followName()] }];
-    }
-
-    macro public function hasViewByTypes(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Bool> {
-        var viewCls = MacroBuilder.getViewClsByTypes(types.map(function(type) return type.identName().getType().follow().toComplexType()));
-        return macro $self.viewsMap.exists($v{ ViewMacro.viewIdsMap[viewCls.followName()] });
-    }
-
-
     // Entity
+
+    @:allow(echo.Entity) function id(immediate:Bool):Int {
+        var id = ++__componentSequence;
+        if (immediate) {
+            entitiesMap.set(id, id);
+            entities.add(id);
+        }
+        return id;
+    }
 
     @:allow(echo.Entity) function addEntity(id:Int) {
         if (!entitiesMap.exists(id)) {
