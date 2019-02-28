@@ -98,7 +98,7 @@ class EntityTest extends buddy.BuddySuite {
 
                 describe("Then remove all of components at once", {
 
-                    beforeAll(e.remove(ArrayComponent, String, Int));
+                    beforeAll(e.remove(ArrayComponent, String, IntComponent));
 
                     it("should not exists all of components", {
                         e.exists(ArrayComponent).should.be(false);
