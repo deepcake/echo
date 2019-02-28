@@ -18,6 +18,7 @@ matrix:
     - haxe: development
 
 install:
+  - haxelib install hx3compat
   # - haxelib install travix
   # to always use the latest version of travix comment out the previous line and uncomment the next
   - haxelib git travix https://github.com/back2dos/travix && pushd . && cd $(haxelib config)travix/git && haxe build-neko.hxml && popd
