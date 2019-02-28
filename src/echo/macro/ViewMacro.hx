@@ -21,13 +21,6 @@ class ViewMacro {
     public static var viewIndex:Int = -1;
     public static var viewIdsMap:Map<String, Int> = new Map();
     public static var viewCache:Map<String, ComplexType> = new Map();
-    public static var viewMasks:Map<Int, Map<Int, Bool>> = new Map();
-
-    //public static var viewTypeCache:Map<String, haxe.macro.Type> = new Map();
-
-    //public static var viewIterCache:Map<String, ComplexType> = new Map();
-
-    //public static var viewDataCache:Map<String, ComplexType> = new Map();
 
     public static var viewDataCache = new Map<String, ViewMacroData>();
 
@@ -68,12 +61,8 @@ class ViewMacro {
         var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
         var viewCls = viewCache.get(viewClsName);
 
-        //if (viewCls == null) {
-        try {
-
-            viewCls = Context.getType(viewClsName).toComplexType();
-
-        } catch (err:String) {
+        if (viewCls == null) { 
+        //try viewCls = Context.getType(viewClsName).toComplexType() catch (err:String) {
 
             viewIdsMap[viewClsName] = ++viewIndex;
 
@@ -194,9 +183,6 @@ class ViewMacro {
             traceTypeDefenition(def);
 
             Context.defineType(def);
-
-            viewMasks.set(viewIndex, new Map<Int, Bool>());
-            components.iter(function(c) viewMasks[viewIndex].set(getComponentId(c.cls), true));
 
             viewCls = Context.getType(viewClsName).toComplexType();
             viewCache.set(viewClsName, viewCls);
