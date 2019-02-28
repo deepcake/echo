@@ -91,7 +91,7 @@ class Render extends System {
   }
 
   // execution order of @update-functions is the same to definition order, 
-  // so it possible to do some preparations before iterate over entities;
+  // so it is possible to do some preparations before iterate over entities;
   @u inline function beforeSpritePositionsUpdated() {
     trace('starting update sprite positions!')
   }
@@ -99,7 +99,6 @@ class Render extends System {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  
   @u inline function afterSpritePositionsUpdated(dt:Float) {
     scene.sort(function(s1, s2) return s2.y - s1.y);
   }
