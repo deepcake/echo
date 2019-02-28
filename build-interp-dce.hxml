@@ -1,7 +1,0 @@
--main Main
--cp src
--cp test
--dce full
--D analyzer-optimize
--D echo_report
---interp
