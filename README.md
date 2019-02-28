@@ -3,6 +3,7 @@
 
 Super lightweight Entity Component System framework for Haxe. 
 Focused to be simple and fast.
+Initially created to know the power of macros.
 Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
 
 #### Wip
@@ -20,29 +21,27 @@ import echo.System;
 import echo.View;
 
 class Example {
-  static var echo:Echo;
 
   static function main() {
-    echo = new Echo();
-    echo.addSystem(new Movement());
-    echo.addSystem(new Render());
-
-    for (i in 0...100) createTree(Std.random(500), Std.random(500));
+    Echo.addSystem(new Movement());
+    Echo.addSystem(new Render());
 
     createRabbit(100, 100, 1, 1);
+    for (i in 0...100) createTree(Std.random(500), Std.random(500));
+
+    //Browser.window.setInterval(function() Echo.update(.050), 50);
   }
 
   static function createTree(x:Float, y:Float) {
-    echo.addComponent(echo.id(), 
-      new Position(x, y), 
-      new Sprite('assets/tree.png'));
+    new Entity()
+      .add(new Position(x, y))
+      .add(new Sprite('assets/tree.png'));
   }
   static function createRabbit(x:Float, y:Float, vx:Float, vy:Float) {
-    var id = echo.id();
     var pos = new Position(x, y);
     var vel = new Velocity(vx, vy);
     var spr = new Sprite('assets/rabbit.png');
-    echo.addComponent(id, pos, vel, spr);
+    new Entity().add(pos, vel, spr);
   }
 }
 
@@ -108,8 +107,8 @@ class Render extends System {
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echo_verbose` - traces to console all generated classes (for debug purposes)
- * `-D echo_debug` - collecting some more info for `toString()` method
+ * `-D echo_profiling` - collecting some more info for `toString()` method (especially for debug purposes)
+ * `-D echo_report` - traces a short report of built components and views
 
 #### Install
 ```haxelib git echo https://github.com/deepcake/echo.git```
