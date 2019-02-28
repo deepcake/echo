@@ -18,10 +18,9 @@ matrix:
     - haxe: development
 
 install:
-  - haxelib install hx3compat
-  # - haxelib install travix
+  - haxelib install travix
   # to always use the latest version of travix comment out the previous line and uncomment the next
-  - haxelib git travix https://github.com/back2dos/travix && pushd . && cd $(haxelib config)travix/git && haxe build-neko.hxml && popd
+  # - haxelib git travix https://github.com/back2dos/travix && pushd . && cd $(haxelib config)travix/git && haxe build-neko.hxml && popd
   - haxelib run travix install
 
 script:
@@ -36,5 +35,5 @@ script:
   # - haxelib run travix cs
   # - haxelib run travix php
   - haxelib run travix php7
-  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl; fi
+  # - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl; fi
   # - haxelib run travix lua
