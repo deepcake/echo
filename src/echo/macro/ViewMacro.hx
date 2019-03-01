@@ -79,21 +79,9 @@ class ViewMacro {
 
                 // instance
 
-                public function new() {
+                function new() {
                     __id = $v{ viewIndex };
                     activate();
-                }
-
-                inline function exists(id:Int):Bool {
-                    return entitiesMap.exists(id);
-                }
-
-                override function addIfMatch(id:Int) {
-                    if (!exists(id) && isMatch(id)) add(id);
-                }
-
-                override function removeIfMatch(id:Int) {
-                    if (exists(id)) remove(id);
                 }
 
             }
@@ -116,20 +104,18 @@ class ViewMacro {
             var callArgs = [ macro id ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(id)));
 
             var addExprs = [
-                    macro entitiesMap.set(id, id), 
-                    macro entities.add(id)
+                    macro super.add(id)
                 ].concat([
                     macro onAdded.dispatch($a{ callArgs })
                 ]);
-            def.fields.push(ffun([AInline], 'add', [arg('id', macro:Int)], macro:Void, macro $b{ addExprs }, Context.currentPos()));
+            def.fields.push(ffun([AOverride], 'add', [arg('id', macro:Int)], macro:Void, macro $b{ addExprs }, Context.currentPos()));
 
             var removeExprs = [
                     macro onRemoved.dispatch($a{ callArgs })
                 ].concat([
-                    macro entities.remove(id),
-                    macro entitiesMap.remove(id)
+                    macro super.remove(id)
                 ]);
-            def.fields.push(ffun([AInline], 'remove', [arg('id', macro:Int)], macro:Void, macro $b{ removeExprs }, Context.currentPos()));
+            def.fields.push(ffun([AOverride], 'remove', [arg('id', macro:Int)], macro:Void, macro $b{ removeExprs }, Context.currentPos()));
 
             // def cc
             components.mapi(function(i, c) {

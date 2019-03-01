@@ -25,7 +25,7 @@ class Echo {
     }
 
 
-    static var entitiesMap:Map<Entity, Int> = new Map(); // map (id : id)
+    static var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
     static var viewsMap:Map<Int, View.ViewBase> = new Map();
     static var systemsMap:Map<Int, System> = new Map();
 

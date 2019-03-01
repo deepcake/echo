@@ -48,7 +48,7 @@ class ComponentMacro {
 
                 var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
 
-                public function new() {
+                function new() {
                     @:privateAccess echo.Echo.regComponentContainer(this);
                 }
 
