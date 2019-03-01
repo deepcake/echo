@@ -16,64 +16,64 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-	var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
+    var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
-	@:noCompletion public var __id = -1;
+    @:noCompletion public var __id = -1;
 
-	/** Signal that dispatched when this view collects a new id (entity) */
-	//public var onAdded(default, null) = new echo.utils.Signal<Int->Void>();
-	/** Signal that dispatched when an id (entity) no more matched and will be removed */
-	//public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
+    /** Signal that dispatched when this view collects a new id (entity) */
+    //public var onAdded(default, null) = new echo.utils.Signal<Int->Void>();
+    /** Signal that dispatched when an id (entity) no more matched and will be removed */
+    //public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
 
-	/** List of matched ids (entities) */
-	public var entities(default, null):List<Entity> = new List();
-
-
-	public function activate() {
-		@:privateAccess Echo.addView(this);
-		for (e in Echo.entities) addIfMatch(e);
-	}
-
-	public function deactivate() {
-		while (entities.length > 0) entitiesMap.remove(entities.pop());
-		@:privateAccess Echo.removeView(this);
-	}
+    /** List of matched ids (entities) */
+    public var entities(default, null):List<Entity> = new List();
 
 
-	function isMatch(id:Int):Bool { // macro
-		// each required component exists in component map with this id
-		return false;
-	}
+    public function activate() {
+        @:privateAccess Echo.addView(this);
+        for (e in Echo.entities) addIfMatch(e);
+    }
 
-	function isRequire(c:Int):Bool { // macro
-		return false;
-	}
-
-
-	function add(id:Int) {
-		entitiesMap.set(id, id);
-		entities.add(id);
-	}
-
-	function remove(id:Int) {
-		entities.remove(id);
-		entitiesMap.remove(id);
-	}
-
-	inline function exists(id:Int):Bool {
-		return entitiesMap.exists(id);
-	}
+    public function deactivate() {
+        while (entities.length > 0) entitiesMap.remove(entities.pop());
+        @:privateAccess Echo.removeView(this);
+    }
 
 
-	@:allow(echo.Echo) function addIfMatch(id:Int) {
-		if (!exists(id) && isMatch(id)) add(id);
-	}
+    function isMatch(id:Int):Bool { // macro
+        // each required component exists in component map with this id
+        return false;
+    }
 
-	@:allow(echo.Echo) function removeIfMatch(id:Int) {
-		if (exists(id)) remove(id);
-	}
+    function isRequire(c:Int):Bool { // macro
+        return false;
+    }
 
 
-	public function toString():String return 'ViewBase';
+    function add(id:Int) {
+        entitiesMap.set(id, id);
+        entities.add(id);
+    }
+
+    function remove(id:Int) {
+        entities.remove(id);
+        entitiesMap.remove(id);
+    }
+
+    inline function exists(id:Int):Bool {
+        return entitiesMap.exists(id);
+    }
+
+
+    @:allow(echo.Echo) function addIfMatch(id:Int) {
+        if (!exists(id) && isMatch(id)) add(id);
+    }
+
+    @:allow(echo.Echo) function removeIfMatch(id:Int) {
+        if (exists(id)) remove(id);
+    }
+
+
+    public function toString():String return 'ViewBase';
 
 }
