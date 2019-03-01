@@ -27,7 +27,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     public function removeAll() {
-        for (cc in @:privateAccess Echo.componentContainers) {
+        for (cc in Echo.componentContainers) {
             cc.remove(this);
         }
     }
@@ -51,7 +51,7 @@ abstract Entity(Int) from Int to Int {
                 components
                     .map(function(c){
                         var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst().add(id, $c);
+                        return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().add(id, $c);
                     })
             )
             .array();
@@ -83,7 +83,7 @@ abstract Entity(Int) from Int to Int {
                 types
                     .map(function(t){
                         var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
-                        return macro ${ ct.expr(Context.currentPos()) }.inst().remove(id);
+                        return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().remove(id);
                     })
             )
             .array();

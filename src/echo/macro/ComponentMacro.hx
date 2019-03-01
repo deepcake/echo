@@ -36,7 +36,7 @@ class ComponentMacro {
             var componentContainerTypePath = tpath([], componentContainerClsName, []);
             var componentContainerComplexType = TPath(componentContainerTypePath);
 
-            var def = macro class $componentContainerClsName implements echo.macro.IComponentContainer<$componentCls> {
+            var def = macro class $componentContainerClsName {
 
                 static var instance = new $componentContainerTypePath();
 
@@ -49,23 +49,23 @@ class ComponentMacro {
                 var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
 
                 function new() {
-                    @:privateAccess echo.Echo.regComponentContainer(this);
+                    @:privateAccess echo.Echo.regComponentContainer(this.components);
                 }
 
-                inline public function add(id:Int, c:$componentCls) {
-                    components.add(id, c);
-                }
-
-                inline public function get(id:Int) {
+                inline public function get(id:Int):$componentCls {
                     return components.get(id);
                 }
 
-                inline public function remove(id:Int) {
-                    components.remove(id);
+                inline public function exists(id:Int):Bool {
+                    return components.exists(id);
                 }
 
-                inline public function exists(id:Int) {
-                    return components.exists(id);
+                inline function add(id:Int, c:$componentCls) {
+                    components.add(id, c);
+                }
+
+                inline function remove(id:Int) {
+                    components.remove(id);
                 }
 
             }
@@ -98,6 +98,7 @@ class ComponentMacro {
 
 }
 #end
+
 
 abstract ArrayComponentContainer<T>(Array<T>) {
 

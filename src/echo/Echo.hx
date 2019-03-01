@@ -18,9 +18,9 @@ class Echo {
     static var __componentSequence = -1;
 
 
-    static var componentContainers:Array<echo.macro.IComponentContainer<Dynamic>> = [];
+    @:allow(echo.Entity) static var componentContainers:Array<echo.macro.ComponentMacro.ComponentContainer<Dynamic>> = [];
 
-    static function regComponentContainer(cc:echo.macro.IComponentContainer<Dynamic>) {
+    static function regComponentContainer(cc:echo.macro.ComponentMacro.ComponentContainer<Dynamic>) {
         componentContainers.push(cc);
     }
 
