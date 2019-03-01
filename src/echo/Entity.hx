@@ -15,6 +15,10 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
+    /**
+    * Entity is an abstract over `Int` id;
+    * @param immediate - immediately adds this entity to the workflow if `true`, otherwise activate call is required
+     */
     public inline function new(immediate = true) this = Echo.id(immediate);
 
 
@@ -41,7 +45,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-    * Removes all associated components of this entity;
+    * Removes all associated components;
      */
     public function removeAll() {
         for (cc in Echo.componentContainers) {
