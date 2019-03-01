@@ -113,7 +113,7 @@ class SystemMacro {
         function argToCallArg(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Float: macro dt;
-                case macro:Int: macro id;
+                case macro:Int, macro:Entity, macro:echo.Entity: macro id;
                 default: macro $i{ a.name };
             }
         }
@@ -130,12 +130,13 @@ class SystemMacro {
 
         function argToComponent(a) {
             return switch (a.type) {
-                case macro:Int, macro:Float: null;
+                case macro:echo.Entity, macro:Entity, macro:Int, macro:Float: null;
                 default: { name: a.name, cls: a.type.followComplexType() };
             }
         };
 
         function addViewByMetaAndComponents(components:Array<{ name:String, cls:ComplexType }>, m:MetadataEntry) {
+            // TODO depr func, del
             return switch (m.params) {
                 case [ _.expr => EConst(CString(x)) ]: views.find(function(v) return v.name == x);
                 case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)];
@@ -146,15 +147,16 @@ class SystemMacro {
         }
 
         function findMetaFunc(f:Field, meta:Array<String>) {
-            if (hasMeta(f, EXCLUDE_META)) return null; // skip by meta
-            else if (hasMeta(f, meta)) {
+            if (hasMeta(f, EXCLUDE_META)) {
+                return null; // skip by meta
+            } else if (hasMeta(f, meta)) {
                 var func = extFunc(f);
                 if (func == null) return null; // skip if not a func
 
                 var components = func.args.map(argToComponent).filter(notNull);
 
                 var view = addViewByMetaAndComponents(components, getMeta(f, meta));
-                var viewArgs = view != null ? [ arg('id', macro:Int) ].concat(view.components.map(componentToViewArg.bind(_, func.args))) : [];
+                var viewArgs = view != null ? [ arg('id', macro:echo.Entity) ].concat(view.components.map(componentToViewArg.bind(_, func.args))) : [];
 
                 var funcName = f.name;
                 var funcArgs = func.args.map(argToCallArg).filter(notNull);
@@ -188,7 +190,6 @@ class SystemMacro {
             .array();
 
         var activateExprs = new List<Expr>()
-            .concat([ macro this.echo = echo ])
             .concat(
                 afuncs.concat(rfuncs)
                     .map(function(f){
@@ -203,10 +204,8 @@ class SystemMacro {
                         var viewType = viewCls.tp();
                         var viewId = viewIdsMap[viewCls.followName()];
                         return [
-                            //macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView(new $viewType()),
-                            //macro $i{ v.name } = cast echo.viewsMap[$v{ viewId }]
-                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(echo.__id),
-                            macro if (!echo.viewsMap.exists($v{ viewId })) echo.addView($i{ v.name })
+                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(),
+                            macro $i{ v.name }.activate()
                         ];
                     })
                     .flatten()
@@ -248,7 +247,6 @@ class SystemMacro {
                         return macro $i{'__${f.name}'} = null;
                     })
             )
-            .concat([ macro this.echo = null ])
             .array();
 
 
@@ -274,8 +272,8 @@ class SystemMacro {
             }
         }
 
-        fields.push(ffun([APublic, AOverride], 'activate', [arg('echo', macro:echo.Echo)], null, macro $b{activateExprs}, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], 'deactivate', null, null, macro $b{deactivateExprs}, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], 'activate', [], null, macro $b{activateExprs}, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], 'deactivate', [], null, macro $b{deactivateExprs}, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));

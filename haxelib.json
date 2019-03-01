@@ -2,10 +2,10 @@
   "name": "echo",
   "url" : "https://github.com/deepcake/echo",
   "license": "MIT",
-  "tags": ["entity", "component", "system", "ecs"],
+  "tags": [ "entity", "component", "system", "ecs" ],
   "description": "Super lightweight Entity Component System framework for Haxe",
-  "version": "1.0.0-alpha.10",
+  "version": "0.1.0",
   "classPath": "src/",
   "releasenote": "Alpha 10",
-  "contributors": ["deepcake"]
+  "contributors": [ "deepcake" ]
 }

@@ -28,64 +28,44 @@ class ComponentMacro {
         var componentContainerClsName = getClsName('ComponentContainer', componentClsName);
         var componentContainerType = componentContainerTypeCache.get(componentContainerClsName);
 
-        //if (componentContainerType == null) {
-        try {
-
-            componentContainerType = Context.getType(componentContainerClsName);
-
-        } catch (err:String) {
-
-            //trace('not found $componentContainerClsName');
+        if (componentContainerType == null) {
+        //try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
 
             ++componentIndex;
 
             var componentContainerTypePath = tpath([], componentContainerClsName, []);
             var componentContainerComplexType = TPath(componentContainerTypePath);
 
-            var def = macro class $componentContainerClsName implements echo.macro.IComponentContainer {
+            var def = macro class $componentContainerClsName {
 
-                static var componentContainers:Map<Int, $componentContainerComplexType>; // echo id => cc inst
-                //static var componentContainer:$componentContainerComplexType;
+                static var instance = new $componentContainerTypePath();
 
-                @:access(echo.Echo) static function __init__() {
-                    componentContainers = new Map();
-                    echo.Echo.__initComponentContainer($v{ componentIndex }, create, destroy);
+                @:keep inline public static function inst():$componentContainerComplexType {
+                    return instance;
                 }
 
-                static function create(eid:Int):echo.macro.IComponentContainer {
-                    componentContainers[eid] = new $componentContainerTypePath();
-                    return componentContainers[eid];
-                    // if (componentContainer == null) componentContainer = new $componentContainerTypePath();
-                    // return componentContainer;
+                // instance
+
+                var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
+
+                function new() {
+                    @:privateAccess echo.Echo.regComponentContainer(this.components);
                 }
 
-                static function destroy(eid:Int):Void {
-                    componentContainers.remove(eid);
-                    //componentContainer = null;
+                inline public function get(id:Int):$componentCls {
+                    return components.get(id);
                 }
 
-                @:keep inline public static function inst(eid:Int) {
-                    return componentContainers[eid];
-                    //return componentContainer;
+                inline public function exists(id:Int):Bool {
+                    return components.exists(id);
                 }
 
-
-                var components:Map<Int, $componentCls>; // cid => c inst
-
-                public function new() {
-                    components = new Map();
+                inline function add(id:Int, c:$componentCls) {
+                    components.add(id, c);
                 }
 
-                inline public function get(cid:Int) {
-                    return components[cid];
-                }
-
-                inline public function set(cid:Int, c:$componentCls) {
-                    components[cid] = c;
-                }
-
-                inline public function remove(cid:Int) {
-                    components.remove(cid);
+                inline function remove(id:Int) {
+                    components.remove(id);
                 }
 
             }
@@ -118,3 +98,52 @@ class ComponentMacro {
 
 }
 #end
+
+
+abstract ArrayComponentContainer<T>(Array<T>) {
+
+    public inline function new() this = new Array<T>();
+
+    public inline function add(id:Int, c:T) {
+        this[id] = c;
+    }
+
+    public inline function get(id:Int):T {
+        return this[id];
+    }
+
+    public inline function remove(id:Int) {
+        this[id] = null;
+    }
+
+    public inline function exists(id:Int) {
+        return this[id] != null;
+    }
+
+}
+
+abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
+
+    public function new() this = new haxe.ds.IntMap<T>();
+
+    public inline function add(id:Int, c:T) {
+        this.set(id, c);
+    }
+
+    public inline function get(id:Int):T {
+        return this.get(id);
+    }
+
+    public inline function remove(id:Int) {
+        this.remove(id);
+    }
+
+    public inline function exists(id:Int) {
+        return this.exists(id);
+    }
+
+}
+
+// TODO change cc by compilier flag
+
+typedef ComponentContainer<T> = IntMapComponentContainer<T>;

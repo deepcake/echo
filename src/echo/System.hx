@@ -10,19 +10,15 @@ package echo;
 class System {
 
 
-    var echo:Echo;
-
     @:noCompletion public var __id = -1;
 
 
-    @:noCompletion public function activate(echo:Echo) {
-        this.echo = echo;
+    @:allow(echo.Echo) function activate() {
         onactivate();
     }
 
-    @:noCompletion public function deactivate() {
+    @:allow(echo.Echo) function deactivate() {
         ondeactivate();
-        this.echo = null;
     }
 
 

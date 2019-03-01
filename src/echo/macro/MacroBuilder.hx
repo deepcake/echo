@@ -42,16 +42,6 @@ class MacroBuilder {
     }
 
     public static function gen() {
-        /*Context.onMacroContextReused(function() {
-            #if echo_verbose 
-            trace('macro context reused');
-            #end
-
-            reportRegistered = false;
-            metaRegistered = false;
-            return true;
-        });*/
-
         #if echo_report
         if (!reportRegistered) {
             Context.onGenerate(function(types) {
@@ -65,7 +55,7 @@ class MacroBuilder {
                 ret += '\n    COMPONENTS [${componentNames.length}] :';
                 ret += '\n        ' + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join('\n        ');
                 ret += '\n    VIEWS [${viewCache.count()}] :';
-                ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k [${ viewIdsMap.get(k) }]').array()).join('\n        ');
+                ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k #${ viewIdsMap.get(k) }').array()).join('\n        ');
                 trace('\n$ret');
 
             });

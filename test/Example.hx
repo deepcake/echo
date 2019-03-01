@@ -3,6 +3,7 @@ package;
 import echo.Echo;
 import echo.System;
 import echo.View;
+import echo.Entity;
 import js.Browser;
 import js.html.Element;
 using Lambda;
@@ -17,8 +18,6 @@ class Example {
 	static public var MAX_WIDTH = 60;
 	static public var MAX_HEIGHT = 40;
 
-	static var echo:Echo;
-
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
 		var stat = Browser.document.createPreElement();
@@ -31,11 +30,10 @@ class Example {
 		var h = Browser.window.innerHeight / size > MAX_HEIGHT ? MAX_HEIGHT : Math.floor(Browser.window.innerHeight / size);
 
 
-		echo = new Echo();
-		echo.addSystem(new Movement(w, h));
-		echo.addSystem(new Interaction());
-		echo.addSystem(new Render(w, h, size, canvas));
-		echo.addSystem(new InteractionEvent());
+		Echo.addSystem(new Movement(w, h));
+		Echo.addSystem(new Interaction());
+		Echo.addSystem(new Render(w, h, size, canvas));
+		Echo.addSystem(new InteractionEvent());
 
 		// fill world by plants
 		for (y in 0...h) for (x in 0...w) {
@@ -56,29 +54,29 @@ class Example {
 
 
 		Browser.window.setInterval(function() {
-			echo.update(.050);
-			stat.innerHTML = echo.toString();
+			Echo.update(.050);
+			stat.innerHTML = Echo.toString();
 		}, 50);
 	}
 
 
 	static function grass(x:Float, y:Float) {
 		var codes = [ '&#x1F33E', '&#x1F33F' ];
-		echo.addComponent(echo.id(),
+		new Entity().add(
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function tree(x:Float, y:Float) {
 		var codes = [ '&#x1F332', '&#x1F333' ];
-		echo.addComponent(echo.id(),
-			new Position(x, y),
+		new Entity().add(
+			new Position(x, y), 
 			new Sprite(codes[Std.random(codes.length)]));
 	}
 
 	static function flower(x:Float, y:Float) {
 		var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
-		echo.addComponent(echo.id(),
+		new Entity().add(
 			new Position(x, y),
 			new Sprite(codes[Std.random(codes.length)]));
 	}
@@ -87,7 +85,7 @@ class Example {
 		var pos = new Position(x, y);
 		var vel = randomVelocity(1);
 		var spr = new Sprite('&#x1F407;');
-		echo.addComponent(echo.id(), pos, vel, spr, Animal.Rabbit);
+		new Entity().add(pos, vel, spr, Animal.Rabbit);
 	}
 
 	static public function tiger(x:Float, y:Float) {
@@ -95,7 +93,7 @@ class Example {
 		var vel = randomVelocity(10);
 		var spr = new Sprite('&#x1F405;');
 		spr.style.fontSize = '200%';
-		echo.addComponent(echo.id(), pos, vel, spr, Animal.Tiger);
+		new Entity().add(pos, vel, spr, Animal.Tiger);
 	}
 
 	static public function event(x:Float, y:Float, type:String) {
@@ -104,7 +102,7 @@ class Example {
 			case 'skull': '&#x1F480;';
 			default: '';
 		}
-		echo.addComponent(echo.id(),
+		new Entity().add(
 			new Position(x, y),
 			new Sprite(code),
 			new Timeout(3.0));
@@ -210,8 +208,8 @@ class Render extends System {
 	@onadded inline function appendVisual(pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
-	@onremoved inline function removeVisual(id:Int) {
-		echo.getComponent(id, Sprite).remove();
+	@onremoved inline function removeVisual(id:echo.Entity) {
+		id.get(Sprite).remove();
 	}
 
 	// dynamic visuals only (with Velocity component)
@@ -240,7 +238,7 @@ class Interaction extends System {
 					}
 					if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
 						// rabbits reproduces
-						if (animals.entities.count(function(i) return echo.getComponent(i, Animal) == Animal.Rabbit) < Example.RABBITS_POPULATION) {
+						if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < Example.RABBITS_POPULATION) {
 							Example.rabbit(pos1.x, pos1.y);
 							Example.event(pos1.x, pos1.y, 'heart');
 						}
@@ -251,7 +249,7 @@ class Interaction extends System {
 			});
 		});
 
-		for (id in del) echo.remove(id);
+		for (id in del) id.destroy();
 	}
 
 	function isInteract(pos1:Position, pos2:Position, radius:Float) {
@@ -260,12 +258,12 @@ class Interaction extends System {
 }
 
 class InteractionEvent extends System {
-	@u inline function action(id:Int, dt:Float, t:Timeout, s:Sprite) {
+	@u inline function action(id:Entity, dt:Float, t:Timeout, s:Sprite) {
 		s.style.opacity = '${t.t / t.timeout}';
 		t.t -= dt;
 		if (t.t <= .0) {
 			s.style.opacity = '.0';
-			echo.remove(id);
+			id.destroy();
 		}
 	}
 }

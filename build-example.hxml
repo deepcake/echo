@@ -4,5 +4,5 @@
 -js web/example.js
 -dce full
 -D analyzer-optimize
--D echo_debug
+-D echo_profiling
 -D echo_report
