@@ -7,8 +7,6 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var echo_macro_IComponentContainer = function() { };
-echo_macro_IComponentContainer.__name__ = true;
 var haxe_ds_List = function() {
 	this.length = 0;
 };
@@ -47,6 +45,22 @@ haxe_ds_List.prototype = {
 	}
 	,iterator: function() {
 		return new haxe_ds__$List_ListIterator(this.h);
+	}
+};
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = true;
+var haxe_ds_IntMap = function() {
+	this.h = { };
+};
+haxe_ds_IntMap.__name__ = true;
+haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
+haxe_ds_IntMap.prototype = {
+	remove: function(key) {
+		if(!this.h.hasOwnProperty(key)) {
+			return false;
+		}
+		delete(this.h[key]);
+		return true;
 	}
 };
 var echo_Echo = function() { };
@@ -123,73 +137,43 @@ echo_Echo.remove = function(id) {
 };
 var ComponentContainer_$Example_$Animal = function() {
 	this.components = echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new();
-	echo_Echo.regComponentContainer(this);
+	echo_Echo.regComponentContainer(this.components);
 };
 ComponentContainer_$Example_$Animal.__name__ = true;
-ComponentContainer_$Example_$Animal.__interfaces__ = [echo_macro_IComponentContainer];
 ComponentContainer_$Example_$Animal.inst = function() {
 	return ComponentContainer_$Example_$Animal.instance;
 };
-ComponentContainer_$Example_$Animal.prototype = {
-	remove: function(id) {
-		this.components.remove(id);
-	}
-};
 var ComponentContainer_$Example_$Position = function() {
 	this.components = echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new();
-	echo_Echo.regComponentContainer(this);
+	echo_Echo.regComponentContainer(this.components);
 };
 ComponentContainer_$Example_$Position.__name__ = true;
-ComponentContainer_$Example_$Position.__interfaces__ = [echo_macro_IComponentContainer];
 ComponentContainer_$Example_$Position.inst = function() {
 	return ComponentContainer_$Example_$Position.instance;
 };
-ComponentContainer_$Example_$Position.prototype = {
-	remove: function(id) {
-		this.components.remove(id);
-	}
-};
 var ComponentContainer_$Example_$Sprite = function() {
 	this.components = echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new();
-	echo_Echo.regComponentContainer(this);
+	echo_Echo.regComponentContainer(this.components);
 };
 ComponentContainer_$Example_$Sprite.__name__ = true;
-ComponentContainer_$Example_$Sprite.__interfaces__ = [echo_macro_IComponentContainer];
 ComponentContainer_$Example_$Sprite.inst = function() {
 	return ComponentContainer_$Example_$Sprite.instance;
 };
-ComponentContainer_$Example_$Sprite.prototype = {
-	remove: function(id) {
-		this.components.remove(id);
-	}
-};
 var ComponentContainer_$Example_$Timeout = function() {
 	this.components = echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new();
-	echo_Echo.regComponentContainer(this);
+	echo_Echo.regComponentContainer(this.components);
 };
 ComponentContainer_$Example_$Timeout.__name__ = true;
-ComponentContainer_$Example_$Timeout.__interfaces__ = [echo_macro_IComponentContainer];
 ComponentContainer_$Example_$Timeout.inst = function() {
 	return ComponentContainer_$Example_$Timeout.instance;
 };
-ComponentContainer_$Example_$Timeout.prototype = {
-	remove: function(id) {
-		this.components.remove(id);
-	}
-};
 var ComponentContainer_$Example_$Velocity = function() {
 	this.components = echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new();
-	echo_Echo.regComponentContainer(this);
+	echo_Echo.regComponentContainer(this.components);
 };
 ComponentContainer_$Example_$Velocity.__name__ = true;
-ComponentContainer_$Example_$Velocity.__interfaces__ = [echo_macro_IComponentContainer];
 ComponentContainer_$Example_$Velocity.inst = function() {
 	return ComponentContainer_$Example_$Velocity.instance;
-};
-ComponentContainer_$Example_$Velocity.prototype = {
-	remove: function(id) {
-		this.components.remove(id);
-	}
 };
 var Example = function() { };
 Example.__name__ = true;
@@ -648,9 +632,26 @@ echo_ViewBase.prototype = {
 			this.addIfMatch(val);
 		}
 	}
+	,isMatch: function(id) {
+		return false;
+	}
+	,add: function(id) {
+		this.entitiesMap.h[id] = id;
+		this.entities.add(id);
+	}
+	,remove: function(id) {
+		this.entities.remove(id);
+		this.entitiesMap.remove(id);
+	}
 	,addIfMatch: function(id) {
+		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
+			this.add(id);
+		}
 	}
 	,removeIfMatch: function(id) {
+		if(this.entitiesMap.h.hasOwnProperty(id)) {
+			this.remove(id);
+		}
 	}
 	,toString: function() {
 		return "ViewBase";
@@ -669,41 +670,35 @@ View_$Example_$Animal_$Example_$Position.inst = function() {
 };
 View_$Example_$Animal_$Example_$Position.__super__ = echo_ViewBase;
 View_$Example_$Animal_$Example_$Position.prototype = $extend(echo_ViewBase.prototype,{
-	addIfMatch: function(id) {
-		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
-			this.entitiesMap.h[id] = id;
-			this.entities.add(id);
-			var i = 0;
-			var l = this.onAdded.length;
-			while(i < l) {
-				var listener = this.onAdded[i];
-				if(listener != null) {
-					listener(id,this.animal.components.h[id],this.position.components.h[id]);
-					++i;
-				} else {
-					this.onAdded.splice(i,1);
-					--l;
-				}
+	add: function(id) {
+		echo_ViewBase.prototype.add.call(this,id);
+		var i = 0;
+		var l = this.onAdded.length;
+		while(i < l) {
+			var listener = this.onAdded[i];
+			if(listener != null) {
+				listener(id,this.animal.components.h[id],this.position.components.h[id]);
+				++i;
+			} else {
+				this.onAdded.splice(i,1);
+				--l;
 			}
 		}
 	}
-	,removeIfMatch: function(id) {
-		if(this.entitiesMap.h.hasOwnProperty(id)) {
-			var i = 0;
-			var l = this.onRemoved.length;
-			while(i < l) {
-				var listener = this.onRemoved[i];
-				if(listener != null) {
-					listener(id,this.animal.components.h[id],this.position.components.h[id]);
-					++i;
-				} else {
-					this.onRemoved.splice(i,1);
-					--l;
-				}
+	,remove: function(id) {
+		var i = 0;
+		var l = this.onRemoved.length;
+		while(i < l) {
+			var listener = this.onRemoved[i];
+			if(listener != null) {
+				listener(id,this.animal.components.h[id],this.position.components.h[id]);
+				++i;
+			} else {
+				this.onRemoved.splice(i,1);
+				--l;
 			}
-			this.entities.remove(id);
-			this.entitiesMap.remove(id);
 		}
+		echo_ViewBase.prototype.remove.call(this,id);
 	}
 	,activate: function() {
 		this.animal = ComponentContainer_$Example_$Animal.instance;
@@ -734,41 +729,35 @@ View_$Example_$Position_$Example_$Sprite.inst = function() {
 };
 View_$Example_$Position_$Example_$Sprite.__super__ = echo_ViewBase;
 View_$Example_$Position_$Example_$Sprite.prototype = $extend(echo_ViewBase.prototype,{
-	addIfMatch: function(id) {
-		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
-			this.entitiesMap.h[id] = id;
-			this.entities.add(id);
-			var i = 0;
-			var l = this.onAdded.length;
-			while(i < l) {
-				var listener = this.onAdded[i];
-				if(listener != null) {
-					listener(id,this.position.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onAdded.splice(i,1);
-					--l;
-				}
+	add: function(id) {
+		echo_ViewBase.prototype.add.call(this,id);
+		var i = 0;
+		var l = this.onAdded.length;
+		while(i < l) {
+			var listener = this.onAdded[i];
+			if(listener != null) {
+				listener(id,this.position.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onAdded.splice(i,1);
+				--l;
 			}
 		}
 	}
-	,removeIfMatch: function(id) {
-		if(this.entitiesMap.h.hasOwnProperty(id)) {
-			var i = 0;
-			var l = this.onRemoved.length;
-			while(i < l) {
-				var listener = this.onRemoved[i];
-				if(listener != null) {
-					listener(id,this.position.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onRemoved.splice(i,1);
-					--l;
-				}
+	,remove: function(id) {
+		var i = 0;
+		var l = this.onRemoved.length;
+		while(i < l) {
+			var listener = this.onRemoved[i];
+			if(listener != null) {
+				listener(id,this.position.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onRemoved.splice(i,1);
+				--l;
 			}
-			this.entities.remove(id);
-			this.entitiesMap.remove(id);
 		}
+		echo_ViewBase.prototype.remove.call(this,id);
 	}
 	,activate: function() {
 		this.position = ComponentContainer_$Example_$Position.instance;
@@ -799,41 +788,35 @@ View_$Example_$Position_$Example_$Sprite_$Example_$Velocity.inst = function() {
 };
 View_$Example_$Position_$Example_$Sprite_$Example_$Velocity.__super__ = echo_ViewBase;
 View_$Example_$Position_$Example_$Sprite_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
-	addIfMatch: function(id) {
-		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
-			this.entitiesMap.h[id] = id;
-			this.entities.add(id);
-			var i = 0;
-			var l = this.onAdded.length;
-			while(i < l) {
-				var listener = this.onAdded[i];
-				if(listener != null) {
-					listener(id,this.velocity.components.h[id],this.position.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onAdded.splice(i,1);
-					--l;
-				}
+	add: function(id) {
+		echo_ViewBase.prototype.add.call(this,id);
+		var i = 0;
+		var l = this.onAdded.length;
+		while(i < l) {
+			var listener = this.onAdded[i];
+			if(listener != null) {
+				listener(id,this.velocity.components.h[id],this.position.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onAdded.splice(i,1);
+				--l;
 			}
 		}
 	}
-	,removeIfMatch: function(id) {
-		if(this.entitiesMap.h.hasOwnProperty(id)) {
-			var i = 0;
-			var l = this.onRemoved.length;
-			while(i < l) {
-				var listener = this.onRemoved[i];
-				if(listener != null) {
-					listener(id,this.velocity.components.h[id],this.position.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onRemoved.splice(i,1);
-					--l;
-				}
+	,remove: function(id) {
+		var i = 0;
+		var l = this.onRemoved.length;
+		while(i < l) {
+			var listener = this.onRemoved[i];
+			if(listener != null) {
+				listener(id,this.velocity.components.h[id],this.position.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onRemoved.splice(i,1);
+				--l;
 			}
-			this.entities.remove(id);
-			this.entitiesMap.remove(id);
 		}
+		echo_ViewBase.prototype.remove.call(this,id);
 	}
 	,activate: function() {
 		this.velocity = ComponentContainer_$Example_$Velocity.instance;
@@ -865,41 +848,35 @@ View_$Example_$Position_$Example_$Velocity.inst = function() {
 };
 View_$Example_$Position_$Example_$Velocity.__super__ = echo_ViewBase;
 View_$Example_$Position_$Example_$Velocity.prototype = $extend(echo_ViewBase.prototype,{
-	addIfMatch: function(id) {
-		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
-			this.entitiesMap.h[id] = id;
-			this.entities.add(id);
-			var i = 0;
-			var l = this.onAdded.length;
-			while(i < l) {
-				var listener = this.onAdded[i];
-				if(listener != null) {
-					listener(id,this.position.components.h[id],this.velocity.components.h[id]);
-					++i;
-				} else {
-					this.onAdded.splice(i,1);
-					--l;
-				}
+	add: function(id) {
+		echo_ViewBase.prototype.add.call(this,id);
+		var i = 0;
+		var l = this.onAdded.length;
+		while(i < l) {
+			var listener = this.onAdded[i];
+			if(listener != null) {
+				listener(id,this.position.components.h[id],this.velocity.components.h[id]);
+				++i;
+			} else {
+				this.onAdded.splice(i,1);
+				--l;
 			}
 		}
 	}
-	,removeIfMatch: function(id) {
-		if(this.entitiesMap.h.hasOwnProperty(id)) {
-			var i = 0;
-			var l = this.onRemoved.length;
-			while(i < l) {
-				var listener = this.onRemoved[i];
-				if(listener != null) {
-					listener(id,this.position.components.h[id],this.velocity.components.h[id]);
-					++i;
-				} else {
-					this.onRemoved.splice(i,1);
-					--l;
-				}
+	,remove: function(id) {
+		var i = 0;
+		var l = this.onRemoved.length;
+		while(i < l) {
+			var listener = this.onRemoved[i];
+			if(listener != null) {
+				listener(id,this.position.components.h[id],this.velocity.components.h[id]);
+				++i;
+			} else {
+				this.onRemoved.splice(i,1);
+				--l;
 			}
-			this.entities.remove(id);
-			this.entitiesMap.remove(id);
 		}
+		echo_ViewBase.prototype.remove.call(this,id);
 	}
 	,activate: function() {
 		this.position = ComponentContainer_$Example_$Position.instance;
@@ -930,41 +907,35 @@ View_$Example_$Sprite_$Example_$Timeout.inst = function() {
 };
 View_$Example_$Sprite_$Example_$Timeout.__super__ = echo_ViewBase;
 View_$Example_$Sprite_$Example_$Timeout.prototype = $extend(echo_ViewBase.prototype,{
-	addIfMatch: function(id) {
-		if(!this.entitiesMap.h.hasOwnProperty(id) && this.isMatch(id)) {
-			this.entitiesMap.h[id] = id;
-			this.entities.add(id);
-			var i = 0;
-			var l = this.onAdded.length;
-			while(i < l) {
-				var listener = this.onAdded[i];
-				if(listener != null) {
-					listener(id,this.timeout.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onAdded.splice(i,1);
-					--l;
-				}
+	add: function(id) {
+		echo_ViewBase.prototype.add.call(this,id);
+		var i = 0;
+		var l = this.onAdded.length;
+		while(i < l) {
+			var listener = this.onAdded[i];
+			if(listener != null) {
+				listener(id,this.timeout.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onAdded.splice(i,1);
+				--l;
 			}
 		}
 	}
-	,removeIfMatch: function(id) {
-		if(this.entitiesMap.h.hasOwnProperty(id)) {
-			var i = 0;
-			var l = this.onRemoved.length;
-			while(i < l) {
-				var listener = this.onRemoved[i];
-				if(listener != null) {
-					listener(id,this.timeout.components.h[id],this.sprite.components.h[id]);
-					++i;
-				} else {
-					this.onRemoved.splice(i,1);
-					--l;
-				}
+	,remove: function(id) {
+		var i = 0;
+		var l = this.onRemoved.length;
+		while(i < l) {
+			var listener = this.onRemoved[i];
+			if(listener != null) {
+				listener(id,this.timeout.components.h[id],this.sprite.components.h[id]);
+				++i;
+			} else {
+				this.onRemoved.splice(i,1);
+				--l;
 			}
-			this.entities.remove(id);
-			this.entitiesMap.remove(id);
 		}
+		echo_ViewBase.prototype.remove.call(this,id);
 	}
 	,activate: function() {
 		this.timeout = ComponentContainer_$Example_$Timeout.instance;
@@ -997,22 +968,6 @@ var echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$ = {};
 echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$.__name__ = true;
 echo_macro__$ComponentMacro_IntMapComponentContainer_$Impl_$._new = function() {
 	return new haxe_ds_IntMap();
-};
-var haxe_IMap = function() { };
-haxe_IMap.__name__ = true;
-var haxe_ds_IntMap = function() {
-	this.h = { };
-};
-haxe_ds_IntMap.__name__ = true;
-haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
-haxe_ds_IntMap.prototype = {
-	remove: function(key) {
-		if(!this.h.hasOwnProperty(key)) {
-			return false;
-		}
-		delete(this.h[key]);
-		return true;
-	}
 };
 var haxe_ds__$List_ListNode = function(item,next) {
 	this.item = item;
