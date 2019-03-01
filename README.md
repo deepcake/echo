@@ -26,13 +26,19 @@ class Example {
     Echo.addSystem(new Movement());
     Echo.addSystem(new Render());
 
-    createRabbit(100, 100, 1, 1);
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
 
-    //Browser.window.setInterval(function() Echo.update(.050), 50);
+    var rabbit = createRabbit(100, 100, 1, 1);
+    trace(rabbit.exists(Position)); // true
+    trace(rabbit.get(Position).x); // 100
+    rabbit.remove(Position); // oh no!
+    rabbit.add(new Position(1, 1)); // okay
+
+    // also somewhere should be Echo.update(deltatime) call on every tick
   }
 
   static function createTree(x:Float, y:Float) {
+    // entity can be created and added to the workflow anywhere
     new Entity()
       .add(new Position(x, y))
       .add(new Sprite('assets/tree.png'));
@@ -41,13 +47,15 @@ class Example {
     var pos = new Position(x, y);
     var vel = new Velocity(vx, vy);
     var spr = new Sprite('assets/rabbit.png');
-    new Entity().add(pos, vel, spr);
+    return new Entity().add(pos, vel, spr);
   }
 }
 
-class Sprite { } // some visual component, it can be luxe.Sprite or openfl.dispaly.Sprite, for example
-class Vec2 { }
+// some visual component, openfl.dispaly.Sprite for example
+class Sprite { } 
+
 // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
+class Vec2 { var x:Float; var y:Float; }
 @:forward abstract Velocity(Vec2) { 
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
@@ -55,7 +63,6 @@ class Vec2 { }
   inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
 }
 
-// Systems
 class Movement extends echo.System {
   // @update-functions will be called for each entity that contains required components;
   // all views for that will be defined and initialized under the hood;
