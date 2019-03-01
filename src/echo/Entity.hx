@@ -8,30 +8,50 @@ using echo.macro.Macro;
 using Lambda;
 #end
 
+/**
+ * ...
+ * @author https://github.com/deepcake
+ */
 abstract Entity(Int) from Int to Int {
 
 
     public inline function new(immediate = true) this = Echo.id(immediate);
 
 
+    /**
+    * Adds this entity to the workflow;
+     */
     public inline function activate() {
         Echo.add(this);
     }
 
+    /**
+    * Removes this entity from the workflow, but saves all associated components;
+     */
     public inline function deactivate() {
         Echo.remove(this);
     }
 
+    /**
+    * Returns `true` if this entity added to the workflow, otherwise returns `false`;
+    * @return Bool
+     */
     public inline function activated():Bool {
         return Echo.exists(this);
     }
 
+    /**
+    * Removes all associated components of this entity;
+     */
     public function removeAll() {
         for (cc in Echo.componentContainers) {
             cc.remove(this);
         }
     }
 
+    /**
+    * Removes this entity from the workflow with removing all associated components;
+     */
     public function destroy() {
         deactivate();
         removeAll();
@@ -39,11 +59,10 @@ abstract Entity(Int) from Int to Int {
 
 
     /**
-     * Adds specified components to the id (entity).
-     * If component with same type is already added to the id, it will be replaced.
-     * @param id - `Int` id (entity)
+     * Adds specified components to this entity;
+     * If component with the same type is already added - it will be replaced;
      * @param components - comma separated list of components of `Any` type
-     * @return `Int` id
+     * @return `Entity`
      */
     macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<Entity> {
         var componentExprs = new List<Expr>()
@@ -72,10 +91,9 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Removes a components from the id (entity) by its type
-     * @param id - `Int` id (entity)
-     * @param types - comma separated `Class<Any>` types of components to be removed
-     * @return `Int` id
+     * Removes a components from this entity by its type;
+     * @param types - comma separated `Class<Any>` types of components
+     * @return `Entity`
      */
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<Entity> {
         var componentExprs = new List<Expr>()
@@ -121,10 +139,9 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Retrives a component from the id (entity) by its type.
-     * If component with passed type is not added to the id, `null` will be returned.
-     * @param id - `Int` id (entity)
-     * @param type - `Class<T>` type of component to be retrieved
+     * Retrives a component of this entity by its type;
+     * If component with passed type is not added to this entity, `null` will be returned;
+     * @param type - `Class<T>` type of component
      * @return `T`
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
@@ -140,8 +157,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns `true` if the id (entity) has a component with passed type, otherwise returns false
-     * @param id - `Int` id (entity)
+     * Returns `true` if this entity contains a component with passed type, otherwise returns `false`;
      * @param type - `Class<T>` type of component
      * @return `Bool`
      */
