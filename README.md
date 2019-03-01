@@ -17,7 +17,7 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 #### Example
 ```haxe
 import echo.Echo;
-import echo.System;
+import echo.Entity;
 import echo.View;
 
 class Example {
@@ -56,8 +56,8 @@ class Vec2 { }
 }
 
 // Systems
-class Movement extends System {
-  // @update-function will be called for each entity that contains required components;
+class Movement extends echo.System {
+  // @update-functions will be called for each entity that contains required components;
   // all views for that will be defined and initialized under the hood;
   // any types are supposed to be a component, 
   // except Float (reserved for delta time) and Int/Entity (reserved for Entity id);
@@ -78,7 +78,7 @@ class Movement extends System {
   }
 }
 
-class Render extends System {
+class Render extends echo.System {
   var scene:Array<Sprite> = [];
   // @a, @u and @r is a shortcuts for @added, @update and @removed;
   // @added/@removed-functions will be called before/after an entity is added/removed from the view;
