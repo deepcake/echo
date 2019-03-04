@@ -146,11 +146,10 @@ class SystemMacro {
         }
 
         function addViewByMetaAndComponents(components:Array<{ name:String, cls:ComplexType }>, m:MetadataEntry) {
-            // TODO depr func, del
             return switch (m.params) {
-                case [ _.expr => EConst(CString(x)) ]: views.find(function(v) return v.name == x);
-                case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)];
-                case [] if (components.length == 0 && views.length > 0): views[0];
+                //case [ _.expr => EConst(CString(x)) ]: views.find(function(v) return v.name == x);
+                //case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)];
+                case [] if (components.length == 0 && views.length == 1): views[0];
                 case [] if (components.length > 0): requestView(components);
                 default: null;
             }

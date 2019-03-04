@@ -203,12 +203,10 @@ class Render extends System {
 		}
 	}
 
-	// all visuals, not required updates, just add sprite to the canvas
-	var visuals:View<{ pos:Position, spr:Sprite }>;
-	@onadded inline function appendVisual(pos:Position, spr:Sprite) {
+	@added inline function appendVisual(pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
-	@onremoved inline function removeVisual(id:echo.Entity) {
+	@removed inline function removeVisual(id:Entity, pos:Position, spr:Sprite) {
 		id.get(Sprite).remove();
 	}
 
