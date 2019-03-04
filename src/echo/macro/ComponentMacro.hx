@@ -122,6 +122,10 @@ abstract ArrayComponentContainer<T>(Array<T>) {
         return this[id] != null;
     }
 
+    public function dispose() {
+        this.resize(0);
+    }
+
 }
 
 abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
@@ -142,6 +146,10 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 
     public inline function exists(id:Int) {
         return this.exists(id);
+    }
+
+    public function dispose() {
+        for (k in this.keys()) this.remove(k); 
     }
 
 }

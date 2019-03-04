@@ -94,6 +94,9 @@ class Echo {
         for (e in entities) e.destroy();
         for (s in systems) removeSystem(s);
         for (v in views) v.deactivate();
+        for (cc in componentContainers) {
+            cc.dispose();
+        }
     }
 
 
