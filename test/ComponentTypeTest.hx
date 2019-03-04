@@ -40,7 +40,7 @@ class ComponentTypeTest extends buddy.BuddySuite {
                 var c = new AbstractPrimitive(1);
                 beforeAll(e.add(c));
                 it("should returns by AbstractPrimitive", e.get(AbstractPrimitive).should.be(c));
-                it("should not returns by Primitive", e.get(Int).should.not.be(c));
+                //it("should not returns by Primitive", e.get(Int).should.not.be(c));
                 it("should be collected by View<AbstractPrimitive>", s.abstractPrimitives.entities.length.should.be(1));
             });
 

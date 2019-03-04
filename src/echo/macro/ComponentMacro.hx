@@ -70,6 +70,8 @@ class ComponentMacro {
 
             }
 
+            traceTypeDefenition(def);
+
             Context.defineType(def);
 
             //componentContainerType = Context.getType(componentContainerClsName);
@@ -144,6 +146,4 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 
 }
 
-// TODO change cc by compilier flag
-
-typedef ComponentContainer<T> = IntMapComponentContainer<T>;
+typedef ComponentContainer<T> = #if echo_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;

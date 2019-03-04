@@ -137,7 +137,9 @@ class SameViewSystem extends echo.System {
 
     @u function cdFunc(c:B, d:A) { }
 
-    @u function abFullFunc(delta:Float, entity:Entity, a:A, b:B) { }
+    @u function abFloatEntityFunc(delta:Float, entity:Entity, a:A, b:B) { }
+    @u function abFloatIntFunc(a:A, delta:Float, id:Int, b:B) { }
+    @u function abEchoEntityFunc(entity:echo.Entity, a:A, b:B) { }
 
 }
 

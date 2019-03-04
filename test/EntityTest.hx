@@ -16,41 +16,50 @@ class EntityTest extends buddy.BuddySuite {
 
                 it("should be immediate added to the flow", Echo.entities.length.should.be(1));
                 it("should be activated", e.activated().should.be(true));
+                it("should not exists a String component", e.exists(String).should.be(false));
+                it("should not get a String component", e.get(String).should.be(null));
+                it("should remove a String component without error", e.remove(String));
 
                 describe("Then add a Void component", {
                     beforeAll(e.add());
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
+                    it("should be activated", e.activated().should.be(true));
                 });
 
-                describe("Then add a String component 1", {
+                describe("Then add a String component 123", {
                     beforeAll(e.add("123"));
-                    it("should exists a String component 1", e.exists(String).should.be(true));
-                    it("should get a String component 1", e.get(String).should.be("123"));
+                    it("should exists a String component 123", e.exists(String).should.be(true));
+                    it("should get a String component 123", e.get(String).should.be("123"));
+                    it("should be activated", e.activated().should.be(true));
                 });
 
-                describe("Then add a String component 2", {
+                describe("Then add a String component 321", {
                     beforeAll(e.add("321"));
-                    it("should exists a String component 2", e.exists(String).should.be(true));
-                    it("should get a String component 2", e.get(String).should.be("321"));
+                    it("should exists a String component 321", e.exists(String).should.be(true));
+                    it("should get a String component 321", e.get(String).should.be("321"));
+                    it("should be activated", e.activated().should.be(true));
                 });
 
                 describe("Then remove a String component", {
                     beforeAll(e.remove(String));
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
+                    it("should be activated", e.activated().should.be(true));
                 });
 
                 describe("Then remove a String component again", {
                     beforeAll(e.remove(String));
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
+                    it("should be activated", e.activated().should.be(true));
                 });
 
-                describe("Then add a String component 1 after removing", {
+                describe("Then add a String component 123 after removing", {
                     beforeAll(e.add("123"));
-                    it("should exists a String component 1", e.exists(String).should.be(true));
-                    it("should get a String component 1", e.get(String).should.be("123"));
+                    it("should exists a String component 123", e.exists(String).should.be(true));
+                    it("should get a String component 123", e.get(String).should.be("123"));
+                    it("should be activated", e.activated().should.be(true));
                 });
             });
 
