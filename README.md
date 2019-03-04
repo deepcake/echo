@@ -39,7 +39,7 @@ class Example {
 
   static function createTree(x:Float, y:Float) {
     // entity can be created and added to the workflow anywhere
-    new Entity()
+    return new Entity()
       .add(new Position(x, y))
       .add(new Sprite('assets/tree.png'));
   }
@@ -57,10 +57,10 @@ class Sprite { }
 // abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
 class Vec2 { var x:Float; var y:Float; }
 @:forward abstract Velocity(Vec2) { 
-  inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
+  inline public function new(x, y) this = new Vec2(x, y);
 }
 @:forward abstract Position(Vec2) {
-  inline public function new(?x:Float, ?y:Float) this = new Vec2(x, y);
+  inline public function new(x, y) this = new Vec2(x, y);
 }
 
 class Movement extends echo.System {
@@ -81,31 +81,35 @@ class Movement extends echo.System {
   @update function printVelocitiesCount() {
     trace('we have a ${ velocities.entities.length } count of entities with velocity component!');
     // another way to iterate over entities
-    velocities.iter((entity, velocity) -> trace('${entity} has velocity ${velocity}'));
+    velocities.iter((entity, velocity) -> trace('$entity has velocity $velocity'));
   }
 }
 
 class Render extends echo.System {
   var scene:Array<Sprite> = [];
   // @a, @u and @r is a shortcuts for @added, @update and @removed;
-  // @added/@removed-functions will be called before/after an entity is added/removed from the view;
-  @a function onEntityWithSpriteComponentAdded(s:Sprite) {
-    scene.push(s);
+  // @added/@removed-functions is a callbacks that called before/after an entity is added to/removed from the view;
+  @a function onEntityWithSpriteComponentAdded(spr:Sprite, pos:Position) {
+    scene.push(spr);
   }
-  @r function onEntityWithSpriteComponentRemoved(s:Sprite, entity:Entity) {
-    scene.remove(s);
+  @r function onEntityWithSpriteComponentRemoved(spr:Sprite, pos:Position, entity:Entity) {
+    // even if callback was triggered by destroying entity or removing a Sprite component, 
+    // @removed-function actually will be called before that will happened, 
+    // so access to entity or component will be still exists;
+    scene.remove(spr);
     trace('Oh My God! They removed $entity!');
   }
 
   // execution order of @update-functions is the same to definition order, 
   // so it is possible to do some preparations before iterate over entities;
   @u inline function beforeSpritePositionsUpdated() {
-    trace('starting update sprite positions!')
+    trace('starting update positions of ${ scene.length } sprites!');
   }
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
+  // @update-function without components can receive a Float deltatime
   @u inline function afterSpritePositionsUpdated(dt:Float) {
     scene.sort(function(s1, s2) return s2.y - s1.y);
   }
