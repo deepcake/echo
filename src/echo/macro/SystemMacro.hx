@@ -112,9 +112,14 @@ class SystemMacro {
 
         function argToCallArg(a:FunctionArg) {
             return switch (a.type) {
-                case macro:Float: macro dt;
-                case macro:Int, macro:Entity, macro:echo.Entity: macro id;
-                default: macro $i{ a.name };
+                case macro:Float : macro dt;
+                case macro:Int : macro id;
+                default: {
+                    return switch (a.type.followComplexType()) {
+                        case macro:echo.Entity : macro id;
+                        default: macro $i{ a.name };
+                    }
+                }
             }
         }
 
@@ -130,10 +135,15 @@ class SystemMacro {
 
         function argToComponent(a) {
             return switch (a.type) {
-                case macro:echo.Entity, macro:Entity, macro:Int, macro:Float: null;
-                default: { name: a.name, cls: a.type.followComplexType() };
+                case macro:Int, macro:Float : null;
+                default: {
+                    return switch (a.type.followComplexType()) {
+                        case macro:echo.Entity : null;
+                        default: { name: a.name, cls: a.type.followComplexType() };
+                    }
+                }
             }
-        };
+        }
 
         function addViewByMetaAndComponents(components:Array<{ name:String, cls:ComplexType }>, m:MetadataEntry) {
             // TODO depr func, del
