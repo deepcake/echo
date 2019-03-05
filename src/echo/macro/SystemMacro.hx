@@ -20,22 +20,20 @@ using Lambda;
 class SystemMacro {
 
 
-    public static var EXCLUDE_META = ['skip', 'ignore', 'i'];
-    public static var ONADD_META = ['onadded', 'added', 'onadd', 'add', 'a'];
-    public static var ONREMOVE_META = ['onremoved', 'removed', 'onremove', 'onrem', 'remove', 'rem', 'r'];
-    public static var ONEACH_META = ['update', 'upd', 'u'];
+    public static var EXCLUDE_META = [ 'skip' ];
+    public static var ADD_META = [ 'added', 'ad', 'a' ];
+    public static var REMOVE_META = [ 'removed', 'rm', 'r' ];
+    public static var UPDATE_META = [ 'update', 'up', 'u' ];
 
     public static var systemIndex:Int = 0;
-    public static var systemIdsMap:Map<String, Int> = new Map();
+    public static var systemIds:Map<String, Int> = new Map();
 
 
     public static function build() {
-
-        gen();
         var fields = Context.getBuildFields();
         var cls = Context.getLocalType().toComplexType();
 
-        systemIdsMap[cls.followName()] = ++systemIndex;
+        systemIds[cls.followName()] = ++systemIndex;
 
         var fnew = fields.find(function(f) return f.name == 'new');
         if (fnew == null) {
@@ -91,7 +89,7 @@ class SystemMacro {
         }
 
         function requestView(components) {
-            var viewClsName = getClsName('View', getClsNameSuffixByComponents(components));
+            var viewClsName = getViewName(components);
             var view = views.find(function(v) return v.cls.followName() == viewClsName);
 
             if (view == null) {
@@ -176,10 +174,10 @@ class SystemMacro {
         }
 
 
-        var ufuncs = fields.map(findMetaFunc.bind(_, ONEACH_META)).filter(notNull);
+        var ufuncs = fields.map(findMetaFunc.bind(_, UPDATE_META)).filter(notNull);
 
-        var afuncs = fields.map(findMetaFunc.bind(_, ONADD_META)).filter(notNull);
-        var rfuncs = fields.map(findMetaFunc.bind(_, ONREMOVE_META)).filter(notNull);
+        var afuncs = fields.map(findMetaFunc.bind(_, ADD_META)).filter(notNull);
+        var rfuncs = fields.map(findMetaFunc.bind(_, REMOVE_META)).filter(notNull);
 
         afuncs.concat(rfuncs).iter(function(f) {
             //fields.push(ffun([], [], '__${f.name}', [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ f.args }), Context.currentPos()));
@@ -211,7 +209,7 @@ class SystemMacro {
                     .map(function(v){
                         var viewCls = v.cls; //getViewGenericComplexType(v.components);
                         var viewType = viewCls.tp();
-                        var viewId = viewIdsMap[viewCls.followName()];
+                        var viewId = viewIds[viewCls.followName()];
                         return [
                             macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(),
                             macro $i{ v.name }.activate()

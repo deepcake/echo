@@ -54,8 +54,8 @@ class MacroBuilder {
                 
                 ret += '\n    COMPONENTS [${componentNames.length}] :';
                 ret += '\n        ' + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join('\n        ');
-                ret += '\n    VIEWS [${viewCache.count()}] :';
-                ret += '\n        ' + sortedlist({ iterator: function() return viewCache.keys() }.mapi(function(i, k) return '$k #${ viewIdsMap.get(k) }').array()).join('\n        ');
+                ret += '\n    VIEWS [${viewNames.length}] :';
+                ret += '\n        ' + sortedlist(viewNames.mapi(function(i, k) return '$k #${ viewIds.get(k) }').array()).join('\n        ');
                 trace('\n$ret');
 
             });
@@ -106,4 +106,7 @@ class MacroBuilder {
 
 
 }
+
+typedef ComponentDef = { name:String, cls:ComplexType };
+
 #end
