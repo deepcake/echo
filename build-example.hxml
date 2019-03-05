@@ -1,6 +1,6 @@
--main Example
 -cp src
--cp test
+-cp example
+-main TigerInTheMeatdow
 -js web/example.js
 -dce full
 -D analyzer-optimize

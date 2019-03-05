@@ -12,7 +12,7 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-class Example {
+class TigerInTheMeatdow {
 
 	static public var RABBITS_POPULATION = 64;
 	static public var MAX_WIDTH = 60;
@@ -231,14 +231,14 @@ class Interaction extends System {
 					if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
 						// tiger eats rabbit
 						trace('eat $id2');
-						Example.event(pos1.x, pos1.y, 'skull');
+						TigerInTheMeatdow.event(pos1.x, pos1.y, 'skull');
 						del.push(id2);
 					}
 					if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
 						// rabbits reproduces
-						if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < Example.RABBITS_POPULATION) {
-							Example.rabbit(pos1.x, pos1.y);
-							Example.event(pos1.x, pos1.y, 'heart');
+						if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < TigerInTheMeatdow.RABBITS_POPULATION) {
+							TigerInTheMeatdow.rabbit(pos1.x, pos1.y);
+							TigerInTheMeatdow.event(pos1.x, pos1.y, 'heart');
 						}
 					}
 
