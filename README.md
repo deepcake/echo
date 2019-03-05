@@ -38,7 +38,6 @@ class Example {
   }
 
   static function createTree(x:Float, y:Float) {
-    // entity can be created and added to the workflow anywhere
     return new Entity()
       .add(new Position(x, y))
       .add(new Sprite('assets/tree.png'));
@@ -88,7 +87,7 @@ class Movement extends echo.System {
 class Render extends echo.System {
   var scene:Array<Sprite> = [];
   // @a, @u and @r is a shortcuts for @added, @update and @removed;
-  // @added/@removed-functions is a callbacks that called before/after an entity is added to/removed from the view;
+  // @added/@removed-functions is a callbacks called when entity is added or removed from the view;
   @a function onEntityWithSpriteComponentAdded(spr:Sprite, pos:Position) {
     scene.push(spr);
   }
