@@ -116,14 +116,14 @@ class Render extends echo.System {
 }
 ```
 
-[Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/test/Example.hx](https://github.com/deepcake/echo/blob/master/test/Example.hx))
+[Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/example/TigerInTheMeatdow.hx](https://github.com/deepcake/echo/blob/master/example/TigerInTheMeatdow.hx))
 
-[Live Demo](https://deepcake.github.io/chickens/bin/web/) of using Echo with Luxe and Nape (source [https://github.com/deepcake/chickens](https://github.com/deepcake/chickens))
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echo_profiling` - collecting some more info for `toString()` method (especially for debug purposes)
+ * `-D echo_profiling` - collecting some more info for `Echo.toString()` method (especially for debug purposes)
  * `-D echo_report` - traces a short report of built components and views
+ * `-D echo_array_cc` - using Array<T> instead IntMap<T> for global component containers
 
 #### Install
 ```haxelib git echo https://github.com/deepcake/echo.git```

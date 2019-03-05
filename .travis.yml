@@ -25,13 +25,23 @@ install:
 
 script:
   - haxelib run travix interp
+  - haxelib run travix node
+  - haxelib run travix cpp
   - haxelib run travix neko
   - haxelib run travix python
-  - haxelib run travix node
+  - haxelib run travix java
+  - haxelib run travix lua
+
+  - haxelib run travix interp -D echo_array_cc
+  - haxelib run travix node -D echo_array_cc
+  - haxelib run travix cpp -D echo_array_cc
+  - haxelib run travix neko -D echo_array_cc
+  - haxelib run travix python -D echo_array_cc
+  - haxelib run travix java -D echo_array_cc
+  - haxelib run travix lua -D echo_array_cc
+
   # - haxelib run travix js
   # - haxelib run travix flash
-  - haxelib run travix java
-  - haxelib run travix cpp
   # - haxelib run travix cs
   # - haxelib run travix php
   #v- haxelib run travix php7
