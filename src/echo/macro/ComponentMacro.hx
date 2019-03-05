@@ -101,7 +101,7 @@ class ComponentMacro {
 }
 #end
 
-
+#if echo_array_cc
 abstract ArrayComponentContainer<T>(Array<T>) {
 
     public inline function new() this = new Array<T>();
@@ -123,10 +123,16 @@ abstract ArrayComponentContainer<T>(Array<T>) {
     }
 
     public function dispose() {
+        #if haxe4 
         this.resize(0);
+        #else 
+        this.splice(0, this.length);
+        #end
     }
 
 }
+
+#else
 
 abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 
@@ -153,5 +159,6 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
     }
 
 }
+#end
 
 typedef ComponentContainer<T> = #if echo_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;
