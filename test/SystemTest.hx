@@ -20,15 +20,15 @@ class SystemTest extends buddy.BuddySuite {
                     it("should updates correctly", FlowSystem1.result.should.be(""));
                 });
 
-                describe("Then add Entity AB and update", {
-                    beforeAll(new Entity().add(new FlowComponentA("A"), new FlowComponentB("B")));
+                describe("Then add Entity AB 12 and update", {
+                    beforeAll(new Entity().add(new FlowComponentA("1"), new FlowComponentB("2")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem1.result.should.be("[A*B]"));
+                    it("should updates correctly", FlowSystem1.result.should.be("[1*2]"));
                 });
-                describe("Then add Entity CD and update", {
-                    beforeAll(new Entity().add(new FlowComponentA("C"), new FlowComponentB("D")));
+                describe("Then add Entity AB 34 and update", {
+                    beforeAll(new Entity().add(new FlowComponentA("3"), new FlowComponentB("4")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem1.result.should.be("[AC*BD]"));
+                    it("should updates correctly", FlowSystem1.result.should.be("[13*24]"));
                 });
 
                 describe("Then remove System and update", {
@@ -56,26 +56,26 @@ class SystemTest extends buddy.BuddySuite {
                     it("should updates correctly", FlowSystem2.result.should.be(""));
                 });
 
-                describe("Then add Entity A and update", {
-                    beforeAll(a = new Entity().add(new FlowComponentA("A")));
+                describe("Then add Entity A 1 and update", {
+                    beforeAll(a = new Entity().add(new FlowComponentA("1")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be(">A"));
+                    it("should updates correctly", FlowSystem2.result.should.be(">1"));
                 });
-                describe("Then remove Entity A and update", {
+                describe("Then remove Component A 1 and update", {
                     beforeAll(a.remove(FlowComponentA));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be("<A"));
+                    it("should updates correctly", FlowSystem2.result.should.be("<1"));
                 });
 
-                describe("Then add Entity AB and update", {
-                    beforeAll(ab = new Entity().add(new FlowComponentA("C"), new FlowComponentB("D")));
+                describe("Then add Entity AB 34 and update", {
+                    beforeAll(ab = new Entity().add(new FlowComponentA("3"), new FlowComponentB("4")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be(">CD>C*CD*"));
+                    it("should updates correctly", FlowSystem2.result.should.be(">34>3*34*"));
                 });
-                describe("Then remove Entity AB and update", {
+                describe("Then remove Component AB 34 and update", {
                     beforeAll(ab.remove(FlowComponentA).remove(FlowComponentB));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be("<CD<C"));
+                    it("should updates correctly", FlowSystem2.result.should.be("<34<3"));
                 });
 
                 afterEach(FlowSystem2.result = "");
