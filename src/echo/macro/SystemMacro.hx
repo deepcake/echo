@@ -6,6 +6,7 @@ import echo.macro.MacroBuilder.*;
 import echo.macro.ViewMacro.*;
 import echo.macro.ComponentMacro.*;
 
+import echo.macro.MacroBuilder;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -25,7 +26,7 @@ class SystemMacro {
     public static var REMOVE_META = [ 'removed', 'rm', 'r' ];
     public static var UPDATE_META = [ 'update', 'up', 'u' ];
 
-    public static var systemIndex:Int = 0;
+    public static var systemIndex:Int = -1;
     public static var systemIds:Map<String, Int> = new Map();
 
 
@@ -33,15 +34,17 @@ class SystemMacro {
         var fields = Context.getBuildFields();
         var cls = Context.getLocalType().toComplexType();
 
-        systemIds[cls.followName()] = ++systemIndex;
+        var index = ++systemIndex;
+
+        systemIds[cls.followName()] = index;
 
         var fnew = fields.find(function(f) return f.name == 'new');
         if (fnew == null) {
-            fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ systemIndex }, Context.currentPos()));
+            fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ index }, Context.currentPos()));
         } else {
             switch (fnew.kind) {
                 case FFun(func):
-                    var fnewexprs = [ macro __id = $v{ systemIndex } ];
+                    var fnewexprs = [ macro __id = $v{ index } ];
 
                     switch (func.expr.expr) {
                         case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
@@ -54,61 +57,28 @@ class SystemMacro {
             }
         }
 
-        var views = fields.map(function(field) {
-            if (hasMeta(field, EXCLUDE_META)) return null; // skip by meta
+        var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
 
-            switch (field.kind) {
-                case FVar(cls, e) if (e == null):
-                    var viewCls = cls.followComplexType();
-                    var viewClsName = viewCls.followName();
-                    if (viewDataCache.exists(viewClsName)) {
-                        return { name: field.name, cls: viewCls, components: viewDataCache.get(viewClsName).components };
-                    }
+        fields.iter(function(field) {
+            if (!hasMeta(field, EXCLUDE_META)) {
+                switch (field.kind) {
+                    case FVar(cls, _) if (cls != null):
+                        var fvarComplexType = cls.followComplexType();
+                        var fvarClsName = fvarComplexType.followName();
 
-                case FVar(_, _.expr => ENew(t, _)):
-                    var viewCls = TPath(t).followComplexType();
-                    var viewClsName = viewCls.followName();
-                    if (viewDataCache.exists(viewClsName)) {
-                        field.kind = FVar(viewCls, null); // TODO only if exists ?
-                        return { name: field.name, cls: viewCls, components: viewDataCache.get(viewClsName).components };
-                    }
+                        // if it is a view
+                        if (viewDataCache.exists(fvarClsName)) {
+                            definedViews.push({ name: field.name, cls: fvarComplexType, components: viewDataCache.get(fvarClsName).components });
+                        }
 
-                default:
+                    default:
+                }
             }
+        } );
 
-            return null;
+        function notNull<T>(e:Null<T>) return e != null;
 
-        } ).filter(function(el) return el != null);
-
-
-        function extFunc(f:Field) {
-            return switch (f.kind) {
-                case FFun(x): x;
-                case x: null;
-            }
-        }
-
-        function requestView(components) {
-            var viewClsName = getViewName(components);
-            var view = views.find(function(v) return v.cls.followName() == viewClsName);
-
-            if (view == null) {
-                var viewName = viewClsName.toLowerCase();
-                var viewCls = getView(components);
-
-                fields.push(fvar(viewName, viewCls, Context.currentPos()));
-
-                view = { name: viewName, cls: viewCls, components: viewDataCache.get(viewClsName).components };
-                views.push(view);
-            }
-
-            return view;
-        }
-
-
-        function notNull(e:Dynamic) return e != null;
-
-        function argToCallArg(a:FunctionArg) {
+        function metaFuncArgToCallArg(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Float : macro dt;
                 case macro:Int : macro id;
@@ -121,7 +91,7 @@ class SystemMacro {
             }
         }
 
-        function componentToViewArg(c:{ name:String, cls:ComplexType }, args:Array<FunctionArg>) {
+        function provideComponentToListenerArg(c:ComponentDef, args:Array<FunctionArg>) {
             var copmonentClsName = c.cls.followName();
             var a = args.find(function(a) return a.type.followName() == copmonentClsName);
             if (a != null) {
@@ -131,7 +101,7 @@ class SystemMacro {
             }
         }
 
-        function argToComponent(a) {
+        function metaFuncArgToComponent(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Int, macro:Float : null;
                 default: {
@@ -143,75 +113,82 @@ class SystemMacro {
             }
         }
 
-        function addViewByMetaAndComponents(components:Array<{ name:String, cls:ComplexType }>, m:MetadataEntry) {
-            return switch (m.params) {
-                //case [ _.expr => EConst(CString(x)) ]: views.find(function(v) return v.name == x);
-                //case [ _.expr => EConst(CInt(x)) ]: views[Std.parseInt(x)];
-                case [] if (components.length == 0 && views.length == 1): views[0];
-                case [] if (components.length > 0): requestView(components);
-                default: null;
+        function procMetaFunc(field:Field, meta:Array<String>) {
+            if (!hasMeta(field, EXCLUDE_META) && hasMeta(field, meta)) {
+                switch (field.kind) {
+                    case FFun(func):
+                        var funcName = field.name;
+                        var callArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
+
+                        var components = func.args.map(metaFuncArgToComponent).filter(notNull);
+
+                        if (components.length > 0) {
+
+                            // get defined or define new
+
+                            var viewClsName = getViewName(components);
+                            var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
+
+                            if (view == null) {
+                                var viewComplexType = getView(components);
+
+                                fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, null, Context.currentPos()));
+
+                                view = { name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components };
+                                definedViews.push(view);
+                            }
+
+                            var viewArgs = [ arg('id', macro:echo.Entity) ].concat(view.components.map(provideComponentToListenerArg.bind(_, func.args)));
+
+                            return { name: funcName, args: callArgs, view: view, viewargs: viewArgs };
+
+                        } else {
+
+                            return { name: funcName, args: callArgs, view: null, viewargs: null };
+
+                        }
+
+                    default:
+                }
             }
-        }
 
-        function findMetaFunc(f:Field, meta:Array<String>) {
-            if (hasMeta(f, EXCLUDE_META)) {
-                return null; // skip by meta
-            } else if (hasMeta(f, meta)) {
-                var func = extFunc(f);
-                if (func == null) return null; // skip if not a func
-
-                var components = func.args.map(argToComponent).filter(notNull);
-
-                var view = addViewByMetaAndComponents(components, getMeta(f, meta));
-                var viewArgs = view != null ? [ arg('id', macro:echo.Entity) ].concat(view.components.map(componentToViewArg.bind(_, func.args))) : [];
-
-                var funcName = f.name;
-                var funcArgs = func.args.map(argToCallArg).filter(notNull);
-
-                return { name: funcName, args: funcArgs, components: components, view: view, viewargs: viewArgs };
-            }
             return null;
         }
 
 
-        var ufuncs = fields.map(findMetaFunc.bind(_, UPDATE_META)).filter(notNull);
+        var ufuncs = fields.map(procMetaFunc.bind(_, UPDATE_META)).filter(notNull);
+        var afuncs = fields.map(procMetaFunc.bind(_, ADD_META)).filter(notNull);
+        var rfuncs = fields.map(procMetaFunc.bind(_, REMOVE_META)).filter(notNull);
 
-        var afuncs = fields.map(findMetaFunc.bind(_, ADD_META)).filter(notNull);
-        var rfuncs = fields.map(findMetaFunc.bind(_, REMOVE_META)).filter(notNull);
+        var listeners = afuncs.concat(rfuncs);
 
-        afuncs.concat(rfuncs).iter(function(f) {
-            //fields.push(ffun([], [], '__${f.name}', [arg('_id_', macro:Int)], null, macro $i{ f.name }($a{ f.args }), Context.currentPos()));
+        listeners.iter(function(f) {
             fields.push(fvar([], [], '__${f.name}', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
 
-
-        var updateExprs = new List<Expr>()
+        var updateExprs = []
             .concat(ufuncs.map(function(f){
-                if (f.components.length == 0) {
+                if (f.view == null) {
                     return macro $i{ f.name }($a{ f.args });
                 } else {
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
                     return macro $i{ f.view.name }.iter($fwrapper);
                 }
-            }))
-            .array();
+            }));
 
-        var activateExprs = new List<Expr>()
+        var activateExprs = []
             .concat(
-                afuncs.concat(rfuncs)
-                    .map(function(f){
-                        var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                        return macro $i{'__${f.name}'} = $fwrapper;
-                    })
+                listeners.map(function(f){
+                    var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                    return macro $i{'__${f.name}'} = $fwrapper;
+                })
             )
             .concat(
-                views
+                definedViews
                     .map(function(v){
-                        var viewCls = v.cls; //getViewGenericComplexType(v.components);
-                        var viewType = viewCls.tp();
-                        var viewId = viewIds[viewCls.followName()];
+                        var viewComplexType = v.cls;
                         return [
-                            macro $i{ v.name } = ${ viewCls.expr(Context.currentPos()) }.inst(),
+                            macro $i{ v.name } = ${ viewComplexType.expr(Context.currentPos()) }.inst(),
                             macro $i{ v.name }.activate()
                         ];
                     })
@@ -233,10 +210,9 @@ class SystemMacro {
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
                     return macro $i{ f.view.name }.iter($fwrapper);
                 })
-            )
-            .array();
+            );
 
-        var deactivateExprs = new List<Expr>()
+        var deactivateExprs = []
             .concat([ macro ondeactivate() ])
             .concat(
                 afuncs.map(function(f){
@@ -249,12 +225,10 @@ class SystemMacro {
                 })
             )
             .concat(
-                afuncs.concat(rfuncs)
-                    .map(function(f) {
-                        return macro $i{'__${f.name}'} = null;
-                    })
-            )
-            .array();
+                listeners.map(function(f) {
+                    return macro $i{'__${f.name}'} = null;
+                })
+            );
 
 
         if (updateExprs.length > 0) {

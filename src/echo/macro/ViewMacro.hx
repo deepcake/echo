@@ -88,7 +88,7 @@ class ViewMacro {
                 // instance
 
                 function new() {
-                    __id = $v{ viewIndex };
+                    __id = $v{ index };
                     activate();
                 }
 
