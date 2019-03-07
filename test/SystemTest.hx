@@ -17,25 +17,25 @@ class SystemTest extends buddy.BuddySuite {
                     beforeAll(Echo.addSystem(s));
                     beforeAll(Echo.update(0));
                     it("should be added to the flow", Echo.systems.length.should.be(1));
-                    it("should updates correctly", FlowSystem1.result.should.be(""));
+                    it("should has correct result", FlowSystem1.result.should.be(""));
                 });
 
-                describe("Then add Entity AB 12 and update", {
+                describe("Then add Entity A1, B2 and update", {
                     beforeAll(new Entity().add(new FlowComponentA("1"), new FlowComponentB("2")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem1.result.should.be("[1*2]"));
+                    it("should has correct result", FlowSystem1.result.should.be("[1*2]"));
                 });
-                describe("Then add Entity AB 34 and update", {
+                describe("Then add Entity A3, B4 and update", {
                     beforeAll(new Entity().add(new FlowComponentA("3"), new FlowComponentB("4")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem1.result.should.be("[13*24]"));
+                    it("should has correct result", FlowSystem1.result.should.be("[13*24]"));
                 });
 
                 describe("Then remove System and update", {
                     beforeAll(Echo.removeSystem(s));
                     beforeAll(Echo.update(0));
                     it("should be removed from the flow", Echo.systems.length.should.be(0));
-                    it("should updates correctly", FlowSystem1.result.should.be(""));
+                    it("should has correct result", FlowSystem1.result.should.be(""));
                 });
 
                 afterEach(FlowSystem1.result = "");
@@ -46,39 +46,107 @@ class SystemTest extends buddy.BuddySuite {
                 beforeAll(Echo.dispose());
 
                 var s = new FlowSystem2();
-                var a:Entity;
-                var ab:Entity;
+                var e:Entity;
 
                 describe("When add System and update", {
                     beforeAll(Echo.addSystem(s));
                     beforeAll(Echo.update(0));
                     it("should be added to the flow", Echo.systems.length.should.be(1));
-                    it("should updates correctly", FlowSystem2.result.should.be(""));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
                 });
 
-                describe("Then add Entity A 1 and update", {
-                    beforeAll(a = new Entity().add(new FlowComponentA("1")));
+                describe("Then add Entity A1 and update", {
+                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be(">1"));
+                    it("should has correct result", FlowSystem2.result.should.be(">1"));
                 });
-                describe("Then remove Component A 1 and update", {
-                    beforeAll(a.remove(FlowComponentA));
+                describe("Then remove Component A and update", {
+                    beforeAll(e.remove(FlowComponentA));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be("<1"));
+                    it("should has correct result", FlowSystem2.result.should.be("<1"));
                 });
 
-                describe("Then add Entity AB 34 and update", {
-                    beforeAll(ab = new Entity().add(new FlowComponentA("3"), new FlowComponentB("4")));
+                describe("Then add Entity A2, B2 and update", {
+                    beforeAll(e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2")));
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be(">34>3*34*"));
+                    it("should has correct result", FlowSystem2.result.should.be(">>22>2*22*"));
                 });
-                describe("Then remove Component AB 34 and update", {
-                    beforeAll(ab.remove(FlowComponentA).remove(FlowComponentB));
+                describe("Then destroy Entity and update", {
+                    beforeAll(e.destroy());
                     beforeAll(Echo.update(0));
-                    it("should updates correctly", FlowSystem2.result.should.be("<34<3"));
+                    it("should has correct result", FlowSystem2.result.should.be("<<22<2"));
+                });
+
+                describe("Then add Entity B3 and update", {
+                    beforeAll(e = new Entity().add(new FlowComponentB("3")));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+                describe("Then add Component A3 and update", {
+                    beforeAll(e.add(new FlowComponentA("3")));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(">>33>3*33*"));
+                });
+
+                describe("Then remove System and update", {
+                    beforeAll(Echo.removeSystem(s));
+                    beforeAll(Echo.update(0));
+                    it("should be removed from the flow", Echo.systems.length.should.be(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                describe("Then destroy Entity and update", {
+                    beforeAll(e.destroy());
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
                 });
 
                 afterEach(FlowSystem2.result = "");
+            });
+
+
+            describe("Using System after Entity was added", {
+                beforeAll(Echo.dispose());
+
+                var s = new FlowSystem2();
+                var e:Entity;
+
+                describe("When add Entity A1, B1 and update", {
+                    beforeAll(e = new Entity().add(new FlowComponentA("1"), new FlowComponentB("1")));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                describe("Then add System", {
+                    beforeAll(Echo.addSystem(s));
+                    it("should be added to the flow", Echo.systems.length.should.be(1));
+                    it("should has correct result", FlowSystem2.result.should.be(">>11>1"));
+                });
+
+                describe("Then update System", {
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be("*11*"));
+                });
+
+                describe("Then remove System", {
+                    beforeAll(Echo.removeSystem(s));
+                    it("should be removed from the flow", Echo.systems.length.should.be(0));
+                    it("should has correct result", FlowSystem2.result.should.be("<<11<1"));
+                });
+
+                describe("Then update System", {
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                describe("Then destroy Entity and update", {
+                    beforeAll(e.destroy());
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                afterEach(FlowSystem2.result = "");
+
             });
 
 
@@ -121,7 +189,7 @@ class FlowSystem2 extends System {
     }
 
     @a function onAddAB(a:FlowComponentA, b:FlowComponentB) {
-        result += '>${a.value}${b.value}';
+        result += '>>${a.value}${b.value}';
     }
 
     @r function onRemoveA(a:FlowComponentA) {
@@ -129,11 +197,21 @@ class FlowSystem2 extends System {
     }
 
     @r function onRemoveAB(a:FlowComponentA, b:FlowComponentB) {
-        result += '<${a.value}${b.value}';
+        result += '<<${a.value}${b.value}';
     }
 
     @u function upd(a:FlowComponentA, b:FlowComponentB) {
         result += '*${a.value}${b.value}*';
+    }
+
+}
+
+class ManualViewSystem extends echo.System {
+
+    var view:View<FlowComponentA->Void>;
+
+    override function onactivate() {
+        
     }
 
 }
