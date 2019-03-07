@@ -131,7 +131,7 @@ class ViewMacro {
             {
                 var exprs = []
                     .concat(
-                        components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = ${ getComponentContainer(c.cls).expr(Context.currentPos()) }.inst())
+                        components.map(function(c) return macro $i{ ccref(c.cls) } = ${ getComponentContainer(c.cls).expr(Context.currentPos()) }.inst())
                     )
                     .concat(
                         [ macro super.activate() ]
@@ -142,7 +142,7 @@ class ViewMacro {
             {
                 var exprs = []
                     .concat(
-                        components.mapi(function(i, c) return macro $i{ ccref(c.cls) } = null)
+                        components.map(function(c) return macro $i{ ccref(c.cls) } = null)
                     )
                     .concat(
                         [ macro super.deactivate() ]

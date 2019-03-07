@@ -167,14 +167,16 @@ class SystemMacro {
         });
 
         var updateExprs = []
-            .concat(ufuncs.map(function(f){
-                if (f.view == null) {
-                    return macro $i{ f.name }($a{ f.args });
-                } else {
-                    var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                    return macro $i{ f.view.name }.iter($fwrapper);
-                }
-            }));
+            .concat(
+                ufuncs.map(function(f){
+                    if (f.view == null) {
+                        return macro $i{ f.name }($a{ f.args });
+                    } else {
+                        var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                        return macro $i{ f.view.name }.iter($fwrapper);
+                    }
+                })
+            );
 
         var activateExprs = []
             .concat(
@@ -193,6 +195,7 @@ class SystemMacro {
                         ];
                     })
                     .flatten()
+                    #if !haxe4 .array() #end
             )
             .concat(
                 afuncs.map(function(f){
