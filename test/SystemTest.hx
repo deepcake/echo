@@ -165,6 +165,37 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
+            describe("Using System with manually initialized View", {
+                beforeAll(Echo.dispose());
+
+                var s = new ManualSystem();
+                var e:Entity;
+
+                describe("When add System and update", {
+                    beforeAll(ManualSystem.result = "");
+                    beforeAll(Echo.addSystem(s));
+                    beforeAll(Echo.update(0));
+                    it("should be added to the flow", Echo.systems.length.should.be(1));
+                    it("should has correct result", ManualSystem.result.should.be(""));
+                });
+
+                describe("Then add Entity A1 and update", {
+                    beforeAll(ManualSystem.result = "");
+                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", ManualSystem.result.should.be(">1*1*"));
+                });
+
+                describe("Then destroy Entity and update", {
+                    beforeAll(ManualSystem.result = "");
+                    beforeAll(e.destroy());
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", ManualSystem.result.should.be("<1"));
+                });
+
+            });
+
+
         });
     }
 }
@@ -221,12 +252,19 @@ class FlowSystem2 extends System {
 
 }
 
-class ManualViewSystem extends echo.System {
+class ManualSystem extends echo.System {
+
+    public static var result = "";
 
     var view:View<FlowComponentA->Void>;
 
     override function onactivate() {
-        
+        view.onAdded.add(function(e, ca) result += '>${ca.value}');
+        view.onRemoved.add(function(e, ca) result += '<${ca.value}');
+    }
+
+    @u inline function action() {
+        view.iter(function(e, ca) result += '*${ca.value}*');
     }
 
 }
