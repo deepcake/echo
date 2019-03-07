@@ -179,13 +179,13 @@ class SystemMacro {
             );
 
         var activateExprs = []
-            .concat(
+            .concat( // init signal wrappers
                 listeners.map(function(f){
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
                     return macro $i{'__${f.name}'} = $fwrapper;
                 })
             )
-            .concat(
+            .concat( // init views
                 definedViews
                     .map(function(v){
                         var viewComplexType = v.cls;
@@ -197,37 +197,45 @@ class SystemMacro {
                     .flatten()
                     #if !haxe4 .array() #end
             )
-            .concat(
+            .concat( // add added-listeners
                 afuncs.map(function(f){
                     return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}' });
                 })
             )
-            .concat(
+            .concat( // add removed-listeners
                 rfuncs.map(function(f){
                     return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}' });
                 })
             )
-            .concat([ macro onactivate() ])
             .concat(
+                [ macro onactivate() ]
+            )
+            .concat( // call added-listeners
                 afuncs.map(function(f){
-                    var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                    return macro $i{ f.view.name }.iter($fwrapper);
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}' });
                 })
             );
 
         var deactivateExprs = []
-            .concat([ macro ondeactivate() ])
+            .concat( // call removed-listeners
+                rfuncs.map(function(f){
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}' });
+                })
+            )
             .concat(
+                [ macro ondeactivate() ]
+            )
+            .concat( // remove added-listeners
                 afuncs.map(function(f){
                     return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}' });
                 })
             )
-            .concat(
+            .concat( // remove removed-listeners
                 rfuncs.map(function(f){
                     return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}' });
                 })
             )
-            .concat(
+            .concat( // null signal wrappers 
                 listeners.map(function(f) {
                     return macro $i{'__${f.name}'} = null;
                 })
