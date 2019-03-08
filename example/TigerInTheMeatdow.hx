@@ -15,8 +15,6 @@ using Lambda;
 class TigerInTheMeatdow {
 
 	static public var RABBITS_POPULATION = 64;
-	static public var MAX_WIDTH = 60;
-	static public var MAX_HEIGHT = 40;
 
 	static function main() {
 		var canvas = Browser.document.createElement('code'); // monospace text
@@ -26,8 +24,9 @@ class TigerInTheMeatdow {
 
 		// mobile friendly (i guess)
 		var size = Std.parseInt(Browser.window.getComputedStyle(Browser.document.body).fontSize);
-		var w = Browser.window.innerWidth / size > MAX_WIDTH ? MAX_WIDTH : Math.floor(Browser.window.innerWidth / size);
-		var h = Browser.window.innerHeight / size > MAX_HEIGHT ? MAX_HEIGHT : Math.floor(Browser.window.innerHeight / size);
+
+		var w = Math.floor(Browser.window.innerWidth / size);
+		var h = 40;
 
 
 		Echo.addSystem(new Movement(w, h));
@@ -36,11 +35,17 @@ class TigerInTheMeatdow {
 		Echo.addSystem(new InteractionEvent());
 
 		// fill world by plants
-		for (y in 0...h) for (x in 0...w) {
-			if (Math.random() > .5) {
-				grass(x, y); 
-			} else {
-				if (Math.random() > .2) tree(x, y); else flower(x, y);
+		for (y in 0...h) {
+			for (x in 0...w) {
+				if (Math.random() < .75) {
+					grass(x, y); 
+				} else {
+					if (Math.random() < .25) {
+						tree(x, y); 
+					} else {
+						flower(x, y);
+					}
+				}
 			}
 		}
 
@@ -105,7 +110,7 @@ class TigerInTheMeatdow {
 		new Entity().add(
 			new Position(x, y),
 			new Sprite(code),
-			new Timeout(3.0));
+			new Timer(5.0));
 	}
 
 	static public function randomVelocity(speed:Float) {
@@ -154,11 +159,12 @@ enum Animal {
 	Tiger;
 }
 
-class Timeout {
+class Timer {
 	public var timeout:Float;
-	public var t:Float;
-	public function new(t:Float) {
-		this.t = timeout = t;
+	public var time:Float;
+	public function new(timeout:Float) {
+		this.time = .0;
+		this.timeout = timeout;
 	}
 }
 
@@ -168,27 +174,30 @@ class Timeout {
 class Movement extends System {
 	var w:Float;
 	var h:Float;
-	var bodies:View<{ pos:Position, vel:Velocity }>;
 	public function new(w:Float, h:Float) {
 		this.w = w;
 		this.h = h;
 	}
-	override public function update(dt:Float) {
-		bodies.iter((id, pos, vel) -> {
-			pos.x += vel.x * dt;
-			pos.y += vel.y * dt;
-			if (pos.x >= w) pos.x -= w;
-			if (pos.x < 0) pos.x += w;
-			if (pos.y >= h) pos.y -= h;
-			if (pos.y < 0) pos.y += h;
-		});
+	@u function move(dt:Float, pos:Position, vel:Velocity) {
+		var dx = vel.x * dt;
+		var dy = vel.y * dt;
+
+		if (pos.x + dx >= w - 1 || pos.x + dx < 0) {
+			vel.x *= -1;
+		}
+
+		if (pos.y + dy >= h - 1 || pos.y + dy < 0) {
+			vel.y *= -1;
+		}
+
+		pos.x += dx;
+		pos.y += dy;
 	}
 }
 
 class Render extends System {
-	var world:Array<Array<Element>>;
+	var world:Array<Array<Element>> = [];
 	public function new(w:Int, h:Int, size:Int, canvas:Element) {
-		world = [];
 		for (y in 0...h) {
 			world[y] = [];
 			for (x in 0...w) {
@@ -203,11 +212,11 @@ class Render extends System {
 		}
 	}
 
-	@added inline function appendVisual(pos:Position, spr:Sprite) {
+	@ad inline function appendVisual(pos:Position, spr:Sprite) {
 		world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
 	}
-	@removed inline function removeVisual(id:Entity, pos:Position, spr:Sprite) {
-		id.get(Sprite).remove();
+	@rm inline function removeVisual(pos:Position, spr:Sprite) {
+		spr.remove();
 	}
 
 	// dynamic visuals only (with Velocity component)
@@ -219,9 +228,8 @@ class Render extends System {
 // some dummy interaction
 class Interaction extends System {
 	var animals:View<{ a:Animal, pos:Position }>;
-	override public function update(dt:Float) {
-		var del = [];
-
+	var del = [];
+	@u inline function action(dt:Float) {
 		// everyone with everyone
 		animals.iter((id1, a1, pos1) -> {
 			animals.iter((id2, a2, pos2) -> {
@@ -230,7 +238,7 @@ class Interaction extends System {
 
 					if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
 						// tiger eats rabbit
-						trace('eat $id2');
+						trace('$id1 eats $id2');
 						TigerInTheMeatdow.event(pos1.x, pos1.y, 'skull');
 						del.push(id2);
 					}
@@ -247,7 +255,7 @@ class Interaction extends System {
 			});
 		});
 
-		for (id in del) id.destroy();
+		while(del.length > 0) del.pop().destroy();
 	}
 
 	function isInteract(pos1:Position, pos2:Position, radius:Float) {
@@ -256,10 +264,10 @@ class Interaction extends System {
 }
 
 class InteractionEvent extends System {
-	@u inline function action(id:Entity, dt:Float, t:Timeout, s:Sprite) {
-		s.style.opacity = '${t.t / t.timeout}';
-		t.t -= dt;
-		if (t.t <= .0) {
+	@u inline function action(id:Entity, dt:Float, t:Timer, s:Sprite) {
+		s.style.opacity = '${1.0 - (t.time / t.timeout)}';
+		t.time += dt;
+		if (t.time >= t.timeout) {
 			s.style.opacity = '.0';
 			id.destroy();
 		}
