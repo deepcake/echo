@@ -69,8 +69,8 @@ class ViewMacro {
         var viewClsName = getViewName(components);
         var viewType = viewTypeCache.get(viewClsName);
 
-        if (viewType == null) { 
-        //try viewCls = Context.getType(viewClsName).toComplexType() catch (err:String) {
+        //if (viewType == null) { 
+        try viewType = Context.getType(viewClsName) catch (err:String) {
 
             var index = ++viewIndex;
 

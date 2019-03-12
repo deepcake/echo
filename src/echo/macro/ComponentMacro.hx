@@ -28,8 +28,8 @@ class ComponentMacro {
         var componentContainerClsName = getClsName('ComponentContainer', componentClsName);
         var componentContainerType = componentContainerTypeCache.get(componentContainerClsName);
 
-        if (componentContainerType == null) {
-        //try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
+        //if (componentContainerType == null) {
+        try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
 
             ++componentIndex;
 
