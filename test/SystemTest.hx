@@ -168,29 +168,59 @@ class SystemTest extends buddy.BuddySuite {
             describe("Using System with manually initialized View", {
                 beforeAll(Echo.dispose());
 
-                var s = new ManualSystem();
+                var s = new ManualViewSystem();
                 var e:Entity;
 
                 describe("When add System and update", {
-                    beforeAll(ManualSystem.result = "");
+                    beforeAll(ManualViewSystem.result = "");
                     beforeAll(Echo.addSystem(s));
                     beforeAll(Echo.update(0));
                     it("should be added to the flow", Echo.systems.length.should.be(1));
-                    it("should has correct result", ManualSystem.result.should.be(""));
+                    it("should has correct result", ManualViewSystem.result.should.be(""));
                 });
 
                 describe("Then add Entity A1 and update", {
-                    beforeAll(ManualSystem.result = "");
+                    beforeAll(ManualViewSystem.result = "");
                     beforeAll(e = new Entity().add(new FlowComponentA("1")));
                     beforeAll(Echo.update(0));
-                    it("should has correct result", ManualSystem.result.should.be(">1*1*"));
+                    it("should has correct result", ManualViewSystem.result.should.be(">1*1*"));
                 });
 
                 describe("Then destroy Entity and update", {
-                    beforeAll(ManualSystem.result = "");
+                    beforeAll(ManualViewSystem.result = "");
                     beforeAll(e.destroy());
                     beforeAll(Echo.update(0));
-                    it("should has correct result", ManualSystem.result.should.be("<1"));
+                    it("should has correct result", ManualViewSystem.result.should.be("<1"));
+                });
+
+            });
+
+
+            describe("Using System with overrided update", {
+                beforeAll(Echo.dispose());
+
+                var s = new OverrideSystem();
+                var e:Entity;
+
+                describe("When add System and update", {
+                    beforeAll(OverrideSystem.result = "");
+                    beforeAll(Echo.addSystem(s));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", OverrideSystem.result.should.be("au"));
+                });
+
+                describe("Then add Entity A1 and update", {
+                    beforeAll(OverrideSystem.result = "");
+                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", OverrideSystem.result.should.be("0u"));
+                });
+
+                describe("Then remove System and update", {
+                    beforeAll(OverrideSystem.result = "");
+                    beforeAll(Echo.removeSystem(s));
+                    beforeAll(Echo.update(0));
+                    it("should has correct result", OverrideSystem.result.should.be("d"));
                 });
 
             });
@@ -252,7 +282,7 @@ class FlowSystem2 extends System {
 
 }
 
-class ManualSystem extends echo.System {
+class ManualViewSystem extends echo.System {
 
     public static var result = "";
 
@@ -267,6 +297,23 @@ class ManualSystem extends echo.System {
         view.iter(function(e, ca) result += '*${ca.value}*');
     }
 
+}
+
+class OverrideSystem extends echo.System {
+    public static var result = "";
+    override function update(dt:Float) {
+        result += 'u';
+    }
+    override function onactivate() {
+        result += 'a';
+    }
+    override function ondeactivate() {
+        result += 'd';
+    }
+
+    @u function test(a:FlowComponentA, dt:Float) {
+        result += '$dt';
+    }
 }
 
 class FlowComponentA {
