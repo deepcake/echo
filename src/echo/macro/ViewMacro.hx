@@ -95,7 +95,6 @@ class ViewMacro {
                     // instance
 
                     function new() {
-                        __id = $v{ index }; // TODO
                         activate();
                     }
 

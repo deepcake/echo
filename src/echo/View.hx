@@ -16,27 +16,28 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
+    var activated = false;
+
     var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
-    @:noCompletion public var __id = -1;
-
-    /** Signal that dispatched when this view collects a new id (entity) */
-    //public var onAdded(default, null) = new echo.utils.Signal<Int->Void>();
-    /** Signal that dispatched when an id (entity) no more matched and will be removed */
-    //public var onRemoved(default, null) = new echo.utils.Signal<Int->Void>();
-
-    /** List of matched ids (entities) */
+    /** List of matched entities */
     public var entities(default, null):List<Entity> = new List();
 
 
     public function activate() {
-        @:privateAccess Echo.addView(this);
-        for (e in Echo.entities) addIfMatch(e);
+        if (!activated) {
+            Echo.views.add(this);
+            for (e in Echo.entities) addIfMatch(e);
+            activated = true;
+        }
     }
 
     public function deactivate() {
-        while (entities.length > 0) entitiesMap.remove(entities.pop());
-        @:privateAccess Echo.removeView(this);
+        if (activated) {
+            while (entities.length > 0) entitiesMap.remove(entities.pop());
+            Echo.views.remove(this);
+            activated = false;
+        }
     }
 
 

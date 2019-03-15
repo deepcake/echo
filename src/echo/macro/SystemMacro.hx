@@ -26,8 +26,8 @@ class SystemMacro {
     public static var REMOVE_META = [ 'removed', 'rm', 'r' ];
     public static var UPDATE_META = [ 'update', 'up', 'u' ];
 
-    public static var systemIndex:Int = -1;
-    public static var systemIds:Map<String, Int> = new Map();
+    public static var systemIndex = -1;
+    public static var systemIds = new Map<String, Int>();
 
 
     public static function build() {
@@ -40,22 +40,23 @@ class SystemMacro {
 
         var fnew = fields.find(function(f) return f.name == 'new');
         if (fnew == null) {
-            fields.push(ffun([APublic], 'new', null, null, macro __id = $v{ index }, Context.currentPos()));
-        } else {
-            switch (fnew.kind) {
-                case FFun(func):
-                    var fnewexprs = [ macro __id = $v{ index } ];
-
-                    switch (func.expr.expr) {
-                        case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
-                        case e: fnewexprs.push(func.expr);
-                    }
-
-                    func.expr = macro $b{fnewexprs};
-
-                default:
-            }
+            fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
         }
+        // else {
+        //     switch (fnew.kind) {
+        //         case FFun(func):
+        //             var fnewexprs = [ macro __id = $v{ index } ];
+
+        //             switch (func.expr.expr) {
+        //                 case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
+        //                 case e: fnewexprs.push(func.expr);
+        //             }
+
+        //             func.expr = macro $b{fnewexprs};
+
+        //         default:
+        //     }
+        // }
 
         var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
 

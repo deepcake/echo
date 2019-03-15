@@ -26,8 +26,6 @@ class Echo {
 
 
     static var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
-    static var viewsMap:Map<Int, View.ViewBase> = new Map();
-    static var systemsMap:Map<Int, System> = new Map();
 
     /** List of added entities */
     public static var entities(default, null):List<Entity> = new List();
@@ -107,11 +105,8 @@ class Echo {
      * @param s `System` instance
      */
     public static function addSystem(s:System) {
-        if (!systemsMap.exists(s.__id)) {
-            systemsMap[s.__id] = s;
-            systems.add(s);
-            s.activate();
-        }
+        systems.add(s);
+        s.activate();
     }
 
     /**
@@ -119,28 +114,8 @@ class Echo {
      * @param s `System` instance
      */
     public static function removeSystem(s:System) {
-        if (systemsMap.exists(s.__id)) {
-            s.deactivate();
-            systemsMap.remove(s.__id);
-            systems.remove(s);
-        }
-    }
-
-
-    // View
-
-    static function addView(v:View.ViewBase) {
-        if (!viewsMap.exists(v.__id)) {
-            viewsMap[v.__id] = v;
-            views.add(v);
-        }
-    }
-
-    static function removeView(v:View.ViewBase) {
-        if (viewsMap.exists(v.__id)) {
-            viewsMap.remove(v.__id);
-            views.remove(v);
-        }
+        s.deactivate();
+        systems.remove(s);
     }
 
 

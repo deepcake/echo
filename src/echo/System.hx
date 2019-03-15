@@ -10,7 +10,11 @@ package echo;
 class System {
 
 
-    @:noCompletion public var __id = -1;
+    // system types sequence
+    @:noCompletion static var sequence = -1;
+
+
+    @:noCompletion public var __id = ++sequence;
 
 
     @:allow(echo.Echo) function activate() {
