@@ -14,13 +14,13 @@ using Lambda;
 class ComponentMacro {
 
 
-    static var componentIndex:Int = -1;
+    static var componentIndex = -1;
 
     // componentContainerClsName / componentContainerType
     static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
 
-    public static var componentIds:Map<String, Int> = new Map();
-    public static var componentNames:Array<String> = [];
+    public static var componentIds = new Map<String, Int>();
+    public static var componentNames = new Array<String>();
 
 
     public static function createComponentContainerType(componentCls:ComplexType) {
@@ -28,60 +28,62 @@ class ComponentMacro {
         var componentContainerClsName = getClsName('ComponentContainer', componentClsName);
         var componentContainerType = componentContainerTypeCache.get(componentContainerClsName);
 
-        //if (componentContainerType == null) {
-        try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
+        if (componentContainerType == null) {
+            // first time call in current macro phase
 
-            ++componentIndex;
+            var index = ++componentIndex;
 
-            var componentContainerTypePath = tpath([], componentContainerClsName, []);
-            var componentContainerComplexType = TPath(componentContainerTypePath);
+            try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
+                // type was not cached in previous macro phases
 
-            var def = macro class $componentContainerClsName {
+                var componentContainerTypePath = tpath([], componentContainerClsName, []);
+                var componentContainerComplexType = TPath(componentContainerTypePath);
 
-                static var instance = new $componentContainerTypePath();
+                var def = macro class $componentContainerClsName {
 
-                @:keep inline public static function inst():$componentContainerComplexType {
-                    return instance;
+                    static var instance = new $componentContainerTypePath();
+
+                    @:keep inline public static function inst():$componentContainerComplexType {
+                        return instance;
+                    }
+
+                    // instance
+
+                    var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
+
+                    function new() {
+                        @:privateAccess echo.Echo.regComponentContainer(this.components);
+                    }
+
+                    inline public function get(id:Int):$componentCls {
+                        return components.get(id);
+                    }
+
+                    inline public function exists(id:Int):Bool {
+                        return components.exists(id);
+                    }
+
+                    inline function add(id:Int, c:$componentCls) {
+                        components.add(id, c);
+                    }
+
+                    inline function remove(id:Int) {
+                        components.remove(id);
+                    }
+
                 }
 
-                // instance
+                traceTypeDefenition(def);
 
-                var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
+                Context.defineType(def);
 
-                function new() {
-                    @:privateAccess echo.Echo.regComponentContainer(this.components);
-                }
-
-                inline public function get(id:Int):$componentCls {
-                    return components.get(id);
-                }
-
-                inline public function exists(id:Int):Bool {
-                    return components.exists(id);
-                }
-
-                inline function add(id:Int, c:$componentCls) {
-                    components.add(id, c);
-                }
-
-                inline function remove(id:Int) {
-                    components.remove(id);
-                }
-
+                componentContainerType = componentContainerComplexType.toType();
             }
 
-            traceTypeDefenition(def);
-
-            Context.defineType(def);
-
-            //componentContainerType = Context.getType(componentContainerClsName);
-            componentContainerType = componentContainerComplexType.toType();
+            // caching current macro phase
             componentContainerTypeCache.set(componentContainerClsName, componentContainerType);
-
-            componentIds[componentClsName] = componentIndex;
-
+            componentIds[componentClsName] = index;
             componentNames.push(componentClsName);
-
         }
 
         return componentContainerType;
