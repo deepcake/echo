@@ -6,91 +6,81 @@ class ViewTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Views", {
 
-            var s = new ViewTestSystem1();
-            var addCounter = 0;
-            var removeCounter = 0;
+            describe("Default", {
+                var s = new ViewTestSystem1();
+                var addCounter = 0;
+                var removeCounter = 0;
 
-            describe("When add entities", {
+                describe("When add entities", {
+                    beforeAll({
+                        Echo.addSystem(s);
 
-                beforeAll({
-                    Echo.addSystem(s);
+                        s.a.onAdded.add(function(id, a) addCounter++);
+                        s.a.onRemoved.add(function(id, a) removeCounter++);
 
-                    s.a.onAdded.add(function(id, a) addCounter++);
-                    s.a.onRemoved.add(function(id, a) removeCounter++);
+                        for (i in 0...300) {
+                            var e = new Entity();
+                            e.add(new A());
+                            if (i % 2 == 0) e.add(new B());
+                            if (i % 3 == 0) e.add(new C());
+                            if (i % 5 == 0) e.add(new D());
+                            if (i % 6 == 0) e.add(new E());
+                        }
+                    });
+                    it("should matching them correctly", {
+                        s.a.entities.length.should.be(300);
+                        s.b.entities.length.should.be(150);
 
-                    for (i in 0...300) {
-                        var e = new Entity();
-                        e.add(new A());
-                        if (i % 2 == 0) e.add(new B());
-                        if (i % 3 == 0) e.add(new C());
-                        if (i % 5 == 0) e.add(new D());
-                        if (i % 6 == 0) e.add(new E());
-                    }
+                        s.ab.entities.length.should.be(150);
+                        s.bc.entities.length.should.be(50);
+
+                        s.abcd.entities.length.should.be(10);
+                    });
+                    it("should correctly dispatch add signals", addCounter.should.be(300));
+                    it("should correctly dispatch remove signals", removeCounter.should.be(0));
                 });
 
-                it("should matching them correctly", {
-                    s.a.entities.length.should.be(300);
-                    s.b.entities.length.should.be(150);
+                describe("When remove components", {
+                    beforeAll({
+                        for(e in Echo.entities) {
+                            e.remove(A);
+                        }
+                    });
+                    it("should matching them correctly", {
+                        s.a.entities.length.should.be(0);
+                        s.b.entities.length.should.be(150);
 
-                    s.ab.entities.length.should.be(150);
-                    s.bc.entities.length.should.be(50);
+                        s.ab.entities.length.should.be(0);
+                        s.bc.entities.length.should.be(50);
 
-                    s.abcd.entities.length.should.be(10);
+                        s.abcd.entities.length.should.be(0);
+                    });
+                    it("should correctly dispatch add signals", addCounter.should.be(300));
+                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
 
-                it("should correctly dispatch add signals", addCounter.should.be(300));
-                it("should correctly dispatch remove signals", removeCounter.should.be(0));
+                describe("When remove entities", {
+                    beforeAll({
+                        for(e in Echo.entities) {
+                            e.destroy();
+                        }
+                    });
+                    it("should matching them correctly", {
+                        s.a.entities.length.should.be(0);
+                        s.b.entities.length.should.be(0);
 
-            });
+                        s.ab.entities.length.should.be(0);
+                        s.bc.entities.length.should.be(0);
 
-            describe("When remove components", {
-
-                beforeAll({
-                    for(e in Echo.entities) {
-                        e.remove(A);
-                    }
+                        s.abcd.entities.length.should.be(0);
+                    });
+                    it("should correctly dispatch add signals", addCounter.should.be(300));
+                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
-
-                it("should matching them correctly", {
-                    s.a.entities.length.should.be(0);
-                    s.b.entities.length.should.be(150);
-
-                    s.ab.entities.length.should.be(0);
-                    s.bc.entities.length.should.be(50);
-
-                    s.abcd.entities.length.should.be(0);
-                });
-
-                it("should correctly dispatch add signals", addCounter.should.be(300));
-                it("should correctly dispatch remove signals", removeCounter.should.be(300));
-
-            });
-
-            describe("When remove entities", {
-
-                beforeAll({
-                    for(e in Echo.entities) {
-                        e.destroy();
-                    }
-                });
-
-                it("should matching them correctly", {
-                    s.a.entities.length.should.be(0);
-                    s.b.entities.length.should.be(0);
-
-                    s.ab.entities.length.should.be(0);
-                    s.bc.entities.length.should.be(0);
-
-                    s.abcd.entities.length.should.be(0);
-                });
-
-                it("should correctly dispatch add signals", addCounter.should.be(300));
-                it("should correctly dispatch remove signals", removeCounter.should.be(300));
-
             });
 
 
-            describe("When views defined with the same signatures", {
+            describe("When views was defined with the same signatures", {
                 beforeAll(Echo.dispose());
                 beforeAll(Echo.addSystem(new SameViewSystem()));
                 it("should not define doublicates", {
@@ -101,6 +91,28 @@ class ViewTest extends buddy.BuddySuite {
                 });
                 it("should not add doublicates to the flow", {
                     Echo.views.length.should.be(1);
+                });
+            });
+
+
+            describe("Using Echo.getView()", {
+                describe("When view was defined somewhere already", {
+                    var view = Echo.getView(B, A);
+                    beforeAll(Echo.dispose());
+                    beforeAll(view.activate());
+                    beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
+
+                    it("should be added to the flow", Echo.views.length.should.be(1));
+                    it("should matching entities correctly", view.entities.length.should.be(1));
+                });
+                describe("When view was not defined defore", {
+                    var view = Echo.getView(D, C, B);
+                    beforeAll(Echo.dispose());
+                    beforeAll(view.activate());
+                    beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
+
+                    it("should be added to the flow", Echo.views.length.should.be(1));
+                    it("should matching entities correctly", view.entities.length.should.be(1));
                 });
             });
 

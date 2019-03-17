@@ -69,7 +69,7 @@ class ViewMacro {
     }
 
 
-    static function createViewType(components:Array<ComponentDef>) {
+    public static function createViewType(components:Array<ComponentDef>) {
         var viewClsName = getViewName(components);
         var viewType = viewTypeCache.get(viewClsName);
 

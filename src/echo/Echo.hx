@@ -3,6 +3,7 @@ package echo;
 #if macro
 import echo.macro.*;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 using haxe.macro.Context;
 using echo.macro.Macro;
 using Lambda;
@@ -95,6 +96,21 @@ class Echo {
         for (cc in componentContainers) {
             cc.dispose();
         }
+    }
+
+
+    /**
+    * Returns the view of passed component types
+    * @param types - list of component types
+    * @return View<>
+     */
+    macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
+        var components = types
+            .map(function(type) return type.identName().getType().follow().toComplexType())
+            .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
+            .array();
+        var viewComplexType = ViewMacro.createViewType(components).toComplexType();
+        return macro ${ viewComplexType.expr(Context.currentPos()) }.inst();
     }
 
 
