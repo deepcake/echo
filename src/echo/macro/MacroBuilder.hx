@@ -26,9 +26,7 @@ using Lambda;
 class MacroBuilder {
 
 
-    public static var reportRegistered = false;
-    public static var metaRegistered = false;
-    public static var contextReusedRegistered = false;
+    static var reportRegistered = false;
 
 
     public static function hasMeta(field:Field, metas:Array<String>) {

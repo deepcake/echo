@@ -38,25 +38,11 @@ class SystemMacro {
 
         systemIds[cls.followName()] = index;
 
-        var fnew = fields.find(function(f) return f.name == 'new');
-        if (fnew == null) {
+        // define new() if not exists
+        if (!fields.exists(function(f) return f.name == 'new')) {
             fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
         }
-        // else {
-        //     switch (fnew.kind) {
-        //         case FFun(func):
-        //             var fnewexprs = [ macro __id = $v{ index } ];
 
-        //             switch (func.expr.expr) {
-        //                 case EBlock(exprs): for (expr in exprs) fnewexprs.push(expr);
-        //                 case e: fnewexprs.push(func.expr);
-        //             }
-
-        //             func.expr = macro $b{fnewexprs};
-
-        //         default:
-        //     }
-        // }
 
         var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
 
