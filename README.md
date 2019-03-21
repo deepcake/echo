@@ -1,4 +1,4 @@
-# Workflow
+# echos
 [![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
 Super lightweight Entity Component System framework for Haxe. 
