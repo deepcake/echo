@@ -1,5 +1,3 @@
-import echos.Echo;
-import echos.Entity;
 import echos.*;
 
 using buddy.Should;
@@ -8,14 +6,14 @@ class ComponentTypeTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Components of different types", {
 
-            beforeAll(Echo.dispose());
+            beforeAll(Workflow.dispose());
 
             var e = new Entity();
             var s = new ComponentTypeSystem();
 
             beforeAll({
                 e.activate();
-                Echo.addSystem(s);
+                Workflow.addSystem(s);
             });
 
             describe("When add an ObjectComponent", {

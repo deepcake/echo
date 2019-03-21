@@ -52,7 +52,7 @@ class ComponentMacro {
                     var components = new echos.macro.ComponentMacro.ComponentContainer<$componentCls>();
 
                     function new() {
-                        @:privateAccess echos.Echo.regComponentContainer(this.components);
+                        @:privateAccess echos.Workflow.regComponentContainer(this.components);
                     }
 
                     inline public function get(id:Int):$componentCls {

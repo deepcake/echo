@@ -1,4 +1,4 @@
-# Echo
+# Workflow
 [![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
 Super lightweight Entity Component System framework for Haxe. 
@@ -16,15 +16,15 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Example
 ```haxe
-import echos.Echo;
+import echos.Workflow;
 import echos.Entity;
 import echos.View;
 
 class Example {
 
   static function main() {
-    Echo.addSystem(new Movement());
-    Echo.addSystem(new Render());
+    Workflow.addSystem(new Movement());
+    Workflow.addSystem(new Render());
 
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
 
@@ -35,7 +35,7 @@ class Example {
     rabbit.remove(Position); // oh no!
     rabbit.add(new Position(1, 1)); // okay
 
-    // also somewhere should be Echo.update(deltatime) call on every tick
+    // also somewhere should be Workflow.update(deltatime) call on every tick
   }
 
   static function createTree(x:Float, y:Float) {
@@ -124,7 +124,7 @@ class Render extends echos.System {
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echo_profiling` - collecting some more info for `Echo.toString()` method (especially for debug purposes)
+ * `-D echo_profiling` - collecting some more info for `Workflow.toString()` method (especially for debug purposes)
  * `-D echo_report` - traces a short report of built components and views
  * `-D echo_array_cc` - using Array<T> instead IntMap<T> for global component containers
 

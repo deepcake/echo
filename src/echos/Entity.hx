@@ -19,21 +19,21 @@ abstract Entity(Int) from Int to Int {
     * Entity is an abstract over `Int` id;
     * @param immediate - immediately adds this entity to the workflow if `true`, otherwise activate call is required
      */
-    public inline function new(immediate = true) this = Echo.id(immediate);
+    public inline function new(immediate = true) this = Workflow.id(immediate);
 
 
     /**
     * Adds this entity to the workflow;
      */
     public inline function activate() {
-        Echo.add(this);
+        Workflow.add(this);
     }
 
     /**
     * Removes this entity from the workflow, but saves all associated components;
      */
     public inline function deactivate() {
-        Echo.remove(this);
+        Workflow.remove(this);
     }
 
     /**
@@ -41,14 +41,14 @@ abstract Entity(Int) from Int to Int {
     * @return Bool
      */
     public inline function isActivated():Bool {
-        return Echo.exists(this);
+        return Workflow.exists(this);
     }
 
     /**
     * Removes all associated components;
      */
     public function removeAll() {
-        for (cc in Echo.componentContainers) {
+        for (cc in Workflow.componentContainers) {
             cc.remove(this);
         }
     }
@@ -81,7 +81,7 @@ abstract Entity(Int) from Int to Int {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if (id.isActivated()) for (v in Echo.views) @:privateAccess v.addIfMatch(id) ])
+            .concat([ macro if (id.isActivated()) for (v in Workflow.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -128,7 +128,7 @@ abstract Entity(Int) from Int to Int {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (id.isActivated()) for (v in echos.Echo.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if (id.isActivated()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();

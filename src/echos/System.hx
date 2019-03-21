@@ -17,11 +17,11 @@ class System {
     @:noCompletion public var __id = ++sequence;
 
 
-    @:allow(echos.Echo) function activate() {
+    @:allow(echos.Workflow) function activate() {
         onactivate();
     }
 
-    @:allow(echos.Echo) function deactivate() {
+    @:allow(echos.Workflow) function deactivate() {
         ondeactivate();
     }
 

@@ -13,7 +13,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When add entities", {
                     beforeAll({
-                        Echo.addSystem(s);
+                        Workflow.addSystem(s);
 
                         s.a.onAdded.add(function(id, a) addCounter++);
                         s.a.onRemoved.add(function(id, a) removeCounter++);
@@ -42,7 +42,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When remove components", {
                     beforeAll({
-                        for(e in Echo.entities) {
+                        for(e in Workflow.entities) {
                             e.remove(A);
                         }
                     });
@@ -61,7 +61,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When remove entities", {
                     beforeAll({
-                        for(e in Echo.entities) {
+                        for(e in Workflow.entities) {
                             e.destroy();
                         }
                     });
@@ -81,8 +81,8 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("When views was defined with the same signatures", {
-                beforeAll(Echo.dispose());
-                beforeAll(Echo.addSystem(new SameViewSystem()));
+                beforeAll(Workflow.dispose());
+                beforeAll(Workflow.addSystem(new SameViewSystem()));
                 it("should not define doublicates", {
                     SameViewSystem.ab.should.be(SameViewSystem.ba);
                     SameViewSystem.ab.should.be(SameViewSystem.ab1);
@@ -90,28 +90,28 @@ class ViewTest extends buddy.BuddySuite {
                     SameViewSystem.ab.should.be(SameViewSystem.ab3);
                 });
                 it("should not add doublicates to the flow", {
-                    Echo.views.length.should.be(1);
+                    Workflow.views.length.should.be(1);
                 });
             });
 
 
-            describe("Using Echo.getView()", {
+            describe("Using Workflow.getView()", {
                 describe("When view was defined somewhere already", {
-                    var view = Echo.getView(B, A);
-                    beforeAll(Echo.dispose());
+                    var view = Workflow.getView(B, A);
+                    beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
 
-                    it("should be added to the flow", Echo.views.length.should.be(1));
+                    it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
                 describe("When view was not defined defore", {
-                    var view = Echo.getView(D, C, B);
-                    beforeAll(Echo.dispose());
+                    var view = Workflow.getView(D, C, B);
+                    beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
 
-                    it("should be added to the flow", Echo.views.length.should.be(1));
+                    it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
             });

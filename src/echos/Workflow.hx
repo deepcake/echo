@@ -13,7 +13,7 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-class Echo {
+class Workflow {
 
 
     static var __componentSequence = -1;

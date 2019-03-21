@@ -26,8 +26,8 @@ class ViewBase {
 
     public function activate() {
         if (!activated) {
-            Echo.views.add(this);
-            for (e in Echo.entities) addIfMatch(e);
+            Workflow.views.add(this);
+            for (e in Workflow.entities) addIfMatch(e);
             activated = true;
         }
     }
@@ -35,7 +35,7 @@ class ViewBase {
     public function deactivate() {
         if (activated) {
             while (entities.length > 0) entitiesMap.remove(entities.pop());
-            Echo.views.remove(this);
+            Workflow.views.remove(this);
             activated = false;
         }
     }
@@ -66,11 +66,11 @@ class ViewBase {
     }
 
 
-    @:allow(echos.Echo) function addIfMatch(id:Int) {
+    @:allow(echos.Workflow) function addIfMatch(id:Int) {
         if (!exists(id) && isMatch(id)) add(id);
     }
 
-    @:allow(echos.Echo) function removeIfMatch(id:Int) {
+    @:allow(echos.Workflow) function removeIfMatch(id:Int) {
         if (exists(id)) remove(id);
     }
 

@@ -1,6 +1,6 @@
 package;
 
-import echos.Echo;
+import echos.Workflow;
 import echos.System;
 import echos.View;
 import echos.Entity;
@@ -29,10 +29,10 @@ class TigerInTheMeatdow {
 		var h = 40;
 
 
-		Echo.addSystem(new Movement(w, h));
-		Echo.addSystem(new Interaction());
-		Echo.addSystem(new Render(w, h, size, canvas));
-		Echo.addSystem(new InteractionEvent());
+		Workflow.addSystem(new Movement(w, h));
+		Workflow.addSystem(new Interaction());
+		Workflow.addSystem(new Render(w, h, size, canvas));
+		Workflow.addSystem(new InteractionEvent());
 
 		// fill world by plants
 		for (y in 0...h) {
@@ -59,8 +59,8 @@ class TigerInTheMeatdow {
 
 
 		Browser.window.setInterval(function() {
-			Echo.update(.050);
-			stat.innerHTML = Echo.toString();
+			Workflow.update(.050);
+			stat.innerHTML = Workflow.toString();
 		}, 50);
 	}
 
