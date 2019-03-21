@@ -19,7 +19,7 @@ class Workflow {
     static var __entitySequence = 0;
 
 
-    @:allow(echos.Entity) static var componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>;
+    @:allow(echos.Entity) static var componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>();
 
     static function regComponentContainer(cc:echos.macro.ComponentMacro.ComponentContainer<Dynamic>) {
         componentContainers.push(cc);
@@ -92,9 +92,15 @@ class Workflow {
     * Removes all views, systems and entities
      */
     public static function dispose() {
-        for (e in entities) e.destroy();
-        for (s in systems) removeSystem(s);
-        for (v in views) v.deactivate();
+        for (e in entities) {
+            e.destroy();
+        }
+        for (s in systems) {
+            removeSystem(s);
+        }
+        for (v in views) {
+            v.dispose();
+        }
         for (cc in componentContainers) {
             cc.dispose();
         }
