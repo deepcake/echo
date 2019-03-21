@@ -1,10 +1,10 @@
-package echo;
+package echos;
 
 #if macro
-import echo.macro.*;
+import echos.macro.*;
 import haxe.macro.Expr;
 using haxe.macro.Context;
-using echo.macro.Macro;
+using echos.macro.Macro;
 using Lambda;
 #end
 
@@ -68,7 +68,7 @@ abstract Entity(Int) from Int to Int {
      * @param components - comma separated list of components of `Any` type
      * @return `Entity`
      */
-    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echo.Entity> {
+    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echos.Entity> {
         var componentExprs = new List<Expr>()
             .concat(
                 components
@@ -85,7 +85,7 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro return id ])
             .array();
 
-        var ret = macro #if haxe4 inline #end ( function(id:echo.Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -99,7 +99,7 @@ abstract Entity(Int) from Int to Int {
      * @param types - comma separated `Class<Any>` types of components
      * @return `Entity`
      */
-    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echo.Entity> {
+    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echos.Entity> {
         var componentExprs = new List<Expr>()
             .concat(
                 types
@@ -128,12 +128,12 @@ abstract Entity(Int) from Int to Int {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (id.isActivated()) for (v in echo.Echo.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if (id.isActivated()) for (v in echos.Echo.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
 
-        var ret = macro #if haxe4 inline #end ( function(id:echo.Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -151,7 +151,7 @@ abstract Entity(Int) from Int to Int {
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
-        var ret = macro #if haxe4 inline #end ( function(id:echo.Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -168,7 +168,7 @@ abstract Entity(Int) from Int to Int {
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
-        var ret = macro #if haxe4 inline #end ( function(id:echo.Entity) $b{exprs} )($self);
+        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echo_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));

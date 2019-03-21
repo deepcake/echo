@@ -1,11 +1,11 @@
-package echo;
+package echos;
 
 /**
  * ...
  * @author https://github.com/deepcake
  */
 #if !macro
-@:autoBuild(echo.macro.SystemMacro.build())
+@:autoBuild(echos.macro.SystemMacro.build())
 #end
 class System {
 
@@ -17,11 +17,11 @@ class System {
     @:noCompletion public var __id = ++sequence;
 
 
-    @:allow(echo.Echo) function activate() {
+    @:allow(echos.Echo) function activate() {
         onactivate();
     }
 
-    @:allow(echo.Echo) function deactivate() {
+    @:allow(echos.Echo) function deactivate() {
         ondeactivate();
     }
 

@@ -1,9 +1,9 @@
-package echo.macro;
+package echos.macro;
 
 #if macro
-import echo.macro.Macro.*;
-import echo.macro.ViewMacro.*;
-import echo.macro.ComponentMacro.*;
+import echos.macro.Macro.*;
+import echos.macro.ViewMacro.*;
+import echos.macro.ComponentMacro.*;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -12,7 +12,7 @@ import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using echo.macro.Macro;
+using echos.macro.Macro;
 using StringTools;
 using Lambda;
 
@@ -99,7 +99,7 @@ class MacroBuilder {
 
     public static function getViewGenericComplexType(components:Array<{ name:String, cls:ComplexType }>):ComplexType {
         var viewClsParams = components.map(function(c) return fvar([], [], c.name, c.cls.followComplexType(), Context.currentPos()));
-        return TPath(tpath(['echo'], 'View', [TPType(TAnonymous(viewClsParams))]));
+        return TPath(tpath(['echos'], 'View', [TPType(TAnonymous(viewClsParams))]));
     }
 
 

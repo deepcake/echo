@@ -4,7 +4,7 @@ class SignalTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Siganls", {
 
-            var s = new echo.utils.Signal<String->String->Void>();
+            var s = new echos.utils.Signal<String->String->Void>();
             var r = "";
             var f = function(s1:String, s2:String) r = s1 + s2;
 

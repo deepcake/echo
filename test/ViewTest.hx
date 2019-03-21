@@ -1,4 +1,4 @@
-import echo.*;
+import echos.*;
 
 using buddy.Should;
 
@@ -121,7 +121,7 @@ class ViewTest extends buddy.BuddySuite {
     }
 }
 
-class ViewTestSystem1 extends echo.System {
+class ViewTestSystem1 extends echos.System {
 
     public var a:View<A->Void>;
     public var b:View<B->Void>;
@@ -135,7 +135,7 @@ class ViewTestSystem1 extends echo.System {
 
 typedef TAB = { a:A, b:B };
 typedef VAB = View<{ a:A, b:B }>;
-class SameViewSystem extends echo.System {
+class SameViewSystem extends echos.System {
 
     public static var ab:View<A->B->Void>;
     public static var ba:View<B->A->Void>;
@@ -150,7 +150,7 @@ class SameViewSystem extends echo.System {
 
     @u function abFloatEntityFunc(delta:Float, entity:Entity, a:A, b:B) { }
     @u function abFloatIntFunc(a:A, delta:Float, id:Int, b:B) { }
-    @u function abEchoEntityFunc(entity:echo.Entity, a:A, b:B) { }
+    @u function abEchoEntityFunc(entity:echos.Entity, a:A, b:B) { }
 
 }
 

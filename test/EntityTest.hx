@@ -1,6 +1,6 @@
-import echo.Echo;
-import echo.Entity;
-import echo.*;
+import echos.Echo;
+import echos.Entity;
+import echos.*;
 
 using buddy.Should;
 

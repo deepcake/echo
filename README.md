@@ -16,9 +16,9 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Example
 ```haxe
-import echo.Echo;
-import echo.Entity;
-import echo.View;
+import echos.Echo;
+import echos.Entity;
+import echos.View;
 
 class Example {
 
@@ -63,7 +63,7 @@ class Vec2 { var x:Float; var y:Float; }
   inline public function new(x, y) this = new Vec2(x, y);
 }
 
-class Movement extends echo.System {
+class Movement extends echos.System {
   // @update-functions will be called for each entity that contains all defined components;
   // any type is becamed a component, except Float (reserved for delta time) and Int/Entity;
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
@@ -85,7 +85,7 @@ class Movement extends echo.System {
   }
 }
 
-class Render extends echo.System {
+class Render extends echos.System {
   var scene:Array<Sprite> = [];
 
   // @a, @u and @r are the shortcuts for @added, @update and @removed;
@@ -129,4 +129,4 @@ There is also exists a few additional compiler flags:
  * `-D echo_array_cc` - using Array<T> instead IntMap<T> for global component containers
 
 #### Install
-```haxelib git echo https://github.com/deepcake/echo.git```
+```haxelib git echos https://github.com/deepcake/echo.git```

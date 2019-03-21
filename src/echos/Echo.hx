@@ -1,11 +1,11 @@
-package echo;
+package echos;
 
 #if macro
-import echo.macro.*;
+import echos.macro.*;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 using haxe.macro.Context;
-using echo.macro.Macro;
+using echos.macro.Macro;
 using Lambda;
 #end
 
@@ -19,9 +19,9 @@ class Echo {
     static var __componentSequence = -1;
 
 
-    @:allow(echo.Entity) static var componentContainers:Array<echo.macro.ComponentMacro.ComponentContainer<Dynamic>> = [];
+    @:allow(echos.Entity) static var componentContainers:Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>> = [];
 
-    static function regComponentContainer(cc:echo.macro.ComponentMacro.ComponentContainer<Dynamic>) {
+    static function regComponentContainer(cc:echos.macro.ComponentMacro.ComponentContainer<Dynamic>) {
         componentContainers.push(cc);
     }
 
@@ -137,7 +137,7 @@ class Echo {
 
     // Entity
 
-    @:allow(echo.Entity) static function id(immediate:Bool):Int {
+    @:allow(echos.Entity) static function id(immediate:Bool):Int {
         var id = ++__componentSequence;
         if (immediate) {
             entitiesMap.set(id, id);
@@ -146,11 +146,11 @@ class Echo {
         return id;
     }
 
-    @:allow(echo.Entity) static inline function exists(id:Int) {
+    @:allow(echos.Entity) static inline function exists(id:Int) {
         return entitiesMap.exists(id);
     }
 
-    @:allow(echo.Entity) static function add(id:Int) {
+    @:allow(echos.Entity) static function add(id:Int) {
         if (!exists(id)) {
             entitiesMap.set(id, id);
             entities.add(id);
@@ -158,7 +158,7 @@ class Echo {
         }
     }
 
-    @:allow(echo.Entity) static function remove(id:Int) {
+    @:allow(echos.Entity) static function remove(id:Int) {
         if (exists(id)) {
             for (v in views) v.removeIfMatch(id);
             entitiesMap.remove(id);

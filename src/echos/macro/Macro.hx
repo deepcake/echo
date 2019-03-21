@@ -1,4 +1,4 @@
-package echo.macro;
+package echos.macro;
 
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;

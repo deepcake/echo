@@ -1,13 +1,13 @@
-package echo.macro;
+package echos.macro;
 
 #if macro
-import echo.macro.Macro.*;
-import echo.macro.MacroBuilder.*;
+import echos.macro.Macro.*;
+import echos.macro.MacroBuilder.*;
 
 import haxe.macro.Expr.ComplexType;
 
 using haxe.macro.Context;
-using echo.macro.Macro;
+using echos.macro.Macro;
 using haxe.macro.ComplexTypeTools;
 using Lambda;
 
@@ -49,10 +49,10 @@ class ComponentMacro {
 
                     // instance
 
-                    var components = new echo.macro.ComponentMacro.ComponentContainer<$componentCls>();
+                    var components = new echos.macro.ComponentMacro.ComponentContainer<$componentCls>();
 
                     function new() {
-                        @:privateAccess echo.Echo.regComponentContainer(this.components);
+                        @:privateAccess echos.Echo.regComponentContainer(this.components);
                     }
 
                     inline public function get(id:Int):$componentCls {

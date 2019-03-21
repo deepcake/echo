@@ -1,12 +1,12 @@
-package echo.macro;
+package echos.macro;
 
 #if macro
-import echo.macro.Macro.*;
-import echo.macro.MacroBuilder.*;
-import echo.macro.ViewMacro.*;
-import echo.macro.ComponentMacro.*;
+import echos.macro.Macro.*;
+import echos.macro.MacroBuilder.*;
+import echos.macro.ViewMacro.*;
+import echos.macro.ComponentMacro.*;
 
-import echo.macro.MacroBuilder;
+import echos.macro.MacroBuilder;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -14,7 +14,7 @@ import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using echo.macro.Macro;
+using echos.macro.Macro;
 using StringTools;
 using Lambda;
 
@@ -71,7 +71,7 @@ class SystemMacro {
                 case macro:Int : macro id;
                 default: {
                     return switch (a.type.followComplexType()) {
-                        case macro:echo.Entity : macro id;
+                        case macro:echos.Entity : macro id;
                         default: macro $i{ a.name };
                     }
                 }
@@ -93,7 +93,7 @@ class SystemMacro {
                 case macro:Int, macro:Float : null;
                 default: {
                     return switch (a.type.followComplexType()) {
-                        case macro:echo.Entity : null;
+                        case macro:echos.Entity : null;
                         default: { name: a.name, cls: a.type.followComplexType() };
                     }
                 }
@@ -125,7 +125,7 @@ class SystemMacro {
                                 definedViews.push(view);
                             }
 
-                            var viewArgs = [ arg('id', macro:echo.Entity) ].concat(view.components.map(provideComponentToListenerArg.bind(_, func.args)));
+                            var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(provideComponentToListenerArg.bind(_, func.args)));
 
                             return { name: funcName, args: callArgs, view: view, viewargs: viewArgs };
 

@@ -1,11 +1,11 @@
-package echo;
+package echos;
 
 /**
  * ...
  * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echo.macro.ViewMacro.build())
+@:genericBuild(echos.macro.ViewMacro.build())
 #end
 class View<T> extends ViewBase { }
 
@@ -66,11 +66,11 @@ class ViewBase {
     }
 
 
-    @:allow(echo.Echo) function addIfMatch(id:Int) {
+    @:allow(echos.Echo) function addIfMatch(id:Int) {
         if (!exists(id) && isMatch(id)) add(id);
     }
 
-    @:allow(echo.Echo) function removeIfMatch(id:Int) {
+    @:allow(echos.Echo) function removeIfMatch(id:Int) {
         if (exists(id)) remove(id);
     }
 

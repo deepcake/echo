@@ -1,5 +1,5 @@
-import echo.Entity;
-import echo.*;
+import echos.Entity;
+import echos.*;
 
 using buddy.Should;
 
@@ -282,7 +282,7 @@ class FlowSystem2 extends System {
 
 }
 
-class ManualViewSystem extends echo.System {
+class ManualViewSystem extends echos.System {
 
     public static var result = "";
 
@@ -299,7 +299,7 @@ class ManualViewSystem extends echo.System {
 
 }
 
-class OverrideSystem extends echo.System {
+class OverrideSystem extends echos.System {
     public static var result = "";
     override function update(dt:Float) {
         result += 'u';

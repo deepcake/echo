@@ -1,9 +1,9 @@
 package;
 
-import echo.Echo;
-import echo.System;
-import echo.View;
-import echo.Entity;
+import echos.Echo;
+import echos.System;
+import echos.View;
+import echos.Entity;
 import js.Browser;
 import js.html.Element;
 using Lambda;

@@ -1,4 +1,4 @@
-package echo.utils;
+package echos.utils;
 #if macro
 import haxe.macro.Expr;
 #end
