@@ -9,10 +9,10 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 #### Wip
 
 #### Overview
-* `Component` is an instance of `T:Any` class. A global component map will be generated for each `T` class, used as a component.
-* `Entity` is an abstract over the `Int` _id_, used as a key in a global component map.
-* `View` is a collection of all suitable _ids_ that was added to _the workflow_.
-* `System` is a place for some logic over views;
+ * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
+ * `Entity` in that case is just an abstract over the `Int`. 
+ * `View<T>` is a collection of the entities contained all components of requested types. 
+ * `System` is a place for operating component data, collected by views. 
 
 #### Example
 ```haxe
@@ -29,6 +29,7 @@ class Example {
     for (i in 0...100) createTree(Std.random(500), Std.random(500));
 
     var rabbit = createRabbit(100, 100, 1, 1);
+
     trace(rabbit.exists(Position)); // true
     trace(rabbit.get(Position).x); // 100
     rabbit.remove(Position); // oh no!
@@ -53,7 +54,7 @@ class Example {
 // some visual component, openfl.dispaly.Sprite for example
 class Sprite { } 
 
-// abstracts can be used to create different ComponentClass'es from the same BaseClass without overhead
+// abstracts can be used to create different Component classes from the same Base class without overhead
 class Vec2 { var x:Float; var y:Float; }
 @:forward abstract Velocity(Vec2) { 
   inline public function new(x, y) this = new Vec2(x, y);
@@ -63,56 +64,59 @@ class Vec2 { var x:Float; var y:Float; }
 }
 
 class Movement extends echo.System {
-  // @update-functions will be called for each entity that contains required components;
-  // all views for that will be defined and initialized under the hood;
-  // any types are supposed to be a component, 
-  // except Float (reserved for delta time) and Int/Entity (reserved for Entity id);
-  @update function updateBody(pos:Position, vel:Velocity, dt:Float, id:Int) {
+  // @update-functions will be called for each entity that contains all defined components;
+  // any type is becamed a component, except Float (reserved for delta time) and Int/Entity;
+  @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
 
-  // it is also possible to define a View manually (initialization is still not needed) 
-  // for additional abilities like counting entities;
+  // all required views will be defined and initialized under the hood,
+  // but it is also possible to define a View manually (initialization is still not needed) 
+  // for additional possibilities like counting entities;
   var velocities:View<{ vel:Velocity }>;
+  // or View<Velocity->Void>
 
   // @update-function without components will be called just once per system update;
-  @update function printVelocitiesCount() {
-    trace('we have a ${ velocities.entities.length } count of entities with velocity component!');
-    // another way to iterate over entities
-    velocities.iter((entity, velocity) -> trace('$entity has velocity $velocity'));
+  @update function printEveryonesVelocity(dt:Float) {
+    trace(velocities.entities.length); // 1 (only one rabbit was created!)
+    // another way to iterating over entities
+    velocities.iter((entity, velocity) -> trace('$entity vel = $velocity'));
   }
 }
 
 class Render extends echo.System {
   var scene:Array<Sprite> = [];
-  // @a, @u and @r is a shortcuts for @added, @update and @removed;
-  // @added/@removed-functions is a callbacks called when entity is added or removed from the view;
-  @a function onEntityWithSpriteComponentAdded(spr:Sprite, pos:Position) {
-    scene.push(spr);
-  }
-  @r function onEntityWithSpriteComponentRemoved(spr:Sprite, pos:Position, entity:Entity) {
-    // even if callback was triggered by destroying entity or removing a Sprite component, 
-    // @removed-function actually will be called before that will happened, 
-    // so access to entity or component will be still exists;
-    scene.remove(spr);
-    trace('Oh My God! They removed $entity!');
-  }
 
-  // execution order of @update-functions is the same to definition order, 
-  // so it is possible to do some preparations before iterate over entities;
+  // @a, @u and @r are the shortcuts for @added, @update and @removed;
+
+  // execution order of the @update-functions is the same to the definition order, 
+  // so it is possible to do some preparations before iterating over entities;
   @u inline function beforeSpritePositionsUpdated() {
-    trace('starting update positions of ${ scene.length } sprites!');
+    trace('start updating sprite positions!');
   }
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  // @update-function without components can receive a Float deltatime
-  @u inline function afterSpritePositionsUpdated(dt:Float) {
+  @u inline function afterSpritePositionsUpdated() {
     scene.sort(function(s1, s2) return s2.y - s1.y);
+    // ... some drawing scene stuff
+  }
+
+  // @added/@removed-functions are the callbacks called when entity is added or removed from the view;
+  @a function onEntityWithSpriteAnpPositionAdded(spr:Sprite, pos:Position) {
+    scene.push(spr);
+  }
+  @r function onEntityWithSpriteAnpPositionRemoved(spr:Sprite, pos:Position, entity:Entity) {
+    // even if callback was triggered by destroying the entity or removing a Sprite component, 
+    // @removed-function will be called before that will actually happened, 
+    // so access to the component will be still exists;
+    scene.remove(spr);
+    trace('Oh My God! They removed $entity!');
   }
 }
+
 ```
 
 [Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/example/TigerInTheMeatdow.hx](https://github.com/deepcake/echo/blob/master/example/TigerInTheMeatdow.hx))
