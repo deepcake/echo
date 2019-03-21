@@ -16,31 +16,33 @@ using Lambda;
 class Workflow {
 
 
-    static var __componentSequence = -1;
+    static var __entitySequence = 0;
 
 
-    @:allow(echos.Entity) static var componentContainers:Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>> = [];
+    @:allow(echos.Entity) static var componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>;
 
     static function regComponentContainer(cc:echos.macro.ComponentMacro.ComponentContainer<Dynamic>) {
         componentContainers.push(cc);
     }
 
 
-    static var entitiesMap:Map<Int, Int> = new Map(); // map (id : id)
+    static var entitiesCache = new Array<Int>();
+
+    static var entitiesMap = new Map<Int, Int>(); // map (id : id)
 
     /** List of added entities */
-    public static var entities(default, null):List<Entity> = new List();
+    public static var entities(default, null) = new List<Entity>();
     /** List of added views */
-    public static var views(default, null):List<View.ViewBase> = new List();
+    public static var views(default, null) = new List<View.ViewBase>();
     /** List of added systems */
-    public static var systems(default, null):List<System> = new List();
+    public static var systems(default, null) = new List<System>();
 
 
     function new() { }
 
 
     #if echos_profiling
-    static var times:Map<Int, Float> = new Map();
+    static var times = new Map<Int, Float>();
     #end
     public static function toString():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
@@ -138,7 +140,7 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = ++__componentSequence;
+        var id = entitiesCache.length > 0 ? entitiesCache.pop() : ++__entitySequence;
         if (immediate) {
             entitiesMap.set(id, id);
             entities.add(id);
@@ -146,8 +148,9 @@ class Workflow {
         return id;
     }
 
-    @:allow(echos.Entity) static inline function exists(id:Int) {
-        return entitiesMap.exists(id);
+    @:allow(echos.Entity) static function cache(id:Int) {
+        // TODO debug check ?
+        if (entitiesCache.indexOf(id) == -1) entitiesCache.push(id);
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
@@ -164,6 +167,10 @@ class Workflow {
             entitiesMap.remove(id);
             entities.remove(id);
         }
+    }
+
+    @:allow(echos.Entity) static inline function exists(id:Int) {
+        return entitiesMap.exists(id);
     }
 
 

@@ -54,17 +54,19 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-    * Removes this entity from the workflow with removing all associated components;
+    * Removes this entity from the workflow with removing all associated components; 
+    * Using the entity after it was destroyed is not supported - use a new Entity() instead!;
      */
     public function destroy() {
         deactivate();
         removeAll();
+        Workflow.cache(this);
     }
 
 
     /**
-     * Adds specified components to this entity;
-     * If component with the same type is already added - it will be replaced;
+     * Adds specified components to this entity; 
+     * If a component with the same type is already added - it will be replaced;
      * @param components - comma separated list of components of `Any` type
      * @return `Entity`
      */
