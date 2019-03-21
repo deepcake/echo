@@ -124,9 +124,9 @@ class Render extends echos.System {
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echo_profiling` - collecting some more info for `Workflow.toString()` method (especially for debug purposes)
- * `-D echo_report` - traces a short report of built components and views
- * `-D echo_array_cc` - using Array<T> instead IntMap<T> for global component containers
+ * `-D echos_profiling` - collecting some more info for `Workflow.toString()` method (especially for debug purposes)
+ * `-D echos_report` - traces a short report of built components and views
+ * `-D echos_array_cc` - using Array<T> instead IntMap<T> for global component containers
 
 #### Install
 ```haxelib git echos https://github.com/deepcake/echo.git```

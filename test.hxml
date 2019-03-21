@@ -2,6 +2,7 @@
 -cp test
 -x Run
 -lib buddy
--D echo_verbose
--D echo_profiling
--D echo_report
+-D echos_verbose
+-D echos_profiling
+-D echos_report
+-D echos_array_cc

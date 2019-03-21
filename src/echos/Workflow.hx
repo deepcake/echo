@@ -39,13 +39,13 @@ class Workflow {
     function new() { }
 
 
-    #if echo_profiling
+    #if echos_profiling
     static var times:Map<Int, Float> = new Map();
     #end
     public static function toString():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
 
-        #if echo_profiling
+        #if echos_profiling
         ret += ' : ${ times.get(-2) } ms'; // total
         for (s in systems) {
             ret += '\n        ($s) : ${ times.get(s.__id) } ms';
@@ -64,23 +64,23 @@ class Workflow {
      * @param dt - delta time
      */
     public static function update(dt:Float) {
-        #if echo_profiling
+        #if echos_profiling
         var engineUpdateStartTimestamp = Date.now().getTime();
         #end
 
         for (s in systems) {
-            #if echo_profiling
+            #if echos_profiling
             var systemUpdateStartTimestamp = Date.now().getTime();
             #end
 
             s.update(dt);
 
-            #if echo_profiling
+            #if echos_profiling
             times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
             #end
         }
 
-        #if echo_profiling
+        #if echos_profiling
         times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
     }

@@ -103,7 +103,7 @@ class ComponentMacro {
 }
 #end
 
-#if echo_array_cc
+#if echos_array_cc
 abstract ArrayComponentContainer<T>(Array<T>) {
 
     public inline function new() this = new Array<T>();
@@ -163,4 +163,4 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 }
 #end
 
-typedef ComponentContainer<T> = #if echo_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;
+typedef ComponentContainer<T> = #if echos_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;

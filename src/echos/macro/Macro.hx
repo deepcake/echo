@@ -72,7 +72,7 @@ class Macro {
 
 
     public static inline function traceFields(clsname:String, fields:Array<Field>) {
-        #if echo_verbose
+        #if echos_verbose
         var pr = new Printer();
         var ret = '$clsname\n';
         for (f in fields) ret += pr.printField(f) + '\n';
@@ -81,7 +81,7 @@ class Macro {
     }
 
     public static inline function traceTypeDefenition(def:TypeDefinition) {
-        #if echo_verbose
+        #if echos_verbose
         trace(new Printer().printTypeDefinition(def));
         #end
     }

@@ -40,7 +40,7 @@ class MacroBuilder {
     }
 
     public static function gen() {
-        #if echo_report
+        #if echos_report
         if (!reportRegistered) {
             Context.onGenerate(function(types) {
                 function sortedlist(array:Array<String>) {

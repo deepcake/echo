@@ -87,7 +87,7 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
-        #if echo_verbose
+        #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -135,7 +135,7 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
-        #if echo_verbose
+        #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -153,7 +153,7 @@ abstract Entity(Int) from Int to Int {
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
-        #if echo_verbose
+        #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -170,7 +170,7 @@ abstract Entity(Int) from Int to Int {
         var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
-        #if echo_verbose
+        #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
