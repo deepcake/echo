@@ -116,17 +116,17 @@ class Render extends echos.System {
     trace('Oh My God! They removed $entity!');
   }
 }
-
 ```
 
-[Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! (source [echo/example/TigerInTheMeatdow.hx](https://github.com/deepcake/echo/blob/master/example/TigerInTheMeatdow.hx))
+
+[Live Example](https://deepcake.github.io/echo/web/) - Tiger in the Meatdow! ([source](https://github.com/deepcake/echo/blob/master/example/TigerInTheMeatdow.hx))
 
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echos_profiling` - collecting some more info for `Workflow.toString()` method (especially for debug purposes)
+ * `-D echos_profiling` - collecting some more info in `Workflow.toString()` method for debug purposes
  * `-D echos_report` - traces a short report of built components and views
- * `-D echos_array_cc` - using Array<T> instead IntMap<T> for global component containers
+ * `-D echos_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
 
 #### Install
 ```haxelib git echos https://github.com/deepcake/echo.git```
