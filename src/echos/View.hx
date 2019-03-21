@@ -75,6 +75,11 @@ class ViewBase {
     }
 
 
+    @:allow(echos.Workflow) function dispose() {
+        deactivate();
+    }
+
+
     public function toString():String return 'ViewBase';
 
 }

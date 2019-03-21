@@ -84,6 +84,14 @@ class ViewMacro {
                 var viewTypePath = tpath([], viewClsName, []);
                 var viewComplexType = TPath(viewTypePath);
 
+                // signals
+                var signalTypeParamComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
+                var signalTypePath = tpath(['echos', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
+
+                // signal args for dispatch() call
+                var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(id)));
+
+                // type def
                 var def:TypeDefinition = macro class $viewClsName extends echos.View.ViewBase {
 
                     static var instance = new $viewTypePath();
@@ -94,8 +102,27 @@ class ViewMacro {
 
                     // instance
 
+                    public var onAdded(default, null) = new $signalTypePath();
+                    public var onRemoved(default, null) = new $signalTypePath();
+
                     function new() {
                         activate();
+                    }
+
+                    override function add(id:Int) {
+                        super.add(id);
+                        onAdded.dispatch($a{ signalArgs });
+                    }
+
+                    override function remove(id:Int) {
+                        onRemoved.dispatch($a{ signalArgs });
+                        super.remove(id);
+                    }
+
+                    override function dispose() {
+                        super.dispose();
+                        onAdded.dispose();
+                        onRemoved.dispose();
                     }
 
                 }
@@ -103,25 +130,6 @@ class ViewMacro {
                 //var iteratorTypePath = getViewIterator(components).tp();
                 //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echos, this.entities.iterator()), Context.currentPos()));
 
-                // signals
-                var signalTypeParamComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
-                var signalTypePath = tpath(['echos', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
-                var signalComplexType = macro:echos.utils.Signal<$signalTypeParamComplexType>;
-                def.fields.push(fvar([#if haxe4 AFinal, #end APublic], 'onAdded', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
-                def.fields.push(fvar([#if haxe4 AFinal, #end APublic], 'onRemoved', signalComplexType, macro new $signalTypePath(), Context.currentPos()));
-
-                // add/remove
-                var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ ccref(c.cls) }.get(id)));
-
-                {
-                    var exprs = [ macro super.add(id) , macro onAdded.dispatch($a{ signalArgs }) ];
-                    def.fields.push(ffun([AOverride], 'add', [arg('id', macro:Int)], macro:Void, macro $b{ exprs }, Context.currentPos()));
-                }
-
-                {
-                    var exprs = [ macro onRemoved.dispatch($a{ signalArgs }) , macro super.remove(id) ];
-                    def.fields.push(ffun([AOverride], 'remove', [arg('id', macro:Int)], macro:Void, macro $b{ exprs }, Context.currentPos()));
-                }
 
                 // def cc
                 components.mapi(function(i, c) {
