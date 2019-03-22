@@ -18,7 +18,7 @@ using Lambda;
 class Workflow {
 
 
-    static var __entitySequence = 0;
+    static var __entitySequence = -1;
 
 
     static var __componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>();
@@ -110,11 +110,13 @@ class Workflow {
         for (cc in __componentContainers) {
             cc.dispose();
         }
-        for (key in ids.keys()) {
-            ids.remove(key);
+        while (idsCache.length > 0) {
+            idsCache.pop();
         }
-        while (idsCache.length > 0) idsCache.pop();
-        __entitySequence = 0;
+        while (__entitySequence > -1) {
+            ids.remove(__entitySequence);
+            --__entitySequence;
+        }
     }
 
 
