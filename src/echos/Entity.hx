@@ -37,29 +37,34 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-    * Returns `true` if this entity added to the workflow, otherwise returns `false`;
+    * Returns `true` if this entity is added to the workflow, otherwise returns `false`;
     * @return Bool
      */
     public inline function isActivated():Bool {
-        return Workflow.exists(this);
+        return Workflow.status(this) == Active;
+    }
+
+    /**
+    * Returns the status of this entity: Active, Deactive or Cached;
+    * Mostly for debug purposes;
+    * @return EntityStatus
+     */
+    public inline function status():Status {
+        return Workflow.status(this);
     }
 
     /**
     * Removes all associated components;
      */
-    public function removeAll() {
-        for (cc in Workflow.componentContainers) {
-            cc.remove(this);
-        }
+    public inline function removeAll() {
+        Workflow.removeComponents(this);
     }
 
     /**
-    * Removes this entity from the workflow with removing all associated components; 
-    * Using the entity after it was destroyed is not supported - use a new Entity() instead!;
+    * Removes this entity from the workflow with removing all associated components;  
+    * __Attention!__ Using the entity after it was destroyed is not correct - create a `new Entity()` instead!;
      */
     public function destroy() {
-        deactivate();
-        removeAll();
         Workflow.cache(this);
     }
 
@@ -180,4 +185,11 @@ abstract Entity(Int) from Int to Int {
     }
 
 
+}
+
+@:enum abstract Status(Int) from Int to Int {
+    var Inactive = 0;
+    var Active = 1;
+    var Cached = 2;
+    var Unknown = 3;
 }

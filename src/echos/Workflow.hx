@@ -1,5 +1,7 @@
 package echos;
 
+import echos.Entity.Status;
+
 #if macro
 import echos.macro.*;
 import haxe.macro.Expr;
@@ -26,15 +28,11 @@ class Workflow {
     }
 
 
-    static var entitiesCache = new Array<Int>();
+    static var idsCache = new Array<Int>();
+    static var ids = new Map<Int, Status>();
 
-    static var entitiesMap = new Map<Int, Int>(); // map (id : id)
-
-    /** List of added entities */
     public static var entities(default, null) = new List<Entity>();
-    /** List of added views */
     public static var views(default, null) = new List<View.ViewBase>();
-    /** List of added systems */
     public static var systems(default, null) = new List<System>();
 
 
@@ -146,37 +144,51 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = entitiesCache.length > 0 ? entitiesCache.pop() : ++__entitySequence;
+        var id = idsCache.length > 0 ? idsCache.pop() : ++__entitySequence;
         if (immediate) {
-            entitiesMap.set(id, id);
+            ids.set(id, Active);
             entities.add(id);
+        } else {
+            ids.set(id, Inactive);
         }
         return id;
     }
 
     @:allow(echos.Entity) static function cache(id:Int) {
-        // TODO debug check ?
-        if (entitiesCache.indexOf(id) == -1) entitiesCache.push(id);
+        if (status(id) == Unknown) {
+            // TODO debug check Unknown status
+        } else if (status(id) != Cached) { // Active or Inactive
+            remove(id);
+            removeComponents(id);
+            idsCache.push(id);
+            ids.set(id, Cached);
+        }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
-        if (!exists(id)) {
-            entitiesMap.set(id, id);
+        if (status(id) == Inactive) {
+            ids.set(id, Active);
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
     }
 
     @:allow(echos.Entity) static function remove(id:Int) {
-        if (exists(id)) {
+        if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
-            entitiesMap.remove(id);
             entities.remove(id);
+            ids.set(id, Inactive);
         }
     }
 
-    @:allow(echos.Entity) static inline function exists(id:Int) {
-        return entitiesMap.exists(id);
+    @:allow(echos.Entity) static inline function status(id:Int):Status {
+        return ids.exists(id) ? ids.get(id) : Unknown;
+    }
+
+    @:allow(echos.Entity) static function removeComponents(id:Int) {
+        for (cc in componentContainers) {
+            cc.remove(id);
+        }
     }
 
 

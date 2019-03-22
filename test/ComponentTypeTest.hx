@@ -6,13 +6,13 @@ class ComponentTypeTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Components of different types", {
 
-            beforeAll(Workflow.dispose());
-
-            var e = new Entity();
-            var s = new ComponentTypeSystem();
+            var e:Entity;
+            var s:ComponentTypeSystem;
 
             beforeAll({
-                e.activate();
+                Workflow.dispose();
+                e = new Entity();
+                s = new ComponentTypeSystem();
                 Workflow.addSystem(s);
             });
 
