@@ -42,8 +42,16 @@ class Workflow {
     #if echos_profiling
     static var times = new Map<Int, Float>();
     #end
+    /**
+    * Returns the workflow statistics:  
+    * ( _systems count_ ) { _views count_ } [ _entities count_ | _entity cache size_ ]  
+    * With `echos_profiling` flag additionaly returns:  
+    * ( _system name_ ) : _time for update_ ms  
+    * { _view name_ } [ _collected entities count_ ]  
+    * @return String
+     */
     public static function toString():String {
-        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} ]'; // TODO version or something
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idsCache.length} ]'; // TODO version or something
 
         #if echos_profiling
         ret += ' : ${ times.get(-2) } ms'; // total
