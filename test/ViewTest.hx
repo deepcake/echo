@@ -6,7 +6,7 @@ class ViewTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Views", {
 
-            describe("Default", {
+            describe("Matching", {
                 var s = new ViewTestSystem1();
                 var addCounter = 0;
                 var removeCounter = 0;
@@ -80,7 +80,7 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("When views was defined with the same signatures", {
+            describe("Same Param Types", {
                 beforeAll(Workflow.dispose());
                 beforeAll(Workflow.addSystem(new SameViewSystem()));
                 it("should not define doublicates", {
@@ -95,7 +95,7 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using Workflow.getView()", {
+            describe("Workflow::getView", {
                 describe("When view was defined somewhere already", {
                     var view = Workflow.getView(B, A);
                     beforeAll(Workflow.dispose());
@@ -105,7 +105,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
-                describe("When view was not defined defore", {
+                describe("When view was not defined before", {
                     var view = Workflow.getView(D, C, B);
                     beforeAll(Workflow.dispose());
                     beforeAll(view.activate());

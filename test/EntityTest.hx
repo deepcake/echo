@@ -9,7 +9,7 @@ class EntityTest extends buddy.BuddySuite {
 
             var e:Entity;
 
-            describe("Using the Immediate Arg", {
+            describe("Immediate Arg", {
                 describe("When init an immediate Entity", {
                     beforeAll(Workflow.dispose());
                     beforeAll(e = new Entity());
@@ -25,7 +25,7 @@ class EntityTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using a Component", {
+            describe("Add a Component", {
                 beforeAll(Workflow.dispose());
 
                 describe("When init an immediate Entity", {
@@ -79,7 +79,7 @@ class EntityTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using a few Components at once", {
+            describe("Add a few Components at once", {
                 beforeAll(Workflow.dispose());
 
                 describe("When init an immediate Entity and then add a few components at once", {
@@ -130,7 +130,7 @@ class EntityTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using Status and Cache", {
+            describe("Status and Cache", {
                 beforeAll(Workflow.dispose());
 
                 describe("When init a non immediate Entity and then add a component", {

@@ -4,7 +4,7 @@ using buddy.Should;
 
 class ComponentTypeTest extends buddy.BuddySuite {
     public function new() {
-        describe("Using Components of different types", {
+        describe("Using Components of Different Types", {
 
             var e:Entity;
             var s:ComponentTypeSystem;

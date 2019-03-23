@@ -1,225 +1,437 @@
+import echos.Entity.Status;
 import echos.*;
 
 using buddy.Should;
+using Lambda;
 
 class SystemTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Systems", {
 
 
-            describe("Using System with update functions", {
+            describe("Using @update functions", {
                 beforeAll(Workflow.dispose());
 
                 var s = new FlowSystem1();
 
-                describe("When add System and update", {
-                    beforeAll(FlowSystem1.result = "");
-                    beforeAll(Workflow.addSystem(s));
-                    beforeAll(Workflow.update(0));
+                describe("When add System", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.addSystem(s);
+                    });
                     it("should be added to the flow", Workflow.systems.length.should.be(1));
+                    it("should has correct result", FlowSystem1.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem1.result.should.be("[*]"));
                 });
 
-                describe("Then add Entity A1, B2 and update", {
-                    beforeAll(FlowSystem1.result = "");
-                    beforeAll(new Entity().add(new FlowComponentA("1"), new FlowComponentB("2")));
-                    beforeAll(Workflow.update(0));
+                describe("Then add Entity A1+B2", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        new Entity().add(new FlowComponentA("1"), new FlowComponentB("2"));
+                    });
+                    it("should has correct result", FlowSystem1.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem1.result.should.be("[1*2]"));
                 });
-                describe("Then add Entity A3, B4 and update", {
-                    beforeAll(FlowSystem1.result = "");
-                    beforeAll(new Entity().add(new FlowComponentA("3"), new FlowComponentB("4")));
-                    beforeAll(Workflow.update(0));
+
+                describe("Then add Entity A3+B4", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        new Entity().add(new FlowComponentA("3")).add(new FlowComponentB("4"));
+                    });
+                    it("should has correct result", FlowSystem1.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem1.result.should.be("[13*24]"));
                 });
 
-                describe("Then remove System and update", {
-                    beforeAll(FlowSystem1.result = "");
-                    beforeAll(Workflow.removeSystem(s));
-                    beforeAll(Workflow.update(0));
+                describe("Then remove System", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.removeSystem(s);
+                    });
                     it("should be removed from the flow", Workflow.systems.length.should.be(0));
+                    it("should has correct result", FlowSystem1.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem1.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem1.result.should.be(""));
                 });
 
             });
 
 
-            describe("Using System with added/removed functions", {
+            describe("Using @added/@removed functions", {
                 beforeAll(Workflow.dispose());
 
                 var s = new FlowSystem2();
                 var e:Entity;
 
-                describe("When add System and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.addSystem(s));
-                    beforeAll(Workflow.update(0));
+                describe("When add System", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.addSystem(s);
+                    });
                     it("should be added to the flow", Workflow.systems.length.should.be(1));
                     it("should has correct result", FlowSystem2.result.should.be(""));
                 });
-
-                describe("Then add Entity A1 and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(">1"));
-                });
-                describe("Then remove Component A and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e.remove(FlowComponentA));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be("<1"));
-                });
-
-                describe("Then add Entity A2, B2 and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2")));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(">>22>2*22*"));
-                });
-                describe("Then destroy Entity and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e.destroy());
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be("<<22<2"));
-                });
-
-                describe("Then add Entity B3 and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentB("3")));
-                    beforeAll(Workflow.update(0));
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be(""));
                 });
-                describe("Then add Component A3 and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e.add(new FlowComponentA("3")));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(">>33>3*33*"));
+
+                describe("Then add Entity A1", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e = new Entity().add(new FlowComponentA("1"));
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(">1"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
                 });
 
-                describe("Then remove System and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.removeSystem(s));
-                    beforeAll(Workflow.update(0));
-                    it("should be removed from the flow", Workflow.systems.length.should.be(0));
+                describe("Then remove A1", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.remove(FlowComponentA);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("<1"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+
+                describe("Then add Entity A2+B2", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2"));
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(">>22>2"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("*22*"));
+                });
+
+                describe("Then destroy Entity A2+B2", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.destroy();
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("<<22<2"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+
+                describe("Then add Entity B3", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e = new Entity().add(new FlowComponentB("3"));
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                describe("Then add A3", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.add(new FlowComponentA("3"));
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("*33*"));
+                });
+
+
+                describe("Then deactivate Entity", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.deactivate();
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("<<33<3"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+
+                describe("Then activate Entity", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.activate();
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be("*33*"));
+                });
+
+
+                describe("Then remove System", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.removeSystem(s);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be("<3<<33"));
                 });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
 
-                describe("Then destroy Entity and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e.destroy());
-                    beforeAll(Workflow.update(0));
+
+                describe("Then destroy Entity", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        e.destroy();
+                    });
+                    it("should has correct result", FlowSystem2.result.should.be(""));
+                });
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be(""));
                 });
 
             });
 
 
-            describe("Using System after Entity was added", {
-                beforeAll(Workflow.dispose());
-
+            describe("Add System after Entity", {
                 var s = new FlowSystem2();
                 var e:Entity;
 
-                describe("When add Entity A1, B1 and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentA("1"), new FlowComponentB("1")));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(""));
+                beforeAll({
+                    Workflow.dispose();
+                    e = new Entity().add(new FlowComponentA("1"), new FlowComponentB("1"));
                 });
 
-                describe("Then add System", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.addSystem(s));
-                    it("should be added to the flow", Workflow.systems.length.should.be(1));
+                describe("When add System", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.addSystem(s);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be(">1>>11"));
                 });
 
-                describe("Then update System", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.update(0));
+                describe("Then update", {
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be("*11*"));
                 });
 
                 describe("Then remove System", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.removeSystem(s));
-                    it("should be removed from the flow", Workflow.systems.length.should.be(0));
+                    beforeAll({
+                        FlowSystem2.result = "";
+                        Workflow.removeSystem(s);
+                    });
                     it("should has correct result", FlowSystem2.result.should.be("<1<<11"));
                 });
-
-                describe("Then update System", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-                describe("Then destroy Entity and update", {
-                    beforeAll(FlowSystem2.result = "");
-                    beforeAll(e.destroy());
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
             });
 
 
-            describe("Using System with manually initialized View", {
-                beforeAll(Workflow.dispose());
-
+            describe("Using System with manually view", {
                 var s = new ManualViewSystem();
                 var e:Entity;
 
-                describe("When add System and update", {
-                    beforeAll(ManualViewSystem.result = "");
-                    beforeAll(Workflow.addSystem(s));
-                    beforeAll(Workflow.update(0));
-                    it("should be added to the flow", Workflow.systems.length.should.be(1));
-                    it("should has correct result", ManualViewSystem.result.should.be(""));
+                beforeAll({
+                    Workflow.dispose();
+                    Workflow.addSystem(s);
                 });
 
-                describe("Then add Entity A1 and update", {
-                    beforeAll(ManualViewSystem.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", ManualViewSystem.result.should.be(">1*1*"));
+                describe("When add Entity", {
+                    beforeAll({
+                        ManualViewSystem.result = "";
+                        e = new Entity().add(new FlowComponentA("1"));
+                    });
+                    it("should has correct result", ManualViewSystem.result.should.be(">1"));
                 });
 
-                describe("Then destroy Entity and update", {
-                    beforeAll(ManualViewSystem.result = "");
-                    beforeAll(e.destroy());
-                    beforeAll(Workflow.update(0));
+                describe("Then update", {
+                    beforeAll({
+                        ManualViewSystem.result = "";
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", ManualViewSystem.result.should.be("*1*"));
+                });
+
+                describe("Then destroy Entity", {
+                    beforeAll({
+                        ManualViewSystem.result = "";
+                        e.destroy();
+                    });
                     it("should has correct result", ManualViewSystem.result.should.be("<1"));
                 });
-
             });
 
 
             describe("Using System with overrided update", {
-                beforeAll(Workflow.dispose());
-
                 var s = new OverrideSystem();
                 var e:Entity;
 
-                describe("When add System and update", {
-                    beforeAll(OverrideSystem.result = "");
-                    beforeAll(Workflow.addSystem(s));
-                    beforeAll(Workflow.update(0));
-                    it("should has correct result", OverrideSystem.result.should.be("au"));
+                beforeAll({
+                    Workflow.dispose();
                 });
 
-                describe("Then add Entity A1 and update", {
-                    beforeAll(OverrideSystem.result = "");
-                    beforeAll(e = new Entity().add(new FlowComponentA("1")));
-                    beforeAll(Workflow.update(0));
+                describe("When add System", {
+                    beforeAll({
+                        OverrideSystem.result = "";
+                        Workflow.addSystem(s);
+                    });
+                    it("should has correct result", OverrideSystem.result.should.be("a"));
+                });
+
+                describe("When add Entity", {
+                    beforeAll({
+                        OverrideSystem.result = "";
+                        e = new Entity().add(new FlowComponentA("1"));
+                    });
+                    it("should has correct result", OverrideSystem.result.should.be(""));
+                });
+
+                describe("Then update", {
+                    beforeAll({
+                        OverrideSystem.result = "";
+                        Workflow.update(0);
+                    });
                     it("should has correct result", OverrideSystem.result.should.be("0u"));
                 });
 
-                describe("Then remove System and update", {
-                    beforeAll(OverrideSystem.result = "");
-                    beforeAll(Workflow.removeSystem(s));
-                    beforeAll(Workflow.update(0));
+                describe("Then destroy Entity", {
+                    beforeAll({
+                        OverrideSystem.result = "";
+                        e.destroy();
+                    });
+                    it("should has correct result", OverrideSystem.result.should.be(""));
+                });
+
+                describe("When remove System", {
+                    beforeAll({
+                        OverrideSystem.result = "";
+                        Workflow.removeSystem(s);
+                    });
                     it("should has correct result", OverrideSystem.result.should.be("d"));
+                });
+            });
+
+
+            describe("Flow", {
+                var s1 = new FlowSystem1();
+                var s2 = new FlowSystem2();
+                var e:Entity;
+
+                beforeAll({
+                    Workflow.dispose();
+                });
+
+                describe("When initialize", {
+                    beforeAll({
+                        e = new Entity().add(new FlowComponentA('x'));
+                        Workflow.addSystem(s1);
+                        Workflow.addSystem(s2);
+                        var entities = [ for (i in 0...100) new Entity() ];
+                        for (i in 0...entities.length) {
+                            var e = entities[i];
+                            if (i % 1 == 0) e.add(new FlowComponentA('$i'));
+                            if (i % 2 == 0) e.add(new FlowComponentB('$i')); // 50
+                            if (i % 5 == 0) e.deactivate(); // 20
+                            if (i % 25 == 0) e.destroy(); // 4
+                        }
+                    });
+                    it("should have correct count of systems", Workflow.systems.length.should.be(2));
+                    it("should have correct count of views", Workflow.views.length.should.be(3));
+                    it("should have correct count of entities", Workflow.entities.length.should.be(81));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.idsCache.length.should.be(4));
+                    it("should have correct size of id map", @:privateAccess Workflow.ids.count().should.be(101));
+                    it("lost entity should have correct status", e.status().should.be(Active));
+                    describe("View<A>", {
+                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(81));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(81));
+                        it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
+                        it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(1));
+                    });
+                });
+
+                describe("Then dispose", {
+                    beforeAll({
+                        Workflow.dispose();
+                    });
+                    it("should have correct count of systems", Workflow.systems.length.should.be(0));
+                    it("should have correct count of views", Workflow.systems.length.should.be(0));
+                    it("should have correct count of entities", Workflow.systems.length.should.be(0));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.idsCache.length.should.be(0));
+                    it("should have correct size of ids", @:privateAccess Workflow.ids.count().should.be(0));
+                    it("lost entity should have correct status", e.status().should.be(Unknown));
+                    describe("View<A>", {
+                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(0));
+                        it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
+                        it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(0));
+                    });
                 });
 
             });
