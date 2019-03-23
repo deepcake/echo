@@ -157,7 +157,9 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
     }
 
     public function dispose() {
-        for (k in this.keys()) this.remove(k); 
+        // for (k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
+        var keys = [ for (k in this.keys()) k ];
+        for (k in keys) this.remove(k); 
     }
 
 }
