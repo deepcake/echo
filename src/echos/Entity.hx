@@ -191,5 +191,7 @@ abstract Entity(Int) from Int to Int {
     var Inactive = 0;
     var Active = 1;
     var Cached = 2;
-    var Unknown = 3;
+    var Invalid = 3;
+    @:op(A > B) static function gt(a:Status, b:Status):Bool;
+    @:op(A < B) static function lt(a:Status, b:Status):Bool;
 }

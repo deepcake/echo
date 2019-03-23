@@ -425,7 +425,7 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of entities", Workflow.systems.length.should.be(0));
                     it("should have correct count of cached ids", @:privateAccess Workflow.idsCache.length.should.be(0));
                     it("should have correct size of ids", @:privateAccess Workflow.ids.count().should.be(0));
-                    it("lost entity should have correct status", e.status().should.be(Unknown));
+                    it("lost entity should have correct status", e.status().should.be(Invalid));
                     describe("View<A>", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
                         it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(0));

@@ -170,9 +170,8 @@ class Workflow {
     }
 
     @:allow(echos.Entity) static function cache(id:Int) {
-        if (status(id) == Unknown) {
-            // TODO debug check Unknown status
-        } else if (status(id) != Cached) { // Active or Inactive
+        // TODO debug check Unknown status
+        if (status(id) < Cached) { // Active or Inactive
             remove(id);
             removeComponents(id);
             idsCache.push(id);
@@ -197,7 +196,7 @@ class Workflow {
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return ids.exists(id) ? ids.get(id) : Unknown;
+        return ids.exists(id) ? ids.get(id) : Invalid;
     }
 
     @:allow(echos.Entity) static function removeComponents(id:Int) {
