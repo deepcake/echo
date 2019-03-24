@@ -12,7 +12,7 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-class TigerInTheMeatdow {
+class Main {
 
 
     static function main() {
