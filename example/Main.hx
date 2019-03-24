@@ -38,8 +38,8 @@ class Main {
 
         var population = Std.int(Math.max(w * h / 50, 10));
 
-        Workflow.addSystem(new Movement(w, h));
         Workflow.addSystem(new Play(population));
+        Workflow.addSystem(new Movement(w, h));
         Workflow.addSystem(new Render(w, h, size, canvas));
         Workflow.addSystem(new InteractionEvent());
         Workflow.addSystem(new Info(info));
@@ -104,7 +104,7 @@ class Main {
         new Entity().add(pos, vel, spr, Animal.Tiger);
     }
 
-    static public function event(x:Float, y:Float, type:String) {
+    static public function event(x:Float, y:Float, type:String, cb:Void->Void) {
         var code = switch(type) {
             case 'heart': '&#x1F498;';
             case 'skull': '&#x1F480;';
@@ -113,7 +113,7 @@ class Main {
         new Entity().add(
             new Position(x, y),
             new Sprite(code),
-            new Timer(5.0));
+            new Timer(5.0, cb));
     }
 
     static function randomEmoji(codes:Array<String>) {
@@ -172,9 +172,11 @@ enum Animal {
 class Timer {
     public var timeout:Float;
     public var time:Float;
-    public function new(timeout:Float) {
+    public var cb:Void->Void;
+    public function new(timeout:Float, cb:Void->Void) {
         this.time = .0;
         this.timeout = timeout;
+        this.cb = cb;
     }
 }
 
@@ -244,36 +246,49 @@ class Render extends System {
     }
 }
 
-// some dummy interaction
 class Play extends System {
     var del = [];
+    var animals:View<Animal->Position->Velocity->Void>;
 
+    var maxPopulation:Int;
     var population:Int;
-    var animals:View<{ a:Animal, pos:Position }>;
 
     public function new(population:Int) {
-        this.population = population;
+        this.maxPopulation = population;
+        this.population = maxPopulation;
     }
 
     @u inline function action(dt:Float) {
-        // everyone with everyone
-        animals.iter((id1, a1, pos1) -> {
-            animals.iter((id2, a2, pos2) -> {
+        // dummy everyone with everyone
+        animals.iter((id1, a1, pos1, vel1) -> {
+            animals.iter((id2, a2, pos2, vel2) -> {
 
-                if (id1 != id2 && isInteract(pos1, pos2, 1.0)) {
+                if (id1 != id2 && test(pos1, pos2, 1.41)) {
 
                     if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
-                        // tiger eats rabbit
-                        trace('$id1 eats $id2');
-                        Main.event(pos1.x, pos1.y, 'skull');
+
+                        trace('#$id1 eats #$id2');
+                        Main.event(pos1.x, pos1.y, 'skull', null);
                         del.push(id2);
+                        population--;
+
                     }
+
                     if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
-                        // rabbits reproduces
-                        if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < population) {
-                            Main.rabbit(pos1.x, pos1.y);
-                            Main.event(pos1.x, pos1.y, 'heart');
+
+                        // bounce
+                        vel1.x *= -1;
+                        vel1.y *= -1;
+                        vel2.x *= -1;
+                        vel2.y *= -1;
+
+                        if (population < maxPopulation) {
+                            var x = (pos1.x + pos2.x) / 2;
+                            var y = (pos1.y + pos2.y) / 2;
+                            Main.event(x, y, 'heart', function() Main.rabbit(x, y));
+                            population++;
                         }
+
                     }
 
                 }
@@ -281,20 +296,26 @@ class Play extends System {
             });
         });
 
-        while(del.length > 0) del.pop().destroy();
+        while (del.length > 0) del.pop().destroy();
     }
 
-    function isInteract(pos1:Position, pos2:Position, radius:Float) {
-        return Math.abs(pos1.x - pos2.x) < radius && Math.abs(pos1.y - pos2.y) < radius;
+    function test(pos1:Position, pos2:Position, radius:Float) {
+        var dx = pos2.x - pos1.x;
+        var dy = pos2.y - pos1.y;
+        return dx * dx + dy * dy < radius * radius;
     }
 }
 
 class InteractionEvent extends System {
     @u inline function action(id:Entity, dt:Float, t:Timer, s:Sprite) {
         s.style.opacity = '${1.0 - (t.time / t.timeout)}';
+        s.style.fontSize = '${ 100 + Std.int((t.time / t.timeout) * 75) }%';
+
         t.time += dt;
         if (t.time >= t.timeout) {
             s.style.opacity = '.0';
+
+            if (t.cb != null) t.cb();
             id.destroy();
         }
     }
