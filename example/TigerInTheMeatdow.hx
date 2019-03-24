@@ -14,25 +14,30 @@ using Lambda;
  */
 class TigerInTheMeatdow {
 
-    static public var RABBITS_POPULATION = 64;
 
     static function main() {
-        var canvas = Browser.document.createElement('code'); // monospace text
-        var stat = Browser.document.createPreElement();
-        Browser.document.body.appendChild(canvas);
-        Browser.document.body.appendChild(stat);
+        var canvas = Browser.document.createDivElement();
+        canvas.classList.add('meatdow');
 
-        // mobile friendly (i guess)
-        var size = Std.parseInt(Browser.window.getComputedStyle(Browser.document.body).fontSize);
+        var info = Browser.document.createPreElement();
+        info.classList.add('info');
+
+        Browser.document.body.appendChild(canvas);
+        Browser.document.body.appendChild(info);
+
+        // make it mobile friendly (i guess)
+        var size = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
 
         var w = Math.floor(Browser.window.innerWidth / size);
-        var h = 40;
+        var h = Math.floor(Browser.window.innerHeight / size);
 
+        var population = Std.int(Math.max(w * h / 50, 10));
 
         Workflow.addSystem(new Movement(w, h));
-        Workflow.addSystem(new Interaction());
+        Workflow.addSystem(new Play(population));
         Workflow.addSystem(new Render(w, h, size, canvas));
         Workflow.addSystem(new InteractionEvent());
+        Workflow.addSystem(new Info(info));
 
         // fill world by plants
         for (y in 0...h) {
@@ -50,18 +55,15 @@ class TigerInTheMeatdow {
         }
 
         // some rabbits
-        for (i in 0...RABBITS_POPULATION) {
+        for (i in 0...population) {
             rabbit(Std.random(w), Std.random(h));
         }
 
         // tiger!
         tiger(Std.random(w), Std.random(h));
 
-
-        Browser.window.setInterval(function() {
-            Workflow.update(.050);
-            stat.innerHTML = Workflow.toString();
-        }, 50);
+        var fps = 60;
+        Browser.window.setInterval(function() Workflow.update(fps / 1000), fps);
     }
 
 
@@ -97,7 +99,7 @@ class TigerInTheMeatdow {
         var pos = new Position(x, y);
         var vel = randomVelocity(10);
         var spr = new Sprite('&#x1F405;');
-        spr.style.fontSize = '200%';
+        spr.style.fontSize = '150%';
         new Entity().add(pos, vel, spr, Animal.Tiger);
     }
 
@@ -150,6 +152,9 @@ abstract Sprite(Element) from Element to Element {
     inline public function new(value:String) {
         this = Browser.document.createSpanElement();
         this.style.position = 'absolute';
+        this.style.right = '0px';
+        this.style.bottom = '0px';
+        this.style.fontSize = '125%';
         this.innerHTML = value;
     }
 }
@@ -171,6 +176,16 @@ class Timer {
 
 // Systems
 
+class Info extends System {
+    var element:Element;
+    public function new(element:Element) {
+        this.element = element;
+    }
+    @u function print() {
+        element.innerHTML = '${ Workflow.toString() }';
+    }
+}
+
 class Movement extends System {
     var w:Float;
     var h:Float;
@@ -178,15 +193,15 @@ class Movement extends System {
         this.w = w;
         this.h = h;
     }
-    @u function move(dt:Float, pos:Position, vel:Velocity) {
+    @u inline function move(dt:Float, pos:Position, vel:Velocity) {
         var dx = vel.x * dt;
         var dy = vel.y * dt;
 
-        if (pos.x + dx >= w - 1 || pos.x + dx < 0) {
+        if (pos.x + dx > w - 1 || pos.x + dx < 0) {
             vel.x *= -1;
         }
 
-        if (pos.y + dy >= h - 1 || pos.y + dy < 0) {
+        if (pos.y + dy > h - 1 || pos.y + dy < 0) {
             vel.y *= -1;
         }
 
@@ -203,8 +218,8 @@ class Render extends System {
             for (x in 0...w) {
                 var span = Browser.document.createSpanElement();
                 span.style.position = 'absolute';
-                span.style.left = '${x * size}px';
-                span.style.top = '${y * size}px';
+                span.style.left = '${(x + 1) * size}px';
+                span.style.top = '${(y + 1) * size}px';
                 world[y][x] = span;
                 canvas.appendChild(span);
             }
@@ -212,23 +227,29 @@ class Render extends System {
         }
     }
 
-    @ad inline function appendVisual(pos:Position, spr:Sprite) {
+    @ad inline function appendSprite(pos:Position, spr:Sprite) {
         world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
     }
-    @rm inline function removeVisual(pos:Position, spr:Sprite) {
+    @rm inline function detachSprite(pos:Position, spr:Sprite) {
         spr.remove();
     }
 
-    // dynamic visuals only (with Velocity component)
-    @update inline function updateDynamicVisual(dt:Float, vel:Velocity, pos:Position, spr:Sprite) {
+    @u inline function updateDynamicSprite(vel:Velocity, pos:Position, spr:Sprite) {
         world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr);
     }
 }
 
 // some dummy interaction
-class Interaction extends System {
-    var animals:View<{ a:Animal, pos:Position }>;
+class Play extends System {
     var del = [];
+
+    var population:Int;
+    var animals:View<{ a:Animal, pos:Position }>;
+
+    public function new(population:Int) {
+        this.population = population;
+    }
+
     @u inline function action(dt:Float) {
         // everyone with everyone
         animals.iter((id1, a1, pos1) -> {
@@ -244,7 +265,7 @@ class Interaction extends System {
                     }
                     if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
                         // rabbits reproduces
-                        if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < TigerInTheMeatdow.RABBITS_POPULATION) {
+                        if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < population) {
                             TigerInTheMeatdow.rabbit(pos1.x, pos1.y);
                             TigerInTheMeatdow.event(pos1.x, pos1.y, 'heart');
                         }
