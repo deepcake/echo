@@ -15,6 +15,11 @@ using Lambda;
 class Main {
 
 
+    static var GRASS = [ '&#x1F33E', '&#x1F33F' ];
+    static var TREE = [ '&#x1F332', '&#x1F333' ];
+    static var FLOWER = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
+
+
     static function main() {
         var canvas = Browser.document.createDivElement();
         canvas.classList.add('meatdow');
@@ -68,24 +73,21 @@ class Main {
 
 
     static function grass(x:Float, y:Float) {
-        var codes = [ '&#x1F33E', '&#x1F33F' ];
         new Entity().add(
             new Position(x, y),
-            new Sprite(codes[Std.random(codes.length)]));
+            new Sprite(randomEmoji(GRASS)));
     }
 
     static function tree(x:Float, y:Float) {
-        var codes = [ '&#x1F332', '&#x1F333' ];
         new Entity().add(
             new Position(x, y), 
-            new Sprite(codes[Std.random(codes.length)]));
+            new Sprite(randomEmoji(TREE), '175%'));
     }
 
     static function flower(x:Float, y:Float) {
-        var codes = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
         new Entity().add(
             new Position(x, y),
-            new Sprite(codes[Std.random(codes.length)]));
+            new Sprite(randomEmoji(FLOWER)));
     }
 
     static public function rabbit(x:Float, y:Float) {
@@ -98,8 +100,7 @@ class Main {
     static public function tiger(x:Float, y:Float) {
         var pos = new Position(x, y);
         var vel = randomVelocity(10);
-        var spr = new Sprite('&#x1F405;');
-        spr.style.fontSize = '150%';
+        var spr = new Sprite('&#x1F405;', '150%');
         new Entity().add(pos, vel, spr, Animal.Tiger);
     }
 
@@ -115,7 +116,11 @@ class Main {
             new Timer(5.0));
     }
 
-    static public function randomVelocity(speed:Float) {
+    static function randomEmoji(codes:Array<String>) {
+        return codes[Std.random(codes.length)];
+    }
+
+    static function randomVelocity(speed:Float) {
         var d = Math.random() * Math.PI * 2;
         return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
     }
@@ -149,12 +154,12 @@ abstract Position(Vec2) {
 
 @:forward(remove, style)
 abstract Sprite(Element) from Element to Element {
-    inline public function new(value:String) {
+    inline public function new(value:String, size = '125%') {
         this = Browser.document.createSpanElement();
         this.style.position = 'absolute';
         this.style.right = '0px';
         this.style.bottom = '0px';
-        this.style.fontSize = '125%';
+        this.style.fontSize = size;
         this.innerHTML = value;
     }
 }
@@ -260,14 +265,14 @@ class Play extends System {
                     if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
                         // tiger eats rabbit
                         trace('$id1 eats $id2');
-                        TigerInTheMeatdow.event(pos1.x, pos1.y, 'skull');
+                        Main.event(pos1.x, pos1.y, 'skull');
                         del.push(id2);
                     }
                     if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
                         // rabbits reproduces
                         if (animals.entities.count(function(i) return i.get(Animal) == Animal.Rabbit) < population) {
-                            TigerInTheMeatdow.rabbit(pos1.x, pos1.y);
-                            TigerInTheMeatdow.event(pos1.x, pos1.y, 'heart');
+                            Main.rabbit(pos1.x, pos1.y);
+                            Main.event(pos1.x, pos1.y, 'heart');
                         }
                     }
 
