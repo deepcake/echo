@@ -41,7 +41,7 @@ class Main {
         Workflow.addSystem(new Play(population));
         Workflow.addSystem(new Movement(w, h));
         Workflow.addSystem(new Render(w, h, size, canvas));
-        Workflow.addSystem(new InteractionEvent());
+        Workflow.addSystem(new Event());
         Workflow.addSystem(new Info(info));
 
         // fill world by plants
@@ -75,52 +75,64 @@ class Main {
     static function grass(x:Float, y:Float) {
         new Entity().add(
             new Position(x, y),
-            new Sprite(randomEmoji(GRASS)));
+            new Sprite(getRandomEmoji(GRASS)));
     }
 
     static function tree(x:Float, y:Float) {
         new Entity().add(
             new Position(x, y), 
-            new Sprite(randomEmoji(TREE), '175%'));
+            new Sprite(getRandomEmoji(TREE), '175%'));
     }
 
     static function flower(x:Float, y:Float) {
         new Entity().add(
             new Position(x, y),
-            new Sprite(randomEmoji(FLOWER)));
+            new Sprite(getRandomEmoji(FLOWER)));
     }
 
     static public function rabbit(x:Float, y:Float) {
         var pos = new Position(x, y);
-        var vel = randomVelocity(1);
+        var vel = getRandomVelocity(1);
         var spr = new Sprite('&#x1F407;');
         new Entity().add(pos, vel, spr, Animal.Rabbit);
     }
 
     static public function tiger(x:Float, y:Float) {
         var pos = new Position(x, y);
-        var vel = randomVelocity(10);
+        var vel = getRandomVelocity(10);
         var spr = new Sprite('&#x1F405;', '150%');
         new Entity().add(pos, vel, spr, Animal.Tiger);
     }
 
-    static public function event(x:Float, y:Float, type:String, cb:Void->Void) {
-        var code = switch(type) {
-            case 'heart': '&#x1F498;';
-            case 'skull': '&#x1F480;';
-            default: '';
-        }
+    static public function loveEvent(x:Float, y:Float) {
+        // new rabbit
         new Entity().add(
             new Position(x, y),
-            new Sprite(code),
-            new Timer(5.0, cb));
+            new Sprite('&#x1F498;'),
+            new Timer(1.0, function() Main.rabbit(x, y)));
     }
 
-    static function randomEmoji(codes:Array<String>) {
+    static public function deathEvent(x:Float, y:Float) {
+        // skull
+        new Entity().add(
+            new Position(x, y),
+            new Sprite('&#x1F480;'),
+            new Timer(3.0, null)
+        );
+        // ghost
+        new Entity().add(
+            getRandomVelocity(2),
+            new Position(x, y),
+            new Sprite('&#x1F47B;'),
+            new Timer(7.0, null)
+        );
+    }
+
+    static function getRandomEmoji(codes:Array<String>) {
         return codes[Std.random(codes.length)];
     }
 
-    static function randomVelocity(speed:Float) {
+    static function getRandomVelocity(speed:Float) {
         var d = Math.random() * Math.PI * 2;
         return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
     }
@@ -184,12 +196,13 @@ class Timer {
 // Systems
 
 class Info extends System {
+    public static var eaten = 0;
     var element:Element;
     public function new(element:Element) {
         this.element = element;
     }
     @u function print() {
-        element.innerHTML = '${ Workflow.toString() }';
+        element.innerHTML = 'EATEN: $eaten\n\n${ Workflow.toString() }';
     }
 }
 
@@ -251,14 +264,13 @@ class Play extends System {
     var animals:View<Animal->Position->Velocity->Void>;
 
     var maxPopulation:Int;
-    var population:Int;
+    var curPopulation:Int;
 
     public function new(population:Int) {
-        this.maxPopulation = population;
-        this.population = maxPopulation;
+        this.curPopulation = this.maxPopulation = population;
     }
 
-    @u inline function action(dt:Float) {
+    @u inline function interaction(dt:Float) {
         // dummy everyone with everyone
         animals.iter((id1, a1, pos1, vel1) -> {
             animals.iter((id2, a2, pos2, vel2) -> {
@@ -268,9 +280,10 @@ class Play extends System {
                     if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
 
                         trace('#$id1 eats #$id2');
-                        Main.event(pos1.x, pos1.y, 'skull', null);
+                        Main.deathEvent(pos1.x, pos1.y);
                         del.push(id2);
-                        population--;
+                        curPopulation--;
+                        Info.eaten++;
 
                     }
 
@@ -282,11 +295,11 @@ class Play extends System {
                         vel2.x *= -1;
                         vel2.y *= -1;
 
-                        if (population < maxPopulation) {
+                        if (curPopulation < maxPopulation) {
                             var x = (pos1.x + pos2.x) / 2;
                             var y = (pos1.y + pos2.y) / 2;
-                            Main.event(x, y, 'heart', function() Main.rabbit(x, y));
-                            population++;
+                            Main.loveEvent(x, y);
+                            curPopulation++;
                         }
 
                     }
@@ -306,7 +319,7 @@ class Play extends System {
     }
 }
 
-class InteractionEvent extends System {
+class Event extends System {
     @u inline function action(id:Entity, dt:Float, t:Timer, s:Sprite) {
         s.style.opacity = '${1.0 - (t.time / t.timeout)}';
         s.style.fontSize = '${ 100 + Std.int((t.time / t.timeout) * 75) }%';
