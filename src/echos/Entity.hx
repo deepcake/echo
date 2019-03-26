@@ -88,7 +88,7 @@ abstract Entity(Int) from Int to Int {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if (id.isActivated()) for (v in Workflow.views) @:privateAccess v.addIfMatch(id) ])
+            .concat([ macro if (id.isActivated()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
