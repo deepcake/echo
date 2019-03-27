@@ -12,7 +12,8 @@ using Lambda;
 #end
 
 /**
- * ...
+ *  
+ *  
  * @author https://github.com/deepcake
  */
 class Workflow {
@@ -68,8 +69,8 @@ class Workflow {
 
 
     /**
-     * Update
-     * @param dt - delta time
+     * Update 
+     * @param dt deltatime
      */
     public static function update(dt:Float) {
         #if echos_profiling
@@ -95,7 +96,7 @@ class Workflow {
 
 
     /**
-    * Removes all views, systems and entities and resets the id sequence
+    * Removes all views, systems and entities from the workflow, and resets the id sequence 
      */
     public static function dispose() {
         for (e in entities) {
@@ -121,9 +122,9 @@ class Workflow {
 
 
     /**
-    * Returns the view of passed component types
-    * @param types - list of component types
-    * @return View<>
+    * Returns the view of passed component types 
+    * @param types list of component types
+    * @return `View`
      */
     macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
         var components = types
@@ -138,7 +139,7 @@ class Workflow {
     // System
 
     /**
-     * Adds system to the workflow
+     * Adds the system to the workflow
      * @param s `System` instance
      */
     public static function addSystem(s:System) {
@@ -147,7 +148,7 @@ class Workflow {
     }
 
     /**
-     * Removes system from the workflow
+     * Removes the system from the workflow
      * @param s `System` instance
      */
     public static function removeSystem(s:System) {

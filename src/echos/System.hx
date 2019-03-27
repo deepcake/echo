@@ -1,7 +1,11 @@
 package echos;
 
 /**
- * ...
+ * System  
+ * @update, @up, @u - calls on every appropriated entity  
+ * @added, @ad, @a - added callback  
+ * @removed, @rm, @r - removed callback  
+ *  
  * @author https://github.com/deepcake
  */
 #if !macro
@@ -25,11 +29,20 @@ class System {
         ondeactivate();
     }
 
-
+    /**
+    * Calls when system is added to the workflow
+     */
     public function onactivate() { }
 
+    /**
+    * Calls when system is removed from the workflow
+     */
     public function ondeactivate() { }
 
+    /**
+    * Calls on every `Workflow.update(dt)` call
+    * @param dt deltatime
+     */
     public function update(dt:Float) { }
 
 

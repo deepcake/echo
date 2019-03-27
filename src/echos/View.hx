@@ -1,7 +1,8 @@
 package echos;
 
 /**
- * ...
+ * View  
+ *  
  * @author https://github.com/deepcake
  */
 #if !macro
@@ -9,9 +10,7 @@ package echos;
 #end
 class View<T> extends ViewBase { }
 
-/**
- *
- */
+
 @:noCompletion
 class ViewBase {
 
