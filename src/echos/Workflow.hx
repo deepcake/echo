@@ -41,7 +41,7 @@ class Workflow {
 
 
     #if echos_profiling
-    static var times = new Map<Int, Float>();
+    static var times = new Map<String, Float>();
     #end
     /**
     * Returns the workflow statistics:  
@@ -55,9 +55,9 @@ class Workflow {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idsCache.length} ]'; // TODO version or something
 
         #if echos_profiling
-        ret += ' : ${ times.get(-2) } ms'; // total
+        ret += ' : ${ times.get("total") } ms'; // total
         for (s in systems) {
-            ret += '\n        ($s) : ${ times.get(s.__id) } ms';
+            ret += '\n        ($s) : ${ times.get(s.toString()) } ms';
         }
         for (v in views) {
             ret += '\n    {$v} [${v.entities.length}]';
@@ -85,12 +85,12 @@ class Workflow {
             s.update(dt);
 
             #if echos_profiling
-            times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
+            times.set(s.toString(), Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
             #end
         }
 
         #if echos_profiling
-        times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
+        times.set("total", Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
     }
 
