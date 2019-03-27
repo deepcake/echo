@@ -32,17 +32,16 @@ class Workflow {
     static var idsCache = new Array<Int>();
     static var ids = new Map<Int, Status>();
 
-    public static var entities(default, null) = new List<Entity>();
-    public static var views(default, null) = new List<View.ViewBase>();
-    public static var systems(default, null) = new List<System>();
-
-
-    function new() { }
+    @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
+    @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
+    @:noCompletion public static #if haxe4 final #else var #end systems = new List<System>();
 
 
     #if echos_profiling
     static var times = new Map<String, Float>();
     #end
+
+
     /**
     * Returns the workflow statistics:  
     * ( _systems count_ ) { _views count_ } [ _entities count_ | _entity cache size_ ]  
