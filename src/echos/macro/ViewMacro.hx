@@ -151,8 +151,11 @@ class ViewMacro {
                 def.fields.push(ffun([AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, macro return __mask[c] != null, Context.currentPos()));
 
                 // mask
-                var maskBody = Context.parse('[' + components.map(function(c) return '${getComponentId(c.cls)} => true').join(', ') + ']', Context.currentPos());
-                def.fields.push(fvar([AStatic], '__mask', null, maskBody, Context.currentPos()));
+                {
+                    var flagExprs = components.map(function(c) return macro $v{ getComponentId(c.cls) } => true);
+                    var body = macro [ $a{ flagExprs } ];
+                    def.fields.push(fvar([AStatic], '__mask', null, body, Context.currentPos()));
+                }
 
                 // toString
                 {
