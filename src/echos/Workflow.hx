@@ -43,12 +43,12 @@ class Workflow {
 
 
     /**
-    * Returns the workflow statistics:  
-    * ( _systems count_ ) { _views count_ } [ _entities count_ | _entity cache size_ ]  
-    * With `echos_profiling` flag additionaly returns:  
-    * ( _system name_ ) : _time for update_ ms  
-    * { _view name_ } [ _collected entities count_ ]  
-    * @return String
+     * Returns the workflow statistics:  
+     * _( systems count ) { views count } [ entities count | entity cache size ]_  
+     * With `echos_profiling` flag additionaly returns:  
+     * _( system name ) : time for update ms_  
+     * _{ view name } [ collected entities count ]_  
+     * @return String
      */
     public static function toString():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idsCache.length} ]'; // TODO version or something
@@ -95,7 +95,7 @@ class Workflow {
 
 
     /**
-    * Removes all views, systems and entities from the workflow, and resets the id sequence 
+     * Removes all views, systems and entities from the workflow, and resets the id sequence 
      */
     public static function dispose() {
         for (e in entities) {
@@ -121,9 +121,9 @@ class Workflow {
 
 
     /**
-    * Returns the view of passed component types 
-    * @param types list of component types
-    * @return `View`
+     * Returns the view of passed component types 
+     * @param types list of component types
+     * @return `View`
      */
     macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
         var components = types

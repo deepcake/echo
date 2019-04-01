@@ -17,55 +17,56 @@ abstract Entity(Int) from Int to Int {
 
 
     /**
-    * Creates a new Entity instance  
-    * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
+     * Creates a new Entity instance  
+     * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
      */
     public inline function new(immediate = true) this = Workflow.id(immediate);
 
 
     /**
-    * Adds this entity to the workflow, so it can be collected by views  
+     * Adds this entity to the workflow, so it can be collected by views  
      */
     public inline function activate() {
         Workflow.add(this);
     }
 
     /**
-    * Removes this entity from the workflow, but saves all associated components.  
-    * Entity can be added to the workflow again by `activate()` call
+     * Removes this entity from the workflow (and also from all views), but saves all associated components.  
+     * Entity can be added to the workflow again by `activate()` call
      */
     public inline function deactivate() {
         Workflow.remove(this);
     }
 
     /**
-    * Returns `true` if this entity is added to the workflow, otherwise returns `false`  
-    * @return Bool
+     * Returns `true` if this entity is added to the workflow, otherwise returns `false`  
+     * @return Bool
      */
     public inline function isActivated():Bool {
         return Workflow.status(this) == Active;
     }
 
     /**
-    * Returns the status of this entity: Active, Deactive, Cached or Invalid. Method is used mostly for debug purposes  
-    * @return EntityStatus
+     * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes  
+     * @return EntityStatus
      */
     public inline function status():Status {
         return Workflow.status(this);
     }
 
     /**
-    * Removes all of associated to this entity components.  
-    * __Note__ that this entity will be still exists after call this method (just without any associated components). 
-    * So if entity is not required anymore, then `destroy()` should be called 
+     * Removes all of associated to this entity components.  
+     * __Note__ that this entity will be still exists after call this method (just without any associated components). 
+     * If entity is not required anymore - `destroy()` should be called 
      */
     public inline function removeAll() {
         Workflow.removeComponents(this);
     }
 
     /**
-    * Removes this entity from the workflow with removing all associated components.  
-    * __Note__ that using this entity after call this method is incorrect!
+     * Removes this entity from the workflow with removing all associated components. 
+     * The `Int` id will be cached and then will be used again in new created entities.  
+     * __Note__ that using this entity after call this method is incorrect!
      */
     public function destroy() {
         Workflow.cache(this);
