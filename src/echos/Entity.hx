@@ -42,7 +42,7 @@ abstract Entity(Int) from Int to Int {
      * Returns `true` if this entity is added to the workflow, otherwise returns `false`  
      * @return Bool
      */
-    public inline function isActivated():Bool {
+    public inline function isActive():Bool {
         return Workflow.status(this) == Active;
     }
 
@@ -92,7 +92,7 @@ abstract Entity(Int) from Int to Int {
 
         var exprs = new List<Expr>()
             .concat(componentExprs)
-            .concat([ macro if (id.isActivated()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
+            .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
             .array();
 
@@ -139,7 +139,7 @@ abstract Entity(Int) from Int to Int {
             }, requireExprs.length > 0 ? requireExprs[0] : null);
 
         var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (id.isActivated()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+            .concat(requireCond == null ? [] : [ macro if (id.isActive()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
