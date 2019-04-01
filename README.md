@@ -65,7 +65,7 @@ class Vec2 { var x:Float; var y:Float; }
 
 class Movement extends echos.System {
   // @update-functions will be called for each entity that contains all defined components;
-  // any type is becamed a component, except Float (reserved for delta time) and Int/Entity;
+  // all types will became a component, except Float (reserved for delta time) and Int/Entity;
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
@@ -74,14 +74,13 @@ class Movement extends echos.System {
   // all required views will be defined and initialized under the hood,
   // but it is also possible to define a View manually (initialization is still not needed) 
   // for additional possibilities like counting entities;
-  var velocities:View<{ vel:Velocity }>;
-  // or View<Velocity->Void>
+  var bodies:View<Position->Velocity->Void>;
 
   // @update-function without components will be called just once per system update;
-  @update function printEveryonesVelocity(dt:Float) {
-    trace(velocities.entities.length); // 1 (only one rabbit was created!)
+  @update function printBodies(dt:Float) {
+    trace(bodies.entities.length);
     // another way to iterating over entities
-    velocities.iter((entity, velocity) -> trace('$entity vel = $velocity'));
+    bodies.iter((entity, position, velocity) -> trace('#$entity vel = $velocity'));
   }
 }
 
@@ -100,8 +99,8 @@ class Render extends echos.System {
     spr.y = pos.y;
   }
   @u inline function afterSpritePositionsUpdated() {
-    scene.sort(function(s1, s2) return s2.y - s1.y);
-    // ... some drawing scene stuff
+    scene.sort(function(s1, s2) return s2.y - s1.y); // sort by y-axis for 2d
+    // rendering ...
   }
 
   // @added/@removed-functions are the callbacks called when entity is added or removed from the view;
