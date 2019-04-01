@@ -12,7 +12,8 @@ using Lambda;
 #end
 
 /**
- * ...
+ *  
+ *  
  * @author https://github.com/deepcake
  */
 class Workflow {
@@ -31,32 +32,31 @@ class Workflow {
     static var idsCache = new Array<Int>();
     static var ids = new Map<Int, Status>();
 
-    public static var entities(default, null) = new List<Entity>();
-    public static var views(default, null) = new List<View.ViewBase>();
-    public static var systems(default, null) = new List<System>();
-
-
-    function new() { }
+    @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
+    @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
+    @:noCompletion public static #if haxe4 final #else var #end systems = new List<System>();
 
 
     #if echos_profiling
-    static var times = new Map<Int, Float>();
+    static var times = new Map<String, Float>();
     #end
+
+
     /**
-    * Returns the workflow statistics:  
-    * ( _systems count_ ) { _views count_ } [ _entities count_ | _entity cache size_ ]  
-    * With `echos_profiling` flag additionaly returns:  
-    * ( _system name_ ) : _time for update_ ms  
-    * { _view name_ } [ _collected entities count_ ]  
-    * @return String
+     * Returns the workflow statistics:  
+     * _( systems count ) { views count } [ entities count | entity cache size ]_  
+     * With `echos_profiling` flag additionaly returns:  
+     * _( system name ) : time for update ms_  
+     * _{ view name } [ collected entities count ]_  
+     * @return String
      */
     public static function toString():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idsCache.length} ]'; // TODO version or something
 
         #if echos_profiling
-        ret += ' : ${ times.get(-2) } ms'; // total
+        ret += ' : ${ times.get("total") } ms'; // total
         for (s in systems) {
-            ret += '\n        ($s) : ${ times.get(s.__id) } ms';
+            ret += '\n        ($s) : ${ times.get(s.toString()) } ms';
         }
         for (v in views) {
             ret += '\n    {$v} [${v.entities.length}]';
@@ -68,8 +68,8 @@ class Workflow {
 
 
     /**
-     * Update
-     * @param dt - delta time
+     * Update 
+     * @param dt deltatime
      */
     public static function update(dt:Float) {
         #if echos_profiling
@@ -84,18 +84,18 @@ class Workflow {
             s.update(dt);
 
             #if echos_profiling
-            times.set(s.__id, Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
+            times.set(s.toString(), Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
             #end
         }
 
         #if echos_profiling
-        times.set(-2, Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
+        times.set("total", Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
     }
 
 
     /**
-    * Removes all views, systems and entities and resets the id sequence
+     * Removes all views, systems and entities from the workflow, and resets the id sequence 
      */
     public static function dispose() {
         for (e in entities) {
@@ -121,9 +121,9 @@ class Workflow {
 
 
     /**
-    * Returns the view of passed component types
-    * @param types - list of component types
-    * @return View<>
+     * Returns the view of passed component types 
+     * @param types list of component types
+     * @return `View`
      */
     macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
         var components = types
@@ -138,21 +138,37 @@ class Workflow {
     // System
 
     /**
-     * Adds system to the workflow
+     * Adds the system to the workflow
      * @param s `System` instance
      */
     public static function addSystem(s:System) {
-        systems.add(s);
-        s.activate();
+        if (!hasSystem(s)) {
+            systems.add(s);
+            s.activate();
+        }
     }
 
     /**
-     * Removes system from the workflow
+     * Removes the system from the workflow
      * @param s `System` instance
      */
     public static function removeSystem(s:System) {
-        s.deactivate();
-        systems.remove(s);
+        if (hasSystem(s)) {
+            s.deactivate();
+            systems.remove(s);
+        }
+    }
+
+    /**
+     * Returns `true` if the system is added to the workflow, otherwise returns `false`  
+     * @param s `System` instance
+     * @return `Bool`
+     */
+    public static function hasSystem(s:System):Bool {
+        for (system in systems) {
+            if (system == s) return true;
+        }
+        return false;
     }
 
 
@@ -199,7 +215,7 @@ class Workflow {
         return ids.exists(id) ? ids.get(id) : Invalid;
     }
 
-    @:allow(echos.Entity) static function removeComponents(id:Int) {
+    @:allow(echos.Entity) static inline function removeComponents(id:Int) {
         for (cc in __componentContainers) {
             cc.remove(id);
         }

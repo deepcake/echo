@@ -14,13 +14,13 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(echos.Workflow.dispose());
                     beforeAll(e = new Entity());
                     it("should be immediate added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
                 describe("When init a non immediate Entity", {
                     beforeAll(echos.Workflow.dispose());
                     beforeAll(e = new Entity(false));
                     it("should not be immediate added to the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                 });
             });
 
@@ -32,49 +32,49 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e = new Entity());
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then add a Void component", {
                     beforeAll(e.add());
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then add a String component 123", {
                     beforeAll(e.add("123"));
                     it("should exists a String component 123", e.exists(String).should.be(true));
                     it("should get a String component 123", e.get(String).should.be("123"));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then add a String component 321", {
                     beforeAll(e.add("321"));
                     it("should exists a String component 321", e.exists(String).should.be(true));
                     it("should get a String component 321", e.get(String).should.be("321"));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then remove a String component", {
                     beforeAll(e.remove(String));
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then remove a String component again", {
                     beforeAll(e.remove(String));
                     it("should not exists a String component", e.exists(String).should.be(false));
                     it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
 
                 describe("Then add a String component 123 after removing", {
                     beforeAll(e.add("123"));
                     it("should exists a String component 123", e.exists(String).should.be(true));
                     it("should get a String component 123", e.get(String).should.be("123"));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                 });
             });
 
@@ -137,7 +137,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e = new Entity(false).add(new ArrayComponent()));
                     it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be deactivated", e.isActivated().should.be(false));
+                    it("should be deactivated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Inactive));
                 });
 
@@ -145,7 +145,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.activate());
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
                 });
 
@@ -153,7 +153,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.activate());
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
                 });
 
@@ -161,7 +161,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.deactivate());
                     it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Inactive));
                 });
 
@@ -169,7 +169,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.deactivate());
                     it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Inactive));
                 });
 
@@ -177,7 +177,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.activate());
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
                 });
 
@@ -185,7 +185,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.destroy());
                     it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
                     it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
                 });
@@ -194,7 +194,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.activate());
                     it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
                     it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
                 });
@@ -203,7 +203,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e.activate());
                     it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActivated().should.be(false));
+                    it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
                     it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
                 });
@@ -212,7 +212,7 @@ class EntityTest extends buddy.BuddySuite {
                     beforeAll(e = new Entity());
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should be activated", e.isActivated().should.be(true));
+                    it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
                     it("should not exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(0));
                 });
