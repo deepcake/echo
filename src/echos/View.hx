@@ -15,8 +15,6 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-    var activated = false;
-
     var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
 
     /** List of matched entities */
@@ -24,19 +22,24 @@ class ViewBase {
 
 
     public function activate() {
-        if (!activated) {
+        if (!isActive()) {
             Workflow.views.add(this);
             for (e in Workflow.entities) addIfMatch(e);
-            activated = true;
         }
     }
 
     public function deactivate() {
-        if (activated) {
+        if (isActive()) {
             while (entities.length > 0) entitiesMap.remove(entities.pop());
             Workflow.views.remove(this);
-            activated = false;
         }
+    }
+
+    public function isActive() {
+        for (v in Workflow.views) {
+            if (v == this) return true;
+        }
+        return false;
     }
 
 

@@ -142,8 +142,10 @@ class Workflow {
      * @param s `System` instance
      */
     public static function addSystem(s:System) {
-        systems.add(s);
-        s.activate();
+        if (!hasSystem(s)) {
+            systems.add(s);
+            s.activate();
+        }
     }
 
     /**
@@ -151,8 +153,22 @@ class Workflow {
      * @param s `System` instance
      */
     public static function removeSystem(s:System) {
-        s.deactivate();
-        systems.remove(s);
+        if (hasSystem(s)) {
+            s.deactivate();
+            systems.remove(s);
+        }
+    }
+
+    /**
+     * Returns `true` if the system is added to the workflow, otherwise returns `false`  
+     * @param s `System` instance
+     * @return `Bool`
+     */
+    public static function hasSystem(s:System):Bool {
+        for (system in systems) {
+            if (system == s) return true;
+        }
+        return false;
     }
 
 
@@ -199,7 +215,7 @@ class Workflow {
         return ids.exists(id) ? ids.get(id) : Invalid;
     }
 
-    @:allow(echos.Entity) static function removeComponents(id:Int) {
+    @:allow(echos.Entity) static inline function removeComponents(id:Int) {
         for (cc in __componentContainers) {
             cc.remove(id);
         }
