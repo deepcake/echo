@@ -177,10 +177,10 @@ class Workflow {
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
         var id = idsCache.length > 0 ? idsCache.pop() : ++__entitySequence;
         if (immediate) {
-            ids.set(id, Active);
+            ids[id] = Active;
             entities.add(id);
         } else {
-            ids.set(id, Inactive);
+            ids[id] = Inactive;
         }
         return id;
     }
@@ -191,13 +191,13 @@ class Workflow {
             remove(id);
             removeComponents(id);
             idsCache.push(id);
-            ids.set(id, Cached);
+            ids[id] = Cached;
         }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            ids.set(id, Active);
+            ids[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
@@ -207,12 +207,12 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
-            ids.set(id, Inactive);
+            ids[id] = Inactive;
         }
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return ids.exists(id) ? ids.get(id) : Invalid;
+        return ids.exists(id) ? ids[id] : Invalid;
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {

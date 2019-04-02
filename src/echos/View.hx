@@ -61,7 +61,7 @@ class ViewBase {
         if (iterating) {
             addToChanged(id, QueuedToAdd);
         } else {
-            entitiesMap.set(id, Collected);
+            entitiesMap[id] = Collected;
             entities.push(id);
         }
         // macro on add call
@@ -79,7 +79,7 @@ class ViewBase {
 
 
     inline function status(id:Int):CollectingStatus {
-        return entitiesMap.exists(id) ? entitiesMap.get(id) : Unprocessed;
+        return entitiesMap.exists(id) ? entitiesMap[id] : Unprocessed;
     }
 
 
@@ -93,7 +93,7 @@ class ViewBase {
 
 
     inline function addToChanged(id:Int, status:CollectingStatus) {
-        entitiesMap.set(id, status);
+        entitiesMap[id] = status;
         if (changed.indexOf(id) == -1) changed.push(id);
     }
 
@@ -105,7 +105,7 @@ class ViewBase {
                 entitiesMap.remove(id);
                 entities.remove(id);
             } else if (status == QueuedToAdd) {
-                entitiesMap.set(id, Collected);
+                entitiesMap[id] = Collected;
                 entities.push(id);
             }
         }
