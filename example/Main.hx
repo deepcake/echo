@@ -272,28 +272,36 @@ class Play extends System {
 
     @u inline function interaction(dt:Float) {
         // dummy everyone with everyone
-        animals.iter((id1, a1, pos1, vel1) -> {
-            animals.iter((id2, a2, pos2, vel2) -> {
+        for (i1 in 0...animals.entities.length) {
+            var id1 = animals.entities[i1];
+            var a1 = id1.get(Animal);
+            var pos1 = id1.get(Position);
 
-                if (id1 != id2 && test(pos1, pos2, 1.41)) {
+            for (i2 in i1+1...animals.entities.length) {
+                var id2 = animals.entities[i2];
+                var a2 = id2.get(Animal);
+                var pos2 = id2.get(Position);
+
+                if (test(pos1, pos2, 1.41)) {
 
                     if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
 
-                        trace('#$id1 eats #$id2');
-                        Main.deathEvent(pos1.x, pos1.y);
-                        del.push(id2);
-                        curPopulation--;
-                        Info.eaten++;
+                        eats(id1, id2);
 
-                    }
+                    } else if (a2 == Animal.Tiger && a1 == Animal.Rabbit) {
 
-                    if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
+                        eats(id2, id1);
+
+                    } else if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
+
+                        var vel1 = id1.get(Velocity);
+                        var vel2 = id2.get(Velocity);
 
                         // bounce
-                        vel1.x *= -1;
-                        vel1.y *= -1;
-                        vel2.x *= -1;
-                        vel2.y *= -1;
+                        // vel1.x *= -1;
+                        // vel1.y *= -1;
+                        // vel2.x *= -1;
+                        // vel2.y *= -1;
 
                         if (curPopulation < maxPopulation) {
                             var x = (pos1.x + pos2.x) / 2;
@@ -305,11 +313,18 @@ class Play extends System {
                     }
 
                 }
-
-            });
-        });
+            }
+        }
 
         while (del.length > 0) del.pop().destroy();
+    }
+
+    function eats(tiger:Entity, rabbit:Entity) {
+        trace('#$tiger eats #$rabbit');
+        Main.deathEvent(rabbit.get(Position).x, rabbit.get(Position).y);
+        del.push(rabbit);
+        curPopulation--;
+        Info.eaten++;
     }
 
     function test(pos1:Position, pos2:Position, radius:Float) {
