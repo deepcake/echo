@@ -15,10 +15,14 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-    var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
+    var iterating = false;
+
+    var changed = new Array<Entity>();
+
+    var entitiesMap = new Map<Int, CollectingStatus>();
 
     /** List of matched entities */
-    public var entities(default, null):List<Entity> = new List();
+    public var entities(default, null) = new Array<Entity>();
 
 
     public function activate() {
@@ -54,26 +58,57 @@ class ViewBase {
 
 
     function add(id:Int) {
-        entitiesMap.set(id, id);
-        entities.add(id);
+        if (iterating) {
+            addToChanged(id, QueuedToAdd);
+        } else {
+            entitiesMap.set(id, Collected);
+            entities.push(id);
+        }
+        // macro on add call
     }
 
     function remove(id:Int) {
-        entities.remove(id);
-        entitiesMap.remove(id);
+        // macro on remove call
+        if (iterating) {
+            addToChanged(id, QueuedToRemove);
+        } else {
+            entitiesMap.remove(id);
+            entities.remove(id);
+        }
     }
 
-    inline function exists(id:Int):Bool {
-        return entitiesMap.exists(id);
+
+    inline function status(id:Int):CollectingStatus {
+        return entitiesMap.exists(id) ? entitiesMap.get(id) : Unprocessed;
     }
 
 
     @:allow(echos.Workflow) function addIfMatch(id:Int) {
-        if (!exists(id) && isMatch(id)) add(id);
+        if (status(id) < QueuedToAdd && isMatch(id)) add(id);
     }
 
     @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        if (exists(id)) remove(id);
+        if (status(id) > QueuedToRemove) remove(id);
+    }
+
+
+    inline function addToChanged(id:Int, status:CollectingStatus) {
+        entitiesMap.set(id, status);
+        if (changed.indexOf(id) == -1) changed.push(id);
+    }
+
+    inline function flush() {
+        while (changed.length > 0) {
+            var id = changed.pop();
+            var status = status(id);
+            if (status == QueuedToRemove) {
+                entitiesMap.remove(id);
+                entities.remove(id);
+            } else if (status == QueuedToAdd) {
+                entitiesMap.set(id, Collected);
+                entities.push(id);
+            }
+        }
     }
 
 
@@ -84,4 +119,13 @@ class ViewBase {
 
     public function toString():String return 'ViewBase';
 
+}
+
+@:enum private abstract CollectingStatus(Int) {
+    var Unprocessed = 0;
+    var QueuedToRemove = 1;
+    var QueuedToAdd = 2;
+    var Collected = 3;
+    @:op(A > B) static function gt(a:CollectingStatus, b:CollectingStatus):Bool;
+    @:op(A < B) static function lt(a:CollectingStatus, b:CollectingStatus):Bool;
 }

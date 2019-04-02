@@ -1,6 +1,7 @@
 import echos.*;
 
 using buddy.Should;
+using Lambda;
 
 class ViewTest extends buddy.BuddySuite {
     public function new() {
@@ -8,16 +9,10 @@ class ViewTest extends buddy.BuddySuite {
 
             describe("Matching", {
                 var s = new ViewTestSystem1();
-                var addCounter = 0;
-                var removeCounter = 0;
 
                 describe("When add entities", {
                     beforeAll({
                         Workflow.addSystem(s);
-
-                        s.a.onAdded.add(function(id, a) addCounter++);
-                        s.a.onRemoved.add(function(id, a) removeCounter++);
-
                         for (i in 0...300) {
                             var e = new Entity();
                             e.add(new A());
@@ -36,8 +31,6 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(10);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(0));
                 });
 
                 describe("When remove components", {
@@ -55,8 +48,6 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(0);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
 
                 describe("When remove entities", {
@@ -74,9 +65,106 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(0);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
+            });
+
+
+            describe("Signals", {
+                var s:ViewTestSystem1;
+                var e:Entity;
+                var r = "";
+
+                beforeAll({
+                    s = new ViewTestSystem1();
+                    Workflow.addSystem(s);
+                    s.ab.onAdded.add(function(id, a, b) r += '+');
+                    s.ab.onRemoved.add(function(id, a, b) r += '-');
+                    e = new Entity();
+                });
+
+                describe("When add Entity", {
+                    beforeAll(e.add(new A(), new B()));
+                    it("should be dispatched", r.should.be("+"));
+                });
+
+                describe("Then add Components", {
+                    beforeAll(e.add(new A(), new B()));
+                    it("should not be dispatched", r.should.be("+"));
+                });
+
+                describe("Then remove Components", {
+                    beforeAll(e.remove(A, B));
+                    it("should be dispatched", r.should.be("+-"));
+                });
+
+                describe("Then remove Components again", {
+                    beforeAll(e.remove(A, B));
+                    it("should not be dispatched", r.should.be("+-"));
+                });
+
+            });
+
+
+            describe("Iterating", {
+                var s = new ViewIterTestSystem();
+                var s2 = new ViewIterSignalTestSystem();
+
+                describe("When remove Component while meta iterate", {
+                    beforeAll({
+                        Workflow.dispose();
+                        Workflow.addSystem(s);
+                        s.result = '';
+                        for (i in 0...10) new Entity().add(new A(), new V(i));
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", s.result.should.be("-1-3-5-7-9"));
+                });
+
+                describe("When remove Component while manually iterate", {
+                    beforeAll({
+                        Workflow.dispose();
+                        Workflow.addSystem(s);
+                        s.result = '';
+                        for (i in 0...10) new Entity().add(new A(), new V(i));
+                        s.whileIterManuallyRemoveComponent();
+                    });
+                    it("should has correct result", s.result.should.be("-1-3-5-7-9"));
+                });
+
+                describe("When deact Entity while manually iterate", {
+                    beforeAll({
+                        Workflow.dispose();
+                        Workflow.addSystem(s);
+                        s.result = '';
+                        for (i in 0...10) new Entity().add(new A(), new V(i));
+                        s.whileIterManuallyDeactEntity();
+                    });
+                    it("should has correct result", s.result.should.be("-1-3-5-7-9"));
+                });
+
+                describe("When destroy Entity while manually iterate", {
+                    beforeAll({
+                        Workflow.dispose();
+                        Workflow.addSystem(s);
+                        s.result = '';
+                        for (i in 0...10) new Entity().add(new A(), new V(i));
+                        s.whileIterManuallyDestroyEntity();
+                    });
+                    it("should has correct result", s.result.should.be("-1-3-5-7-9"));
+                });
+
+
+                describe("When remove/add Component while meta iterate", {
+                    beforeAll({
+                        Workflow.dispose();
+                        Workflow.addSystem(s2);
+                        s2.result = '';
+                        new Entity().add(new A(), new V(0));
+                        Workflow.update(0);
+                    });
+                    it("should has correct result", s2.result.should.be("0>*<01><12>*"));
+                });
+
             });
 
 
@@ -95,13 +183,12 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Workflow::getView", {
+            describe("View Ref", {
                 describe("When view was defined somewhere already", {
                     var view = Workflow.getView(B, A);
                     beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-
                     it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
@@ -110,7 +197,6 @@ class ViewTest extends buddy.BuddySuite {
                     beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-
                     it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
@@ -173,4 +259,78 @@ abstract D(B) {
 
 class E extends A {
     public function new() super();
+}
+
+
+class ViewIterTestSystem extends echos.System {
+    public var result = '';
+
+    public var view:View<A->V->Void>;
+
+    @u function whileIterByMetaRemoveComponent(id:Entity, a:A, v:V) {
+        if (v.val % 2 == 0) {
+            id.remove(A);
+            result += '-';
+        } else result += '$v';
+    }
+
+    public function whileIterManuallyRemoveComponent() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.remove(A);
+                result += '-';
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyDeactEntity() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.deactivate();
+                result += '-';
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyDestroyEntity() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.destroy();
+                result += '-';
+            } else result += '$v';
+        });
+    }
+}
+
+class ViewIterSignalTestSystem extends echos.System {
+    public var result = '';
+
+    public var view:View<A->V->Void>;
+
+    @a function ad(id:Entity, a:A, v:V) {
+        result += '$v>';
+    }
+
+    @r function rm(id:Entity, a:A, v:V) {
+        result += '<$v';
+    }
+
+    @u function iter(id:Entity, a:A, v:V) {
+        result += '*';
+        id.remove(V);
+        id.add(new V(1));
+        id.remove(V);
+        id.add(new V(2));
+        result += '*';
+    }
+}
+
+class V {
+    public var val:Int;
+    public function new(val) {
+        this.val = val;
+    }
+    public function toString() {
+        return Std.string(val);
+    }
 }
