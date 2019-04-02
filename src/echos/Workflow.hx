@@ -19,7 +19,7 @@ using Lambda;
 class Workflow {
 
 
-    static var __entitySequence = -1;
+    static var __nextEntityId = 0;
 
 
     static var __componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>();
@@ -113,10 +113,10 @@ class Workflow {
         while (idsCache.length > 0) {
             idsCache.pop();
         }
-        while (__entitySequence > -1) {
-            ids.remove(__entitySequence);
-            --__entitySequence;
+        while (--__nextEntityId > -1) {
+            ids.remove(__nextEntityId);
         }
+        __nextEntityId = 0;
     }
 
 
@@ -175,7 +175,7 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = idsCache.length > 0 ? idsCache.pop() : ++__entitySequence;
+        var id = idsCache.length > 0 ? idsCache.pop() : __nextEntityId++;
         if (immediate) {
             ids[id] = Active;
             entities.add(id);
