@@ -141,9 +141,9 @@ class ViewMacro {
 
                 // isMatch
                 {
-                    var checkExprs = components.map(function(c) return macro ${ ccref(c.cls) }.get(id) != null);
-                    var matchExpr = checkExprs.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checkExprs[0]);
-                    var body = macro return $matchExpr;
+                    var checks = components.map(function(c) return macro ${ ccref(c.cls) }.get(id) != null);
+                    var cond = checks.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checks[0]);
+                    var body = macro return $cond;
                     def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
                 }
 
@@ -152,8 +152,8 @@ class ViewMacro {
 
                 // mask
                 {
-                    var flagExprs = components.map(function(c) return macro $v{ getComponentId(c.cls) } => true);
-                    var body = macro [ $a{ flagExprs } ];
+                    var flags = components.map(function(c) return macro $v{ getComponentId(c.cls) } => true);
+                    var body = macro [ $a{ flags } ];
                     def.fields.push(fvar([AStatic], '__mask', null, body, Context.currentPos()));
                 }
 

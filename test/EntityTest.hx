@@ -35,12 +35,12 @@ class EntityTest extends buddy.BuddySuite {
                     it("should be activated", e.isActive().should.be(true));
                 });
 
-                describe("Then add a Void component", {
-                    beforeAll(e.add());
-                    it("should not exists a String component", e.exists(String).should.be(false));
-                    it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActive().should.be(true));
-                });
+                // describe("Then add a Void component", {
+                //     beforeAll(e.add());
+                //     it("should not exists a String component", e.exists(String).should.be(false));
+                //     it("should not get a String component", e.get(String).should.be(null));
+                //     it("should be activated", e.isActive().should.be(true));
+                // });
 
                 describe("Then add a String component 123", {
                     beforeAll(e.add("123"));
@@ -130,7 +130,7 @@ class EntityTest extends buddy.BuddySuite {
             });
 
 
-            describe("Status and Cache", {
+            describe("Status, Cache and Reuse", {
                 beforeAll(echos.Workflow.dispose());
 
                 describe("When init a non immediate Entity and then add a component", {

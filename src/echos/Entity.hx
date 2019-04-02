@@ -80,7 +80,9 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echos.Entity> {
-        var componentExprs = new List<Expr>()
+        if (components.length == 0) Context.error('Required one or more components', Context.currentPos());
+
+        var componentExprs = []
             .concat(
                 components
                     .map(function(c){
@@ -90,7 +92,7 @@ abstract Entity(Int) from Int to Int {
             )
             .array();
 
-        var exprs = new List<Expr>()
+        var exprs = []
             .concat(componentExprs)
             .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ])
@@ -111,7 +113,9 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echos.Entity> {
-        var componentExprs = new List<Expr>()
+        if (types.length == 0) Context.error('Required one or more component types', Context.currentPos());
+
+        var componentExprs = []
             .concat(
                 types
                     .map(function(t){
@@ -121,7 +125,7 @@ abstract Entity(Int) from Int to Int {
             )
             .array();
 
-        var requireExprs = new List<Expr>()
+        var requireExprs = []
             .concat(
                 types
                     .map(function(t){
@@ -133,13 +137,10 @@ abstract Entity(Int) from Int to Int {
             )
             .array();
 
-        var requireCond = requireExprs.slice(1)
-            .fold(function(e:Expr, r:Expr){
-                return macro $r || $e;
-            }, requireExprs.length > 0 ? requireExprs[0] : null);
+        var requireCond = requireExprs.slice(1).fold(function(e:Expr, r:Expr) return macro $e || $r, requireExprs[0]);
 
-        var exprs = new List<Expr>()
-            .concat(requireCond == null ? [] : [ macro if (id.isActive()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
+        var exprs = []
+            .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
             .concat([ macro return id ])
             .array();
