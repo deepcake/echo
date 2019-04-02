@@ -187,7 +187,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then activate after destroy", {
@@ -196,7 +196,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then deactivate after destroy", {
@@ -205,7 +205,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then init a new immediate Entity", {
@@ -214,7 +214,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
-                    it("should not exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(0));
+                    it("should not exists cached", @:privateAccess echos.Workflow.cache.length.should.be(0));
                 });
             });
 

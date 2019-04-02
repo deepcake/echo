@@ -69,7 +69,7 @@ abstract Entity(Int) from Int to Int {
      * __Note__ that using this entity after call this method is incorrect!
      */
     public function destroy() {
-        Workflow.cache(this);
+        Workflow.free(this);
     }
 
 

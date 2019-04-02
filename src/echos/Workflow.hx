@@ -29,8 +29,8 @@ class Workflow {
     }
 
 
-    static var idsCache = new Array<Int>();
-    static var ids = new Map<Int, Status>();
+    static var cache = new Array<Int>();
+    static var statuses = new Map<Int, Status>();
 
     @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
     @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
@@ -51,7 +51,7 @@ class Workflow {
      * @return String
      */
     public static function toString():String {
-        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idsCache.length} ]'; // TODO version or something
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${cache.length} ]'; // TODO version or something
 
         #if echos_profiling
         ret += ' : ${ times.get("total") } ms'; // total
@@ -110,11 +110,11 @@ class Workflow {
         for (cc in __componentContainers) {
             cc.dispose();
         }
-        while (idsCache.length > 0) {
-            idsCache.pop();
+        while (cache.length > 0) {
+            cache.pop();
         }
         while (--__nextEntityId > -1) {
-            ids.remove(__nextEntityId);
+            statuses.remove(__nextEntityId);
         }
         __nextEntityId = 0;
     }
@@ -175,29 +175,29 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = idsCache.length > 0 ? idsCache.pop() : __nextEntityId++;
+        var id = cache.length > 0 ? cache.pop() : __nextEntityId++;
         if (immediate) {
-            ids[id] = Active;
+            statuses[id] = Active;
             entities.add(id);
         } else {
-            ids[id] = Inactive;
+            statuses[id] = Inactive;
         }
         return id;
     }
 
-    @:allow(echos.Entity) static function cache(id:Int) {
+    @:allow(echos.Entity) static function free(id:Int) {
         // TODO debug check Unknown status
         if (status(id) < Cached) { // Active or Inactive
             remove(id);
             removeComponents(id);
-            idsCache.push(id);
-            ids[id] = Cached;
+            cache.push(id);
+            statuses[id] = Cached;
         }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            ids[id] = Active;
+            statuses[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
@@ -207,12 +207,12 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
-            ids[id] = Inactive;
+            statuses[id] = Inactive;
         }
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return ids.exists(id) ? ids[id] : Invalid;
+        return statuses.exists(id) ? statuses[id] : Invalid;
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {
