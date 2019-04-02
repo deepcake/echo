@@ -192,7 +192,7 @@ abstract Entity(Int) from Int to Int {
 
 }
 
-@:enum abstract Status(Int) from Int to Int {
+@:enum abstract Status(Int) {
     var Inactive = 0;
     var Active = 1;
     var Cached = 2;

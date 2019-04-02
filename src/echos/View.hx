@@ -17,9 +17,9 @@ class ViewBase {
 
     var iterating = false;
 
-    var changed = new Array<Entity>();
+    var incomplete = new Array<Entity>();
 
-    var entitiesMap = new Map<Int, CollectingStatus>();
+    var statuses = new Map<Int, CollectingStatus>();
 
     /** List of matched entities */
     public var entities(default, null) = new Array<Entity>();
@@ -34,7 +34,7 @@ class ViewBase {
 
     public function deactivate() {
         if (isActive()) {
-            while (entities.length > 0) entitiesMap.remove(entities.pop());
+            while (entities.length > 0) statuses.remove(entities.pop());
             Workflow.views.remove(this);
         }
     }
@@ -59,9 +59,9 @@ class ViewBase {
 
     function add(id:Int) {
         if (iterating) {
-            addToChanged(id, QueuedToAdd);
+            addToIncomplete(id, QueuedToAdd);
         } else {
-            entitiesMap[id] = Collected;
+            statuses[id] = Collected;
             entities.push(id);
         }
         // macro on add call
@@ -70,16 +70,16 @@ class ViewBase {
     function remove(id:Int) {
         // macro on remove call
         if (iterating) {
-            addToChanged(id, QueuedToRemove);
+            addToIncomplete(id, QueuedToRemove);
         } else {
-            entitiesMap.remove(id);
+            statuses.remove(id);
             entities.remove(id);
         }
     }
 
 
     inline function status(id:Int):CollectingStatus {
-        return entitiesMap.exists(id) ? entitiesMap[id] : Unprocessed;
+        return statuses.exists(id) ? statuses[id] : Candidate;
     }
 
 
@@ -92,20 +92,20 @@ class ViewBase {
     }
 
 
-    inline function addToChanged(id:Int, status:CollectingStatus) {
-        entitiesMap[id] = status;
-        if (changed.indexOf(id) == -1) changed.push(id);
+    inline function addToIncomplete(id:Int, status:CollectingStatus) {
+        statuses[id] = status;
+        if (incomplete.indexOf(id) == -1) incomplete.push(id);
     }
 
     inline function flush() {
-        while (changed.length > 0) {
-            var id = changed.pop();
+        while (incomplete.length > 0) {
+            var id = incomplete.pop();
             var status = status(id);
             if (status == QueuedToRemove) {
-                entitiesMap.remove(id);
+                statuses.remove(id);
                 entities.remove(id);
             } else if (status == QueuedToAdd) {
-                entitiesMap[id] = Collected;
+                statuses[id] = Collected;
                 entities.push(id);
             }
         }
@@ -122,7 +122,7 @@ class ViewBase {
 }
 
 @:enum private abstract CollectingStatus(Int) {
-    var Unprocessed = 0;
+    var Candidate = 0;
     var QueuedToRemove = 1;
     var QueuedToAdd = 2;
     var Collected = 3;

@@ -410,7 +410,7 @@ class SystemTest extends buddy.BuddySuite {
                     it("lost entity should have correct status", e.status().should.be(Active));
                     describe("View<A>", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(81));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(81));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(1));
                     });
@@ -428,7 +428,7 @@ class SystemTest extends buddy.BuddySuite {
                     it("lost entity should have correct status", e.status().should.be(Invalid));
                     describe("View<A>", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(0));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(0));
                     });
