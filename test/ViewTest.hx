@@ -176,6 +176,7 @@ class ViewTest extends buddy.BuddySuite {
                     SameViewSystem.ab.should.be(SameViewSystem.ab1);
                     SameViewSystem.ab.should.be(SameViewSystem.ab2);
                     SameViewSystem.ab.should.be(SameViewSystem.ab3);
+                    SameViewSystem.ab.should.be(SameViewSystem.ab4);
                 });
                 it("should not add doublicates to the flow", {
                     Workflow.views.length.should.be(1);
@@ -229,6 +230,7 @@ class SameViewSystem extends echos.System {
     public static var ab1:View<TAB>;
     public static var ab2:VAB;
     public static var ab3:View<{ a:A, b:B }>;
+    public static var ab4:View<A->B>;
 
     @u function abFunc(a:A, b:B) { }
     @u function baFunc(b:B, a:A) { }
