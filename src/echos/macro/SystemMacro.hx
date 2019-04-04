@@ -59,15 +59,11 @@ class SystemMacro {
         function notNull<T>(e:Null<T>) return e != null;
 
         function metaFuncArgToCallArg(a:FunctionArg) {
-            return switch (a.type) {
-                case macro:Float : macro dt;
-                case macro:Int : macro id;
-                default: {
-                    return switch (a.type.followComplexType()) {
-                        case macro:echos.Entity : macro id;
-                        default: macro $i{ a.name };
-                    }
-                }
+            return switch (a.type.followComplexType()) {
+                case macro:StdTypes.Float : macro dt;
+                case macro:StdTypes.Int : macro id;
+                case macro:echos.Entity : macro id;
+                default: macro $i{ a.name };
             }
         }
 
@@ -82,14 +78,11 @@ class SystemMacro {
         }
 
         function metaFuncArgToComponentDef(a:FunctionArg) {
-            return switch (a.type) {
-                case macro:Int, macro:Float : null;
-                default: {
-                    return switch (a.type.followComplexType()) {
-                        case macro:echos.Entity : null;
-                        default: { name: a.name, cls: a.type.followComplexType() };
-                    }
-                }
+            return switch (a.type.followComplexType()) {
+                case macro:StdTypes.Float : null;
+                case macro:StdTypes.Int : null;
+                case macro:echos.Entity : null;
+                default: { name: a.name, cls: a.type.followComplexType() };
             }
         }
 
