@@ -68,12 +68,13 @@ class SystemMacro {
             if (!hasMeta(field, EXCLUDE_META)) {
                 switch (field.kind) {
                     case FVar(cls, _) if (cls != null):
-                        var fvarComplexType = cls.followComplexType();
-                        var fvarClsName = fvarComplexType.followName();
+                        var complexType = cls.followComplexType();
+                        var clsName = complexType.followName();
 
                         // if it is a view
-                        if (viewDataCache.exists(fvarClsName)) {
-                            definedViews.push({ name: field.name, cls: fvarComplexType, components: viewDataCache.get(fvarClsName).components });
+                        if (viewDataCache.exists(clsName)) {
+                            field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
+                            definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
                         }
 
                     default:
@@ -137,7 +138,8 @@ class SystemMacro {
                             if (view == null) {
                                 var viewComplexType = getView(components);
 
-                                fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, null, Context.currentPos()));
+                                // instant define and assign
+                                fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro ${ viewComplexType.expr(Context.currentPos()) }.inst(), Context.currentPos()));
 
                                 view = { name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components };
                                 definedViews.push(view);
@@ -190,17 +192,10 @@ class SystemMacro {
                     return macro $i{'__${f.name}'} = $fwrapper;
                 })
             )
-            .concat( // init views
-                definedViews
-                    .map(function(v){
-                        var viewComplexType = v.cls;
-                        return [
-                            macro $i{ v.name } = ${ viewComplexType.expr(Context.currentPos()) }.inst(),
-                            macro $i{ v.name }.activate()
-                        ];
-                    })
-                    .flatten()
-                    #if !haxe4 .array() #end
+            .concat( // activate views
+                definedViews.map(function(v){
+                    return macro $i{ v.name }.activate();
+                })
             )
             .concat( // add added-listeners
                 afuncs.map(function(f){

@@ -105,9 +105,7 @@ class ViewMacro {
                     public var onAdded(default, null) = new $signalTypePath();
                     public var onRemoved(default, null) = new $signalTypePath();
 
-                    function new() {
-                        activate();
-                    }
+                    function new() { }
 
                     override function add(id:Int) {
                         super.add(id);
