@@ -294,7 +294,7 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using System with manually view", {
+            describe("System with manually defined View", {
                 var s = new ManualViewSystem();
                 var e:Entity;
 
@@ -329,7 +329,7 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using System with overrided update", {
+            describe("System on Activate/Deactivate", {
                 var s = new OverrideSystem();
                 var e:Entity;
 
@@ -345,26 +345,10 @@ class SystemTest extends buddy.BuddySuite {
                     it("should has correct result", OverrideSystem.result.should.be("a"));
                 });
 
-                describe("When add Entity", {
-                    beforeAll({
-                        OverrideSystem.result = "";
-                        e = new Entity().add(new FlowComponentA("1"));
-                    });
-                    it("should has correct result", OverrideSystem.result.should.be(""));
-                });
-
                 describe("Then update", {
                     beforeAll({
                         OverrideSystem.result = "";
                         Workflow.update(0);
-                    });
-                    it("should has correct result", OverrideSystem.result.should.be("0u"));
-                });
-
-                describe("Then destroy Entity", {
-                    beforeAll({
-                        OverrideSystem.result = "";
-                        e.destroy();
                     });
                     it("should has correct result", OverrideSystem.result.should.be(""));
                 });
@@ -379,7 +363,7 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
-            describe("Flow", {
+            describe("Initialize/Dispose", {
                 var s1 = new FlowSystem1();
                 var s2 = new FlowSystem2();
                 var e:Entity;
@@ -512,15 +496,25 @@ class ManualViewSystem extends echos.System {
 
 class OverrideSystem extends echos.System {
     public static var result = "";
-    override function update(dt:Float) {
-        result += 'u';
-    }
+
     override function onactivate() {
         result += 'a';
     }
     override function ondeactivate() {
         result += 'd';
     }
+
+    // override function __activate() {
+
+    // }
+
+    // override function __deactivate() {
+        
+    // }
+
+    // override function __update(dt:Float) {
+        
+    // }
 
     @u function test(a:FlowComponentA, dt:Float) {
         result += '$dt';

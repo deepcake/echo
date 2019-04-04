@@ -38,6 +38,24 @@ class SystemMacro {
 
         systemIds[cls.followName()] = index;
 
+        // prevent wrong override
+        for (field in fields) {
+            switch (field.kind) {
+                case FFun(func): 
+                    switch (field.name) {
+                        case '__update':
+                            Context.error('Do not override the `__update` function! Use `@update` meta instead! More info at README example', field.pos);
+                        case '__activate':
+                            Context.error('Do not override the `__activate` function! `onactivate` can be overrided instead!', field.pos);
+                        case '__deactivate':
+                            Context.error('Do not override the `__deactivate` function! `ondeactivate` can be overrided instead!', field.pos);
+                        default:
+                    }
+                default:
+            }
+        }
+
+
         // define new() if not exists
         if (!fields.exists(function(f) return f.name == 'new')) {
             fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
@@ -230,29 +248,13 @@ class SystemMacro {
 
 
         if (updateExprs.length > 0) {
-            var func = (function() {
-                for (field in fields) {
-                    switch (field.kind) {
-                        case FFun(func): if (field.name == 'update') return func;
-                        default:
-                    }
-                }
-                return null;
-            })();
 
-            if (func != null) {
-                switch (func.expr.expr) {
-                    case EBlock(exprs): for (expr in exprs) updateExprs.push(expr);
-                    case e: updateExprs.push(func.expr);
-                }
-                func.expr = macro $b{updateExprs};
-            } else {
-                fields.push(ffun([APublic, AOverride], 'update', [arg('dt', macro:Float)], null, macro $b{updateExprs}, Context.currentPos()));
-            }
+            fields.push(ffun([APublic, AOverride], '__update', [arg('dt', macro:Float)], null, macro $b{ updateExprs }, Context.currentPos()));
+
         }
 
-        fields.push(ffun([APublic, AOverride], 'activate', [], null, macro $b{activateExprs}, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], 'deactivate', [], null, macro $b{deactivateExprs}, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__activate', [], null, macro $b{ activateExprs }, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__deactivate', [], null, macro $b{ deactivateExprs }, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));

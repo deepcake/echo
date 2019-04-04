@@ -81,7 +81,7 @@ class Workflow {
             var systemUpdateStartTimestamp = Date.now().getTime();
             #end
 
-            s.update(dt);
+            s.__update(dt);
 
             #if echos_profiling
             times.set(s.toString(), Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
@@ -144,7 +144,7 @@ class Workflow {
     public static function addSystem(s:System) {
         if (!hasSystem(s)) {
             systems.add(s);
-            s.activate();
+            s.__activate();
         }
     }
 
@@ -154,7 +154,7 @@ class Workflow {
      */
     public static function removeSystem(s:System) {
         if (hasSystem(s)) {
-            s.deactivate();
+            s.__deactivate();
             systems.remove(s);
         }
     }
