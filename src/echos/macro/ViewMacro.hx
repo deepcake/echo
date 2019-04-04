@@ -35,31 +35,41 @@ class ViewMacro {
 
 
     public static function build() {
-        return genViewType(Context.getLocalType());
+        return createViewType(parseComponents(Context.getLocalType()));
     }
 
 
-    static function genViewType(type:haxe.macro.Type) {
+    static function parseComponents(type:haxe.macro.Type) {
         return switch(type) {
-            case TInst(_, [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]):
-                genViewType(x);
+            case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if (params.length == 1):
+                parseComponents(x);
 
             case TType(_.get() => { type: x }, []):
-                genViewType(x);
+                parseComponents(x);
 
             case TAnonymous(_.get() => p):
-                var components = p.fields.map(function(field:ClassField) return { name: field.name, cls: Context.toComplexType(field.type.follow()) });
-                createViewType(components);
+                p.fields
+                    .map(function(f) return { name: f.name, cls: f.type.follow().toComplexType() });
 
-            case TFun(args, _):
-                var components = args.mapi(function(i, a) return { name: a.t.follow().toComplexType().tp().name.toLowerCase(), cls: a.t.follow().toComplexType() }).array();
-                createViewType(components);
+            case TFun(args, ret):
+                args
+                    .map(function(a) return a.t.follow().toComplexType())
+                    .concat([ ret.follow().toComplexType() ])
+                    .filter(function(ct) {
+                        return switch (ct) {
+                            case (macro:StdTypes.Void): false;
+                            default: true;
+                        }
+                    })
+                    .map(function(ct) return { name: ct.tp().name.toLowerCase(), cls: ct });
 
             case TInst(_, types):
-                var components = types.mapi(function(i, t) return { name: t.follow().toComplexType().tp().name.toLowerCase(), cls: t.follow().toComplexType() }).array();
-                createViewType(components);
+                types
+                    .map(function(t) return t.follow().toComplexType())
+                    .map(function(ct) return { name: ct.tp().name.toLowerCase(), cls: ct });
 
-            case x: throw 'Unexpected $x';
+            case x: 
+                Context.error('Unexpected Type Param! See more info at README example', Context.currentPos());
         }
     }
 
