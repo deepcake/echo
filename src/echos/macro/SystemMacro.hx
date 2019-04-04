@@ -56,32 +56,6 @@ class SystemMacro {
         }
 
 
-        // define new() if not exists
-        if (!fields.exists(function(f) return f.name == 'new')) {
-            fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
-        }
-
-
-        var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
-
-        fields.iter(function(field) {
-            if (!hasMeta(field, EXCLUDE_META)) {
-                switch (field.kind) {
-                    case FVar(cls, _) if (cls != null):
-                        var complexType = cls.followComplexType();
-                        var clsName = complexType.followName();
-
-                        // if it is a view
-                        if (viewDataCache.exists(clsName)) {
-                            field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
-                            definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
-                        }
-
-                    default:
-                }
-            }
-        } );
-
         function notNull<T>(e:Null<T>) return e != null;
 
         function metaFuncArgToCallArg(a:FunctionArg) {
@@ -97,7 +71,7 @@ class SystemMacro {
             }
         }
 
-        function provideComponentToListenerArg(c:ComponentDef, args:Array<FunctionArg>) {
+        function refComponentDefToFuncArg(c:ComponentDef, args:Array<FunctionArg>) {
             var copmonentClsName = c.cls.followName();
             var a = args.find(function(a) return a.type.followName() == copmonentClsName);
             if (a != null) {
@@ -107,7 +81,7 @@ class SystemMacro {
             }
         }
 
-        function metaFuncArgToComponent(a:FunctionArg) {
+        function metaFuncArgToComponentDef(a:FunctionArg) {
             return switch (a.type) {
                 case macro:Int, macro:Float : null;
                 default: {
@@ -119,18 +93,39 @@ class SystemMacro {
             }
         }
 
-        function procMetaFunc(field:Field, meta:Array<String>) {
-            if (!hasMeta(field, EXCLUDE_META) && hasMeta(field, meta)) {
-                switch (field.kind) {
-                    case FFun(func):
-                        var funcName = field.name;
-                        var callArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
 
-                        var components = func.args.map(metaFuncArgToComponent).filter(notNull);
+        var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
+
+        // find and init manually defined views
+        fields.iter(function(field) {
+            if (!hasMeta(field, EXCLUDE_META)) {
+                switch (field.kind) {
+                    case FVar(cls, _) if (cls != null): {
+                        var complexType = cls.followComplexType();
+                        var clsName = complexType.followName();
+
+                        // if it is a view
+                        if (viewDataCache.exists(clsName)) {
+                            // init
+                            field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
+
+                            definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
+                        }
+                    }
+                    default:
+                }
+            }
+        } );
+
+        // find and init meta defined views
+        fields.iter(function(field) {
+            if (!hasMeta(field, EXCLUDE_META)) {
+                switch (field.kind) {
+                    case FFun(func): {
+
+                        var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
 
                         if (components.length > 0) {
-
-                            // get defined or define new
 
                             var viewClsName = getViewName(components);
                             var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
@@ -138,14 +133,34 @@ class SystemMacro {
                             if (view == null) {
                                 var viewComplexType = getView(components);
 
-                                // instant define and assign
+                                // instant define and init
                                 fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro ${ viewComplexType.expr(Context.currentPos()) }.inst(), Context.currentPos()));
 
-                                view = { name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components };
-                                definedViews.push(view);
+                                definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components });
                             }
 
-                            var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(provideComponentToListenerArg.bind(_, func.args)));
+                        }
+                    }
+                    default:
+                }
+            }
+        } );
+
+
+        function procMetaFunc(field:Field, meta:Array<String>) {
+            if (!hasMeta(field, EXCLUDE_META) && hasMeta(field, meta)) {
+                switch (field.kind) {
+                    case FFun(func):
+                        var funcName = field.name;
+                        var callArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
+
+                        var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
+
+                        if (components.length > 0) {
+
+                            var viewClsName = getViewName(components);
+                            var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
+                            var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 
                             return { name: funcName, args: callArgs, view: view, viewargs: viewArgs };
 
@@ -154,12 +169,17 @@ class SystemMacro {
                             return { name: funcName, args: callArgs, view: null, viewargs: null };
 
                         }
-
                     default:
                 }
             }
 
             return null;
+        }
+
+
+        // define new() if not exists (just for comfort)
+        if (!fields.exists(function(f) return f.name == 'new')) {
+            fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
         }
 
 
@@ -169,6 +189,7 @@ class SystemMacro {
 
         var listeners = afuncs.concat(rfuncs);
 
+        // define signal listener wrappers
         listeners.iter(function(f) {
             fields.push(fvar([], [], '__${f.name}', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
@@ -186,7 +207,7 @@ class SystemMacro {
             );
 
         var activateExprs = []
-            .concat( // init signal wrappers
+            .concat( // init signal listener wrappers
                 listeners.map(function(f){
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
                     return macro $i{'__${f.name}'} = $fwrapper;

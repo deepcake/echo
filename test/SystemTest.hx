@@ -137,7 +137,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2"));
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>22>2"));
+                    it("should has correct result", FlowSystem2.result.should.be(">2>>22"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -152,7 +152,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.destroy();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be("<<22<2"));
+                    it("should has correct result", FlowSystem2.result.should.be("<2<<22"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -183,7 +183,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.add(new FlowComponentA("3"));
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -199,7 +199,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.deactivate();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be("<<33<3"));
+                    it("should has correct result", FlowSystem2.result.should.be("<3<<33"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -214,7 +214,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.activate();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
                 });
                 describe("Then update", {
                     beforeAll({
