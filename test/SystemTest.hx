@@ -330,36 +330,56 @@ class SystemTest extends buddy.BuddySuite {
 
 
             describe("System on Activate/Deactivate", {
-                var s = new OverrideSystem();
-                var e:Entity;
+                var s = new ActivateDeactivateSystem();
 
                 beforeAll({
                     Workflow.dispose();
                 });
 
-                describe("When add System", {
+                describe("Before add System", {
                     beforeAll({
-                        OverrideSystem.result = "";
-                        Workflow.addSystem(s);
+                        ActivateDeactivateSystem.result = "";
                     });
-                    it("should has correct result", OverrideSystem.result.should.be("a"));
+                    it("should not has views in the worklow", Workflow.views.length.should.be(0));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view not active", ActivateDeactivateSystem.view.isActive().should.be(false));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be(""));
                 });
 
-                describe("Then update", {
+                describe("After add System", {
                     beforeAll({
-                        OverrideSystem.result = "";
-                        Workflow.update(0);
+                        ActivateDeactivateSystem.result = "";
+                        Workflow.addSystem(s);
                     });
-                    it("should has correct result", OverrideSystem.result.should.be(""));
+                    it("should has views in the worklow", Workflow.views.length.should.be(2));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be("a"));
                 });
 
                 describe("When remove System", {
                     beforeAll({
-                        OverrideSystem.result = "";
+                        ActivateDeactivateSystem.result = "";
                         Workflow.removeSystem(s);
                     });
-                    it("should has correct result", OverrideSystem.result.should.be("d"));
+                    it("should has views in the worklow", Workflow.views.length.should.be(2));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be("d"));
                 });
+            });
+
+
+            describe("System with skipped funcs", {
+                var s = new IgnoredFunctionSystem();
+
+                beforeAll({
+                    Workflow.dispose();
+                    Workflow.addSystem(s);
+                    Workflow.update(0);
+                });
+
+                it("should skip", IgnoredFunctionSystem.result.should.be(''));
             });
 
 
@@ -392,7 +412,7 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(4));
                     it("should have correct size of id map", @:privateAccess Workflow.statuses.count().should.be(101));
                     it("lost entity should have correct status", e.status().should.be(Active));
-                    describe("View<A>", {
+                    describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(81));
                         it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
@@ -410,7 +430,7 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(0));
                     it("should have correct size of ids", @:privateAccess Workflow.statuses.count().should.be(0));
                     it("lost entity should have correct status", e.status().should.be(Invalid));
-                    describe("View<A>", {
+                    describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
                         it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
@@ -478,7 +498,6 @@ class FlowSystem2 extends System {
 }
 
 class ManualViewSystem extends echos.System {
-
     public static var result = "";
 
     var view:View<FlowComponentA->Void>;
@@ -491,11 +510,12 @@ class ManualViewSystem extends echos.System {
     @u inline function action() {
         view.iter(function(e, ca) result += '*${ca.value}*');
     }
-
 }
 
-class OverrideSystem extends echos.System {
+class ActivateDeactivateSystem extends echos.System {
     public static var result = "";
+
+    public static var view:View<FlowComponentA->Void>;
 
     override function onactivate() {
         result += 'a';
@@ -504,21 +524,37 @@ class OverrideSystem extends echos.System {
         result += 'd';
     }
 
-    // override function __activate() {
-
-    // }
-
-    // override function __deactivate() {
-        
-    // }
-
-    // override function __update(dt:Float) {
-        
-    // }
-
-    @u function test(a:FlowComponentA, dt:Float) {
+    @u function test(a:FlowComponentB, dt:Float) {
         result += '$dt';
     }
+}
+
+class IgnoredFunctionSystem extends echos.System {
+    public static var result = "";
+
+    function shouldBeIgnored1() {
+        result += 'i';
+    }
+    function shouldBeIgnored2(a:FlowComponentA) {
+        result += 'i';
+    }
+    function shouldBeIgnored3(entity:Entity) {
+        result += 'i';
+    }
+
+    static inline function shouldBeIgnoredStatic() {
+        result += 'i';
+    }
+
+    @skip @u function shouldBeSkipped(a:FlowComponentA) {
+        result += 'i';
+    }
+
+    // override function __activate() { }
+
+    // override function __deactivate() { }
+
+    // override function __update(dt:Float) { }
 }
 
 class FlowComponentA {
