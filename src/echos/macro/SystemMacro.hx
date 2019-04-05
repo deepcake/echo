@@ -15,6 +15,7 @@ import haxe.macro.Type.ClassField;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using echos.macro.Macro;
+using echos.macro.MacroBuilder;
 using StringTools;
 using Lambda;
 
@@ -90,8 +91,11 @@ class SystemMacro {
         var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
 
         // find and init manually defined views
-        fields.iter(function(field) {
-            if (!hasMeta(field, EXCLUDE_META)) {
+        fields
+            .filter(function(field) {
+                return !hasMeta(field, EXCLUDE_META);
+            })
+            .iter(function(field) {
                 switch (field.kind) {
                     case FVar(cls, _) if (cls != null): {
                         var complexType = cls.followComplexType();
@@ -107,12 +111,19 @@ class SystemMacro {
                     }
                     default:
                 }
-            }
-        } );
+            } );
+
+
 
         // find and init meta defined views
-        fields.iter(function(field) {
-            if (!hasMeta(field, EXCLUDE_META)) {
+        fields
+            .filter(function(field) {
+                return field.hasMeta(UPDATE_META) || field.hasMeta(ADD_META) || field.hasMeta(REMOVE_META);
+            })
+            .filter(function(field) {
+                return !hasMeta(field, EXCLUDE_META);
+            })
+            .iter(function(field) {
                 switch (field.kind) {
                     case FFun(func): {
 
@@ -136,8 +147,7 @@ class SystemMacro {
                     }
                     default:
                 }
-            }
-        } );
+            } );
 
 
         function procMetaFunc(field:Field, meta:Array<String>) {
