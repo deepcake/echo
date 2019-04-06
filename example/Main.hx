@@ -15,11 +15,12 @@ using Lambda;
 class Main {
 
 
-    static var GRASS = [ '&#x1F33E', '&#x1F33F' ];
-    static var TREE = [ '&#x1F332', '&#x1F333' ];
-    static var FLOWER = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
+    static var GRASS = [ '🌾', '🌿' ];
+    static var TREE = [ '🌲', '🌳' ];
+    static var FLOWER = [ '🌻', '🥀', '🌹', '🌷' ];
+    static var MEAT = [ '🥩', '🍗', '🍖' ];
 
-    static var size:Int;
+    static var SIZE:Int;
 
 
     static function main() {
@@ -33,16 +34,16 @@ class Main {
         Browser.document.body.appendChild(info);
 
         // make it mobile friendly (i guess)
-        size = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
+        SIZE = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
 
-        var w = Math.floor(Browser.window.innerWidth / size);
-        var h = Math.floor(Browser.window.innerHeight / size);
+        var w = Math.floor(Browser.window.innerWidth / SIZE);
+        var h = Math.floor(Browser.window.innerHeight / SIZE);
 
         var population = Std.int(Math.max(w * h / 50, 10));
 
         Workflow.addSystem(new Play());
         Workflow.addSystem(new Movement(w, h));
-        Workflow.addSystem(new Render(w, h, size, canvas));
+        Workflow.addSystem(new Render(w, h, SIZE, canvas));
         Workflow.addSystem(new Effects());
         Workflow.addSystem(new Info(info));
 
@@ -92,20 +93,20 @@ class Main {
             new Sprite(getRandomEmoji(FLOWER)));
     }
 
-    static public function rabbit(x:Float, y:Float) {
+    static public function rabbit(x:Float, y:Float):Entity {
         var entity = new Entity();
         var pos = new Position(x, y);
         var vel = getRandomVelocity(1);
         var spr = new Sprite('&#x1F407;');
         var animal = Animal.Rabbit(entity);
-        entity.add(pos, vel, spr, animal);
+        return entity.add(pos, vel, spr, animal);
     }
 
-    static public function tiger(x:Float, y:Float) {
+    static public function tiger(x:Float, y:Float):Entity {
         var pos = new Position(x, y);
         var vel = getRandomVelocity(10);
         var spr = new Sprite('&#x1F405;', '150%');
-        new Entity().add(pos, vel, spr, Animal.Tiger);
+        return new Entity().add(pos, vel, spr, Animal.Tiger);
     }
 
     static public function loveEvent(x:Float, y:Float) {
@@ -113,24 +114,33 @@ class Main {
         new Entity().add(
             new Position(x, y),
             new Sprite('&#x1F498'),
-            new Effect(1.0, getSizeAndOpacityTween(1.0, 0.75, 1.0, -1.0), null)
+            new Effect(1.0, getSizeAndOpacityTween(1.25, 0.50, 1.0, -1.0), null)
         );
     }
 
     static public function deathEvent(x:Float, y:Float) {
         // ghost
+        var reborn = (e:Entity) -> Main.rabbit(e.get(Position).x, e.get(Position).y).add(new Effect(1.0, getOpacityTween(0, 1.0), null, false));
         new Entity().add(
             getRandomVelocity(2),
             new Position(x, y),
             new Sprite('&#x1F47B;'),
-            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -1.0), e -> Main.rabbit(e.get(Position).x, e.get(Position).y))
+            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -1.0), reborn)
         );
         // collision
         new Entity().add(
             new Position(x, y),
             new Sprite('&#x1F4A5;'),
-            new Effect(1.0, getSizeAndOpacityTween(1.40, 0.10, 1.0, -1.0), null)
+            new Effect(1.0, getOpacityTween(1.0, -1.0), null)
         );
+        // drop
+        for (i in 0...3) {
+            new Entity().add(
+                new Position(x + (Math.random() < .5 ? 1 : -1), y + (Math.random() < .5 ? 1 : -1)),
+                new Sprite(getRandomEmoji(MEAT), '100%'),
+                new Effect(7.0, getFlickerTween(), null)
+            );
+        }
     }
 
     static function getRandomEmoji(codes:Array<String>) {
@@ -157,6 +167,10 @@ class Main {
             t1(e, t);
             t2(e, t);
         }
+    }
+
+    static function getFlickerTween() {
+        return (e:Entity, t:Float) -> e.get(Sprite).setOpacity(Std.int(t * 50) % 4 == 0 ? 0.0 : 1.0);
     }
 
 }
@@ -188,12 +202,12 @@ abstract Position(Vec2) {
 
 @:forward(remove, style)
 abstract Sprite(Element) from Element to Element {
-    inline public function new(value:String, size = '125%') {
+    inline public function new(value:String, SIZE = '125%') {
         this = Browser.document.createSpanElement();
         this.style.position = 'absolute';
         this.style.right = '0px';
         this.style.bottom = '0px';
-        this.style.fontSize = size;
+        this.style.fontSize = SIZE;
         this.innerHTML = value;
     }
     public function setOpacity(value:Float) {
@@ -215,11 +229,13 @@ class Effect {
     public var time:Float;
     public var onUpdate:Entity->Float->Void;
     public var onComplete:Entity->Void;
-    public function new(timeout:Float, onUpdate:Entity->Float->Void, onComplete:Entity->Void) {
+    public var destroy:Bool;
+    public function new(timeout:Float, onUpdate:Entity->Float->Void, onComplete:Entity->Void, destroy = true) {
         this.time = .0;
         this.timeout = timeout;
         this.onUpdate = onUpdate;
         this.onComplete = onComplete;
+        this.destroy = destroy;
     }
 }
 
@@ -262,15 +278,19 @@ class Movement extends System {
 }
 
 class Render extends System {
+    var w:Float;
+    var h:Float;
     var world:Array<Array<Element>> = [];
-    public function new(w:Int, h:Int, size:Int, canvas:Element) {
+    public function new(w:Int, h:Int, SIZE:Int, canvas:Element) {
+        this.w = w;
+        this.h = h;
         for (y in 0...h) {
             world[y] = [];
             for (x in 0...w) {
                 var span = Browser.document.createSpanElement();
                 span.style.position = 'absolute';
-                span.style.left = '${(x + 1) * size}px';
-                span.style.top = '${(y + 1) * size}px';
+                span.style.left = '${(x + 1) * SIZE}px';
+                span.style.top = '${(y + 1) * SIZE}px';
                 world[y][x] = span;
                 canvas.appendChild(span);
             }
@@ -279,6 +299,8 @@ class Render extends System {
     }
 
     @ad inline function appendSprite(pos:Position, spr:Sprite) {
+        pos.x = Math.max(0, Math.min(w - 1, pos.x));
+        pos.y = Math.max(0, Math.min(h - 1, pos.y));
         world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
     }
     @rm inline function detachSprite(pos:Position, spr:Sprite) {
@@ -354,7 +376,11 @@ class Play extends System {
 
 class Effects extends System {
 
-    @u inline function update(id:Entity, dt:Float, ef:Effect) {
+    @a inline function add(id:Entity, ef:Effect) {
+        if (ef.onUpdate != null) ef.onUpdate(id, 0.0);
+    }
+
+    @u function update(id:Entity, ef:Effect, dt:Float) {
         ef.time += dt;
 
         if (ef.time < ef.timeout) {
@@ -362,7 +388,11 @@ class Effects extends System {
         } else {
             if (ef.onUpdate != null) ef.onUpdate(id, 1.0);
             if (ef.onComplete != null) ef.onComplete(id);
-            id.destroy();
+            if (ef.destroy) {
+                id.destroy();
+            } else {
+                id.remove(Effect);
+            }
         }
     }
 
