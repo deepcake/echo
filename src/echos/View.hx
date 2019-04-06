@@ -53,13 +53,14 @@ class ViewBase {
     }
 
     function isRequire(c:Int):Bool { // macro
+        // check that this component type is required
         return false;
     }
 
 
     function add(id:Int) {
         if (iterating) {
-            addToIncomplete(id, QueuedToAdd);
+            addToIncomplete(id, status(id) == QueuedToRemove ? QueuedToRefresh : QueuedToAdd);
         } else {
             statuses[id] = Collected;
             entities.push(id);
@@ -101,12 +102,17 @@ class ViewBase {
         while (incomplete.length > 0) {
             var id = incomplete.pop();
             var status = status(id);
-            if (status == QueuedToRemove) {
-                statuses.remove(id);
-                entities.remove(id);
-            } else if (status == QueuedToAdd) {
-                statuses[id] = Collected;
-                entities.push(id);
+            switch (status) {
+                case QueuedToRemove: 
+                    statuses.remove(id);
+                    entities.remove(id);
+                case QueuedToAdd: 
+                    statuses[id] = Collected;
+                    entities.push(id);
+                case QueuedToRefresh: 
+                    statuses[id] = Collected;
+                    // pushed already
+                default:
             }
         }
     }
@@ -117,7 +123,8 @@ class ViewBase {
     }
 
 
-    public function toString():String return 'ViewBase';
+    public function toString():String return 'View';
+
 
 }
 
@@ -125,7 +132,8 @@ class ViewBase {
     var Candidate = 0;
     var QueuedToRemove = 1;
     var QueuedToAdd = 2;
-    var Collected = 3;
+    var QueuedToRefresh = 3;
+    var Collected = 4;
     @:op(A > B) static function gt(a:CollectingStatus, b:CollectingStatus):Bool;
     @:op(A < B) static function lt(a:CollectingStatus, b:CollectingStatus):Bool;
 }
