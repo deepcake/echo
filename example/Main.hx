@@ -19,6 +19,8 @@ class Main {
     static var TREE = [ '&#x1F332', '&#x1F333' ];
     static var FLOWER = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
 
+    static var size:Int;
+
 
     static function main() {
         var canvas = Browser.document.createDivElement();
@@ -31,17 +33,17 @@ class Main {
         Browser.document.body.appendChild(info);
 
         // make it mobile friendly (i guess)
-        var size = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
+        size = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
 
         var w = Math.floor(Browser.window.innerWidth / size);
         var h = Math.floor(Browser.window.innerHeight / size);
 
         var population = Std.int(Math.max(w * h / 50, 10));
 
-        Workflow.addSystem(new Play(population));
+        Workflow.addSystem(new Play());
         Workflow.addSystem(new Movement(w, h));
         Workflow.addSystem(new Render(w, h, size, canvas));
-        Workflow.addSystem(new Event());
+        Workflow.addSystem(new Effects());
         Workflow.addSystem(new Info(info));
 
         // fill world by plants
@@ -91,10 +93,12 @@ class Main {
     }
 
     static public function rabbit(x:Float, y:Float) {
+        var entity = new Entity();
         var pos = new Position(x, y);
         var vel = getRandomVelocity(1);
         var spr = new Sprite('&#x1F407;');
-        new Entity().add(pos, vel, spr, Animal.Rabbit);
+        var animal = Animal.Rabbit(entity);
+        entity.add(pos, vel, spr, animal);
     }
 
     static public function tiger(x:Float, y:Float) {
@@ -105,26 +109,27 @@ class Main {
     }
 
     static public function loveEvent(x:Float, y:Float) {
-        // new rabbit
+        // heart
         new Entity().add(
             new Position(x, y),
-            new Sprite('&#x1F498;'),
-            new Timer(1.0, function() Main.rabbit(x, y)));
+            new Sprite('&#x1F498'),
+            new Effect(1.0, getSizeAndOpacityTween(1.0, 0.75, 1.0, -1.0), null)
+        );
     }
 
     static public function deathEvent(x:Float, y:Float) {
-        // skull
-        new Entity().add(
-            new Position(x, y),
-            new Sprite('&#x1F480;'),
-            new Timer(3.0, null)
-        );
         // ghost
         new Entity().add(
             getRandomVelocity(2),
             new Position(x, y),
             new Sprite('&#x1F47B;'),
-            new Timer(7.0, null)
+            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -1.0), e -> Main.rabbit(e.get(Position).x, e.get(Position).y))
+        );
+        // collision
+        new Entity().add(
+            new Position(x, y),
+            new Sprite('&#x1F4A5;'),
+            new Effect(1.0, getSizeAndOpacityTween(1.40, 0.10, 1.0, -1.0), null)
         );
     }
 
@@ -135,6 +140,23 @@ class Main {
     static function getRandomVelocity(speed:Float) {
         var d = Math.random() * Math.PI * 2;
         return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
+    }
+
+    static function getOpacityTween(from:Float, delta:Float) {
+        return (e:Entity, t:Float) -> e.get(Sprite).setOpacity(from + t * delta);
+    }
+
+    static function getSizeTween(from:Float, delta:Float) {
+        return (e:Entity, t:Float) -> e.get(Sprite).setSize(from + t * delta);
+    }
+
+    static function getSizeAndOpacityTween(fromSize:Float, deltaSize:Float, fromOpacity:Float, deltaOpacity:Float) {
+        var t1 = getSizeTween(fromSize, deltaSize);
+        var t2 = getOpacityTween(fromOpacity, deltaOpacity);
+        return (e:Entity, t:Float) -> {
+            t1(e, t);
+            t2(e, t);
+        }
     }
 
 }
@@ -174,21 +196,30 @@ abstract Sprite(Element) from Element to Element {
         this.style.fontSize = size;
         this.innerHTML = value;
     }
+    public function setOpacity(value:Float) {
+        this.style.opacity = '${ value }';
+        
+    }
+    public function setSize(value:Float) {
+        this.style.fontSize = '${ Std.int(value * 100) }%';
+    }
 }
 
 enum Animal {
-    Rabbit;
+    Rabbit(lastlove:Entity);
     Tiger;
 }
 
-class Timer {
+class Effect {
     public var timeout:Float;
     public var time:Float;
-    public var cb:Void->Void;
-    public function new(timeout:Float, cb:Void->Void) {
+    public var onUpdate:Entity->Float->Void;
+    public var onComplete:Entity->Void;
+    public function new(timeout:Float, onUpdate:Entity->Float->Void, onComplete:Entity->Void) {
         this.time = .0;
         this.timeout = timeout;
-        this.cb = cb;
+        this.onUpdate = onUpdate;
+        this.onComplete = onComplete;
     }
 }
 
@@ -261,14 +292,7 @@ class Render extends System {
 
 class Play extends System {
     var del = [];
-    var animals:View<Animal->Position->Velocity->Void>;
-
-    var maxPopulation:Int;
-    var curPopulation:Int;
-
-    public function new(population:Int) {
-        this.curPopulation = this.maxPopulation = population;
-    }
+    var animals:View<Animal->Position>;
 
     @u inline function interaction(dt:Float) {
         // dummy everyone with everyone
@@ -284,32 +308,27 @@ class Play extends System {
 
                 if (test(pos1, pos2, 1.41)) {
 
-                    if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
+                    switch (a1) {
+                        case Tiger: 
+                            switch (a2) {
+                                case Rabbit(_): eats(id1, id2);
+                                default: 
+                            }
+                        case Rabbit(lastlove1): 
+                            switch (a2) {
+                                case Tiger: eats(id2, id1);
+                                case Rabbit(lastlove2): {
 
-                        eats(id1, id2);
+                                    if (id1 != lastlove2 && id2 != lastlove1) {
+                                        var x = (pos1.x + pos2.x) / 2;
+                                        var y = (pos1.y + pos2.y) / 2;
+                                        Main.loveEvent(x, y);
+                                        id1.add(Rabbit(id2));
+                                        id2.add(Rabbit(id1));
+                                    }
 
-                    } else if (a2 == Animal.Tiger && a1 == Animal.Rabbit) {
-
-                        eats(id2, id1);
-
-                    } else if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
-
-                        var vel1 = id1.get(Velocity);
-                        var vel2 = id2.get(Velocity);
-
-                        // bounce
-                        // vel1.x *= -1;
-                        // vel1.y *= -1;
-                        // vel2.x *= -1;
-                        // vel2.y *= -1;
-
-                        if (curPopulation < maxPopulation) {
-                            var x = (pos1.x + pos2.x) / 2;
-                            var y = (pos1.y + pos2.y) / 2;
-                            Main.loveEvent(x, y);
-                            curPopulation++;
-                        }
-
+                                }
+                            }
                     }
 
                 }
@@ -323,7 +342,6 @@ class Play extends System {
         trace('#$tiger eats #$rabbit');
         Main.deathEvent(rabbit.get(Position).x, rabbit.get(Position).y);
         del.push(rabbit);
-        curPopulation--;
         Info.eaten++;
     }
 
@@ -334,17 +352,18 @@ class Play extends System {
     }
 }
 
-class Event extends System {
-    @u inline function action(id:Entity, dt:Float, t:Timer, s:Sprite) {
-        s.style.opacity = '${1.0 - (t.time / t.timeout)}';
-        s.style.fontSize = '${ 100 + Std.int((t.time / t.timeout) * 75) }%';
+class Effects extends System {
 
-        t.time += dt;
-        if (t.time >= t.timeout) {
-            s.style.opacity = '.0';
+    @u inline function update(id:Entity, dt:Float, ef:Effect) {
+        ef.time += dt;
 
-            if (t.cb != null) t.cb();
+        if (ef.time < ef.timeout) {
+            if (ef.onUpdate != null) ef.onUpdate(id, ef.time / ef.timeout);
+        } else {
+            if (ef.onUpdate != null) ef.onUpdate(id, 1.0);
+            if (ef.onComplete != null) ef.onComplete(id);
             id.destroy();
         }
     }
+
 }
