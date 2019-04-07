@@ -97,48 +97,56 @@ class Main {
         var entity = new Entity();
         var pos = new Position(x, y);
         var vel = getRandomVelocity(1);
-        var spr = new Sprite('&#x1F407;');
-        var animal = Animal.Rabbit(entity);
+        var spr = new Sprite('🐇', '100%');
+        var animal = Rabbit(entity);
         return entity.add(pos, vel, spr, animal);
     }
 
     static public function tiger(x:Float, y:Float):Entity {
         var pos = new Position(x, y);
         var vel = getRandomVelocity(10);
-        var spr = new Sprite('&#x1F405;', '150%');
-        return new Entity().add(pos, vel, spr, Animal.Tiger);
+        var spr = new Sprite('🐅', '150%');
+        return new Entity().add(pos, vel, spr, Tiger);
     }
 
     static public function loveEvent(x:Float, y:Float) {
         // heart
         new Entity().add(
             new Position(x, y),
-            new Sprite('&#x1F498'),
-            new Effect(1.0, getSizeAndOpacityTween(1.25, 0.50, 1.0, -1.0), null)
+            new Sprite('💘'),
+            new Effect(1.0, getSizeAndOpacityTween(1.25, 0.50, 1.0, -0.75), null)
         );
     }
 
     static public function deathEvent(x:Float, y:Float) {
+        var reborn = (e:Entity) -> {
+            var nx = e.get(Position).x;
+            var ny = e.get(Position).y;
+            Main.rabbit(nx, ny).add(new Effect(1.0, getOpacityTween(0, 1.0), null, false));
+        };
+
         // ghost
-        var reborn = (e:Entity) -> Main.rabbit(e.get(Position).x, e.get(Position).y).add(new Effect(1.0, getOpacityTween(0, 1.0), null, false));
         new Entity().add(
             getRandomVelocity(2),
             new Position(x, y),
-            new Sprite('&#x1F47B;'),
-            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -1.0), reborn)
+            new Sprite('👻'),
+            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -0.75), reborn)
         );
         // collision
         new Entity().add(
             new Position(x, y),
-            new Sprite('&#x1F4A5;'),
-            new Effect(1.0, getOpacityTween(1.0, -1.0), null)
+            new Sprite('💥', '150%'),
+            new Effect(1.0, getOpacityTween(1.0, -0.75), null)
         );
+
         // drop
         for (i in 0...3) {
+            var dx = 1 - Std.random(3);
+            var dy = 1 - Std.random(3);
             new Entity().add(
-                new Position(x + (Math.random() < .5 ? 1 : -1), y + (Math.random() < .5 ? 1 : -1)),
+                new Position(x + dx, y + dy),
                 new Sprite(getRandomEmoji(MEAT), '100%'),
-                new Effect(7.0, getFlickerTween(), null)
+                new Effect(7.0, getOpacityTween(1.0, -0.75), null)
             );
         }
     }

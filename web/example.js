@@ -350,8 +350,8 @@ Main.rabbit = function(x,y) {
 	this2.style.position = "absolute";
 	this2.style.right = "0px";
 	this2.style.bottom = "0px";
-	this2.style.fontSize = "125%";
-	this2.innerHTML = "&#x1F407;";
+	this2.style.fontSize = "100%";
+	this2.innerHTML = "🐇";
 	ComponentContainer_$Main_$Position.instance.components.h[entity] = this1;
 	ComponentContainer_$Main_$Velocity.instance.components.h[entity] = vel;
 	ComponentContainer_$Main_$Sprite.instance.components.h[entity] = this2;
@@ -374,7 +374,7 @@ Main.tiger = function(x,y) {
 	this2.style.right = "0px";
 	this2.style.bottom = "0px";
 	this2.style.fontSize = "150%";
-	this2.innerHTML = "&#x1F405;";
+	this2.innerHTML = "🐅";
 	var id = echos_Workflow.id(true);
 	ComponentContainer_$Main_$Position.instance.components.h[id] = this1;
 	ComponentContainer_$Main_$Velocity.instance.components.h[id] = vel;
@@ -399,10 +399,10 @@ Main.loveEvent = function(x,y) {
 	this1.style.right = "0px";
 	this1.style.bottom = "0px";
 	this1.style.fontSize = "125%";
-	this1.innerHTML = "&#x1F498";
+	this1.innerHTML = "💘";
 	_this.components.h[id] = this1;
 	var _this1 = ComponentContainer_$Main_$Effect.instance;
-	var c = new Effect(1.0,Main.getSizeAndOpacityTween(1.25,0.50,1.0,-1.0),null);
+	var c = new Effect(1.0,Main.getSizeAndOpacityTween(1.25,0.50,1.0,-0.75),null);
 	_this1.components.h[id] = c;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id) ? echos_Workflow.statuses.h[id] : 3) == 1) {
 		var _g_head = echos_Workflow.views.h;
@@ -440,10 +440,10 @@ Main.deathEvent = function(x,y) {
 	this1.style.right = "0px";
 	this1.style.bottom = "0px";
 	this1.style.fontSize = "125%";
-	this1.innerHTML = "&#x1F47B;";
+	this1.innerHTML = "👻";
 	_this2.components.h[id1] = this1;
 	var _this3 = ComponentContainer_$Main_$Effect.instance;
-	var c2 = new Effect(5.0,Main.getSizeAndOpacityTween(1.15,0.10,1.0,-1.0),reborn);
+	var c2 = new Effect(5.0,Main.getSizeAndOpacityTween(1.15,0.10,1.0,-0.75),reborn);
 	_this3.components.h[id1] = c2;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id1) ? echos_Workflow.statuses.h[id1] : 3) == 1) {
 		var _g_head1 = echos_Workflow.views.h;
@@ -460,11 +460,11 @@ Main.deathEvent = function(x,y) {
 	this2.style.position = "absolute";
 	this2.style.right = "0px";
 	this2.style.bottom = "0px";
-	this2.style.fontSize = "125%";
-	this2.innerHTML = "&#x1F4A5;";
+	this2.style.fontSize = "150%";
+	this2.innerHTML = "💥";
 	_this4.components.h[id2] = this2;
 	var _this5 = ComponentContainer_$Main_$Effect.instance;
-	var c3 = new Effect(1.0,Main.getOpacityTween(1.0,-1.0),null);
+	var c3 = new Effect(1.0,Main.getOpacityTween(1.0,-0.75),null);
 	_this5.components.h[id2] = c3;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id2) ? echos_Workflow.statuses.h[id2] : 3) == 1) {
 		var _g_head2 = echos_Workflow.views.h;
@@ -474,12 +474,11 @@ Main.deathEvent = function(x,y) {
 			val2.addIfMatch(id2);
 		}
 	}
+	var dx = 1 - Std.random(3);
+	var dy = 1 - Std.random(3);
 	var id3 = echos_Workflow.id(true);
-	var _this6 = ComponentContainer_$Main_$Position.instance;
-	var x1 = Math.random() < .5 ? 1 : -1;
-	var y1 = Math.random() < .5 ? 1 : -1;
-	_this6.components.h[id3] = new Vec2(x + x1,y + y1);
-	var _this7 = ComponentContainer_$Main_$Sprite.instance;
+	ComponentContainer_$Main_$Position.instance.components.h[id3] = new Vec2(x + dx,y + dy);
+	var _this6 = ComponentContainer_$Main_$Sprite.instance;
 	var value = Main.getRandomEmoji(Main.MEAT);
 	var this3 = window.document.createElement("span");
 	this3.style.position = "absolute";
@@ -487,10 +486,10 @@ Main.deathEvent = function(x,y) {
 	this3.style.bottom = "0px";
 	this3.style.fontSize = "100%";
 	this3.innerHTML = value;
-	_this7.components.h[id3] = this3;
-	var _this8 = ComponentContainer_$Main_$Effect.instance;
-	var c4 = new Effect(7.0,Main.getFlickerTween(),null);
-	_this8.components.h[id3] = c4;
+	_this6.components.h[id3] = this3;
+	var _this7 = ComponentContainer_$Main_$Effect.instance;
+	var c4 = new Effect(7.0,Main.getOpacityTween(1.0,-0.75),null);
+	_this7.components.h[id3] = c4;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id3) ? echos_Workflow.statuses.h[id3] : 3) == 1) {
 		var _g_head3 = echos_Workflow.views.h;
 		while(_g_head3 != null) {
@@ -499,12 +498,11 @@ Main.deathEvent = function(x,y) {
 			val3.addIfMatch(id3);
 		}
 	}
+	var dx1 = 1 - Std.random(3);
+	var dy1 = 1 - Std.random(3);
 	var id4 = echos_Workflow.id(true);
-	var _this9 = ComponentContainer_$Main_$Position.instance;
-	var x2 = Math.random() < .5 ? 1 : -1;
-	var y2 = Math.random() < .5 ? 1 : -1;
-	_this9.components.h[id4] = new Vec2(x + x2,y + y2);
-	var _this10 = ComponentContainer_$Main_$Sprite.instance;
+	ComponentContainer_$Main_$Position.instance.components.h[id4] = new Vec2(x + dx1,y + dy1);
+	var _this8 = ComponentContainer_$Main_$Sprite.instance;
 	var value1 = Main.getRandomEmoji(Main.MEAT);
 	var this4 = window.document.createElement("span");
 	this4.style.position = "absolute";
@@ -512,10 +510,10 @@ Main.deathEvent = function(x,y) {
 	this4.style.bottom = "0px";
 	this4.style.fontSize = "100%";
 	this4.innerHTML = value1;
-	_this10.components.h[id4] = this4;
-	var _this11 = ComponentContainer_$Main_$Effect.instance;
-	var c5 = new Effect(7.0,Main.getFlickerTween(),null);
-	_this11.components.h[id4] = c5;
+	_this8.components.h[id4] = this4;
+	var _this9 = ComponentContainer_$Main_$Effect.instance;
+	var c5 = new Effect(7.0,Main.getOpacityTween(1.0,-0.75),null);
+	_this9.components.h[id4] = c5;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id4) ? echos_Workflow.statuses.h[id4] : 3) == 1) {
 		var _g_head4 = echos_Workflow.views.h;
 		while(_g_head4 != null) {
@@ -524,12 +522,11 @@ Main.deathEvent = function(x,y) {
 			val4.addIfMatch(id4);
 		}
 	}
+	var dx2 = 1 - Std.random(3);
+	var dy2 = 1 - Std.random(3);
 	var id5 = echos_Workflow.id(true);
-	var _this12 = ComponentContainer_$Main_$Position.instance;
-	var x3 = Math.random() < .5 ? 1 : -1;
-	var y3 = Math.random() < .5 ? 1 : -1;
-	_this12.components.h[id5] = new Vec2(x + x3,y + y3);
-	var _this13 = ComponentContainer_$Main_$Sprite.instance;
+	ComponentContainer_$Main_$Position.instance.components.h[id5] = new Vec2(x + dx2,y + dy2);
+	var _this10 = ComponentContainer_$Main_$Sprite.instance;
 	var value2 = Main.getRandomEmoji(Main.MEAT);
 	var this5 = window.document.createElement("span");
 	this5.style.position = "absolute";
@@ -537,10 +534,10 @@ Main.deathEvent = function(x,y) {
 	this5.style.bottom = "0px";
 	this5.style.fontSize = "100%";
 	this5.innerHTML = value2;
-	_this13.components.h[id5] = this5;
-	var _this14 = ComponentContainer_$Main_$Effect.instance;
-	var c6 = new Effect(7.0,Main.getFlickerTween(),null);
-	_this14.components.h[id5] = c6;
+	_this10.components.h[id5] = this5;
+	var _this11 = ComponentContainer_$Main_$Effect.instance;
+	var c6 = new Effect(7.0,Main.getOpacityTween(1.0,-0.75),null);
+	_this11.components.h[id5] = c6;
 	if((echos_Workflow.statuses.h.hasOwnProperty(id5) ? echos_Workflow.statuses.h[id5] : 3) == 1) {
 		var _g_head5 = echos_Workflow.views.h;
 		while(_g_head5 != null) {
@@ -575,12 +572,6 @@ Main.getSizeAndOpacityTween = function(fromSize,deltaSize,fromOpacity,deltaOpaci
 	return function(e,t) {
 		t1(e,t);
 		t2(e,t);
-		return;
-	};
-};
-Main.getFlickerTween = function() {
-	return function(e,t) {
-		_$Main_Sprite_$Impl_$.setOpacity(ComponentContainer_$Main_$Sprite.instance.components.h[e],(t * 50 | 0) % 4 == 0 ? 0.0 : 1.0);
 		return;
 	};
 };
@@ -811,7 +802,7 @@ Play.__name__ = true;
 Play.__super__ = echos_System;
 Play.prototype = $extend(echos_System.prototype,{
 	eats: function(tiger,rabbit) {
-		console.log("example/Main.hx:364:","#" + tiger + " eats #" + rabbit);
+		console.log("example/Main.hx:372:","#" + tiger + " eats #" + rabbit);
 		Main.deathEvent(ComponentContainer_$Main_$Position.instance.components.h[rabbit].x,ComponentContainer_$Main_$Position.instance.components.h[rabbit].y);
 		this.del.push(rabbit);
 		Info.eaten++;
