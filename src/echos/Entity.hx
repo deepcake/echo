@@ -82,21 +82,16 @@ abstract Entity(Int) from Int to Int {
     macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echos.Entity> {
         if (components.length == 0) Context.error('Required one or more components', Context.currentPos());
 
-        var componentExprs = []
-            .concat(
-                components
-                    .map(function(c){
-                        var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
-                        return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().add(id, $c);
-                    })
-            )
-            .array();
+        var componentExprs = components
+            .map(function(c){
+                var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
+                return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().add(id, $c);
+            });
 
         var exprs = []
             .concat(componentExprs)
             .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
-            .concat([ macro return id ])
-            .array();
+            .concat([ macro return id ]);
 
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
@@ -115,35 +110,26 @@ abstract Entity(Int) from Int to Int {
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echos.Entity> {
         if (types.length == 0) Context.error('Required one or more component types', Context.currentPos());
 
-        var componentExprs = []
-            .concat(
-                types
-                    .map(function(t){
-                        var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
-                        return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().remove(id);
-                    })
-            )
-            .array();
+        var componentExprs = types
+            .map(function(t){
+                var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
+                return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().remove(id);
+            });
 
-        var requireExprs = []
-            .concat(
-                types
-                    .map(function(t){
-                        return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
-                    })
-                    .map(function(i){
-                        return macro @:privateAccess v.isRequire($v{i});
-                    })
-            )
-            .array();
+        var requireExprs = types
+            .map(function(t){
+                return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
+            })
+            .map(function(i){
+                return macro @:privateAccess v.isRequire($v{i});
+            });
 
         var requireCond = requireExprs.slice(1).fold(function(e:Expr, r:Expr) return macro $e || $r, requireExprs[0]);
 
         var exprs = []
             .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
             .concat(componentExprs)
-            .concat([ macro return id ])
-            .array();
+            .concat([ macro return id ]);
 
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
