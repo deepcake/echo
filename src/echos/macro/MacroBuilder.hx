@@ -20,7 +20,6 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-@:noCompletion
 @:final
 @:dce
 class MacroBuilder {

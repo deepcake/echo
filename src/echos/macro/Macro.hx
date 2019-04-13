@@ -1,5 +1,6 @@
 package echos.macro;
 
+#if macro
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
@@ -16,7 +17,6 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-@:noCompletion
 @:final
 @:dce
 class Macro {
@@ -86,7 +86,7 @@ class Macro {
         #end
     }
 
-    #if macro
+    
 
     public static function followComplexType(cls:ComplexType) {
         return ComplexTypeTools.toType(cls).follow().toComplexType();
@@ -145,7 +145,7 @@ class Macro {
         return t.sub == null ? t.name : t.sub;
     }
 
-    #end
+    
 
     public static function tp(t:ComplexType):TypePath {
         return switch(t) {
@@ -163,3 +163,4 @@ class Macro {
     }
 
 }
+#end
