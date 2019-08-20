@@ -158,8 +158,8 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 
     public function dispose() {
         // for (k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
-        var keys = [ for (k in this.keys()) k ];
-        for (k in keys) this.remove(k); 
+        var i = @:privateAccess echos.Workflow.__nextEntityId;
+        while (--i > -1) this.remove(i); 
     }
 
 }

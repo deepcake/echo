@@ -15,9 +15,12 @@ using Lambda;
 class Main {
 
 
-    static var GRASS = [ '&#x1F33E', '&#x1F33F' ];
-    static var TREE = [ '&#x1F332', '&#x1F333' ];
-    static var FLOWER = [ '&#x1F337', '&#x1F339', '&#x1F33B' ];
+    static var GRASS = [ '🌾', '🌿' ];
+    static var TREE = [ '🌲', '🌳' ];
+    static var FLOWER = [ '🌻', '🥀', '🌹', '🌷' ];
+    static var MEAT = [ '🥩', '🍗', '🍖' ];
+
+    static var SIZE:Int;
 
 
     static function main() {
@@ -31,17 +34,17 @@ class Main {
         Browser.document.body.appendChild(info);
 
         // make it mobile friendly (i guess)
-        var size = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
+        SIZE = Std.parseInt(Browser.window.getComputedStyle(canvas).fontSize);
 
-        var w = Math.floor(Browser.window.innerWidth / size);
-        var h = Math.floor(Browser.window.innerHeight / size);
+        var w = Math.floor(Browser.window.innerWidth / SIZE);
+        var h = Math.floor(Browser.window.innerHeight / SIZE);
 
         var population = Std.int(Math.max(w * h / 50, 10));
 
-        Workflow.addSystem(new Play(population));
+        Workflow.addSystem(new Play());
         Workflow.addSystem(new Movement(w, h));
-        Workflow.addSystem(new Render(w, h, size, canvas));
-        Workflow.addSystem(new Event());
+        Workflow.addSystem(new Render(w, h, SIZE, canvas));
+        Workflow.addSystem(new Effects());
         Workflow.addSystem(new Info(info));
 
         // fill world by plants
@@ -90,42 +93,62 @@ class Main {
             new Sprite(getRandomEmoji(FLOWER)));
     }
 
-    static public function rabbit(x:Float, y:Float) {
+    static public function rabbit(x:Float, y:Float):Entity {
+        var entity = new Entity();
         var pos = new Position(x, y);
         var vel = getRandomVelocity(1);
-        var spr = new Sprite('&#x1F407;');
-        new Entity().add(pos, vel, spr, Animal.Rabbit);
+        var spr = new Sprite('🐇', '100%');
+        var animal = Rabbit(entity);
+        return entity.add(pos, vel, spr, animal);
     }
 
-    static public function tiger(x:Float, y:Float) {
+    static public function tiger(x:Float, y:Float):Entity {
         var pos = new Position(x, y);
         var vel = getRandomVelocity(10);
-        var spr = new Sprite('&#x1F405;', '150%');
-        new Entity().add(pos, vel, spr, Animal.Tiger);
+        var spr = new Sprite('🐅', '150%');
+        return new Entity().add(pos, vel, spr, Tiger);
     }
 
     static public function loveEvent(x:Float, y:Float) {
-        // new rabbit
+        // heart
         new Entity().add(
             new Position(x, y),
-            new Sprite('&#x1F498;'),
-            new Timer(1.0, function() Main.rabbit(x, y)));
+            new Sprite('💘'),
+            new Effect(1.0, getSizeAndOpacityTween(1.25, 0.50, 1.0, -0.75), null)
+        );
     }
 
     static public function deathEvent(x:Float, y:Float) {
-        // skull
-        new Entity().add(
-            new Position(x, y),
-            new Sprite('&#x1F480;'),
-            new Timer(3.0, null)
-        );
+        var reborn = (e:Entity) -> {
+            var nx = e.get(Position).x;
+            var ny = e.get(Position).y;
+            Main.rabbit(nx, ny).add(new Effect(1.0, getOpacityTween(0, 1.0), null, false));
+        };
+
         // ghost
         new Entity().add(
             getRandomVelocity(2),
             new Position(x, y),
-            new Sprite('&#x1F47B;'),
-            new Timer(7.0, null)
+            new Sprite('👻'),
+            new Effect(5.0, getSizeAndOpacityTween(1.15, 0.10, 1.0, -0.75), reborn)
         );
+        // collision
+        new Entity().add(
+            new Position(x, y),
+            new Sprite('💥', '150%'),
+            new Effect(1.0, getOpacityTween(1.0, -0.75), null)
+        );
+
+        // drop
+        for (i in 0...3) {
+            var dx = 1 - Std.random(3);
+            var dy = 1 - Std.random(3);
+            new Entity().add(
+                new Position(x + dx, y + dy),
+                new Sprite(getRandomEmoji(MEAT), '100%'),
+                new Effect(7.0, getOpacityTween(1.0, -0.75), null)
+            );
+        }
     }
 
     static function getRandomEmoji(codes:Array<String>) {
@@ -135,6 +158,27 @@ class Main {
     static function getRandomVelocity(speed:Float) {
         var d = Math.random() * Math.PI * 2;
         return new Velocity(Math.cos(d) * speed, Math.sin(d) * speed);
+    }
+
+    static function getOpacityTween(from:Float, delta:Float) {
+        return (e:Entity, t:Float) -> e.get(Sprite).setOpacity(from + t * delta);
+    }
+
+    static function getSizeTween(from:Float, delta:Float) {
+        return (e:Entity, t:Float) -> e.get(Sprite).setSize(from + t * delta);
+    }
+
+    static function getSizeAndOpacityTween(fromSize:Float, deltaSize:Float, fromOpacity:Float, deltaOpacity:Float) {
+        var t1 = getSizeTween(fromSize, deltaSize);
+        var t2 = getOpacityTween(fromOpacity, deltaOpacity);
+        return (e:Entity, t:Float) -> {
+            t1(e, t);
+            t2(e, t);
+        }
+    }
+
+    static function getFlickerTween() {
+        return (e:Entity, t:Float) -> e.get(Sprite).setOpacity(Std.int(t * 50) % 4 == 0 ? 0.0 : 1.0);
     }
 
 }
@@ -166,29 +210,40 @@ abstract Position(Vec2) {
 
 @:forward(remove, style)
 abstract Sprite(Element) from Element to Element {
-    inline public function new(value:String, size = '125%') {
+    inline public function new(value:String, SIZE = '125%') {
         this = Browser.document.createSpanElement();
         this.style.position = 'absolute';
         this.style.right = '0px';
         this.style.bottom = '0px';
-        this.style.fontSize = size;
+        this.style.fontSize = SIZE;
         this.innerHTML = value;
+    }
+    public function setOpacity(value:Float) {
+        this.style.opacity = '${ value }';
+        
+    }
+    public function setSize(value:Float) {
+        this.style.fontSize = '${ Std.int(value * 100) }%';
     }
 }
 
 enum Animal {
-    Rabbit;
+    Rabbit(lastlove:Entity);
     Tiger;
 }
 
-class Timer {
+class Effect {
     public var timeout:Float;
     public var time:Float;
-    public var cb:Void->Void;
-    public function new(timeout:Float, cb:Void->Void) {
+    public var onUpdate:Entity->Float->Void;
+    public var onComplete:Entity->Void;
+    public var destroy:Bool;
+    public function new(timeout:Float, onUpdate:Entity->Float->Void, onComplete:Entity->Void, destroy = true) {
         this.time = .0;
         this.timeout = timeout;
-        this.cb = cb;
+        this.onUpdate = onUpdate;
+        this.onComplete = onComplete;
+        this.destroy = destroy;
     }
 }
 
@@ -231,15 +286,19 @@ class Movement extends System {
 }
 
 class Render extends System {
+    var w:Float;
+    var h:Float;
     var world:Array<Array<Element>> = [];
-    public function new(w:Int, h:Int, size:Int, canvas:Element) {
+    public function new(w:Int, h:Int, SIZE:Int, canvas:Element) {
+        this.w = w;
+        this.h = h;
         for (y in 0...h) {
             world[y] = [];
             for (x in 0...w) {
                 var span = Browser.document.createSpanElement();
                 span.style.position = 'absolute';
-                span.style.left = '${(x + 1) * size}px';
-                span.style.top = '${(y + 1) * size}px';
+                span.style.left = '${(x + 1) * SIZE}px';
+                span.style.top = '${(y + 1) * SIZE}px';
                 world[y][x] = span;
                 canvas.appendChild(span);
             }
@@ -248,6 +307,8 @@ class Render extends System {
     }
 
     @ad inline function appendSprite(pos:Position, spr:Sprite) {
+        pos.x = Math.max(0, Math.min(w - 1, pos.x));
+        pos.y = Math.max(0, Math.min(h - 1, pos.y));
         world[Std.int(pos.y)][Std.int(pos.x)].appendChild(spr); 
     }
     @rm inline function detachSprite(pos:Position, spr:Sprite) {
@@ -261,55 +322,57 @@ class Render extends System {
 
 class Play extends System {
     var del = [];
-    var animals:View<Animal->Position->Velocity->Void>;
-
-    var maxPopulation:Int;
-    var curPopulation:Int;
-
-    public function new(population:Int) {
-        this.curPopulation = this.maxPopulation = population;
-    }
+    var animals:View<Animal->Position>;
 
     @u inline function interaction(dt:Float) {
         // dummy everyone with everyone
-        animals.iter((id1, a1, pos1, vel1) -> {
-            animals.iter((id2, a2, pos2, vel2) -> {
+        for (i1 in 0...animals.entities.length) {
+            var id1 = animals.entities[i1];
+            var a1 = id1.get(Animal);
+            var pos1 = id1.get(Position);
 
-                if (id1 != id2 && test(pos1, pos2, 1.41)) {
+            for (i2 in i1+1...animals.entities.length) {
+                var id2 = animals.entities[i2];
+                var a2 = id2.get(Animal);
+                var pos2 = id2.get(Position);
 
-                    if (a1 == Animal.Tiger && a2 == Animal.Rabbit) {
+                if (test(pos1, pos2, 1.41)) {
 
-                        trace('#$id1 eats #$id2');
-                        Main.deathEvent(pos1.x, pos1.y);
-                        del.push(id2);
-                        curPopulation--;
-                        Info.eaten++;
+                    switch (a1) {
+                        case Tiger: 
+                            switch (a2) {
+                                case Rabbit(_): eats(id1, id2);
+                                default: 
+                            }
+                        case Rabbit(lastlove1): 
+                            switch (a2) {
+                                case Tiger: eats(id2, id1);
+                                case Rabbit(lastlove2): {
 
-                    }
+                                    if (id1 != lastlove2 && id2 != lastlove1) {
+                                        var x = (pos1.x + pos2.x) / 2;
+                                        var y = (pos1.y + pos2.y) / 2;
+                                        Main.loveEvent(x, y);
+                                        id1.add(Rabbit(id2));
+                                        id2.add(Rabbit(id1));
+                                    }
 
-                    if (a1 == Animal.Rabbit && a2 == Animal.Rabbit) {
-
-                        // bounce
-                        vel1.x *= -1;
-                        vel1.y *= -1;
-                        vel2.x *= -1;
-                        vel2.y *= -1;
-
-                        if (curPopulation < maxPopulation) {
-                            var x = (pos1.x + pos2.x) / 2;
-                            var y = (pos1.y + pos2.y) / 2;
-                            Main.loveEvent(x, y);
-                            curPopulation++;
-                        }
-
+                                }
+                            }
                     }
 
                 }
-
-            });
-        });
+            }
+        }
 
         while (del.length > 0) del.pop().destroy();
+    }
+
+    function eats(tiger:Entity, rabbit:Entity) {
+        trace('#$tiger eats #$rabbit');
+        Main.deathEvent(rabbit.get(Position).x, rabbit.get(Position).y);
+        del.push(rabbit);
+        Info.eaten++;
     }
 
     function test(pos1:Position, pos2:Position, radius:Float) {
@@ -319,17 +382,26 @@ class Play extends System {
     }
 }
 
-class Event extends System {
-    @u inline function action(id:Entity, dt:Float, t:Timer, s:Sprite) {
-        s.style.opacity = '${1.0 - (t.time / t.timeout)}';
-        s.style.fontSize = '${ 100 + Std.int((t.time / t.timeout) * 75) }%';
+class Effects extends System {
 
-        t.time += dt;
-        if (t.time >= t.timeout) {
-            s.style.opacity = '.0';
+    @a inline function add(id:Entity, ef:Effect) {
+        if (ef.onUpdate != null) ef.onUpdate(id, 0.0);
+    }
 
-            if (t.cb != null) t.cb();
-            id.destroy();
+    @u function update(id:Entity, ef:Effect, dt:Float) {
+        ef.time += dt;
+
+        if (ef.time < ef.timeout) {
+            if (ef.onUpdate != null) ef.onUpdate(id, ef.time / ef.timeout);
+        } else {
+            if (ef.onUpdate != null) ef.onUpdate(id, 1.0);
+            if (ef.onComplete != null) ef.onComplete(id);
+            if (ef.destroy) {
+                id.destroy();
+            } else {
+                id.remove(Effect);
+            }
         }
     }
+
 }

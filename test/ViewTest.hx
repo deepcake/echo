@@ -1,23 +1,18 @@
 import echos.*;
 
 using buddy.Should;
+using Lambda;
 
 class ViewTest extends buddy.BuddySuite {
     public function new() {
         describe("Using Views", {
 
             describe("Matching", {
-                var s = new ViewTestSystem1();
-                var addCounter = 0;
-                var removeCounter = 0;
+                var s = new MatchingViewSystem();
 
                 describe("When add entities", {
                     beforeAll({
                         Workflow.addSystem(s);
-
-                        s.a.onAdded.add(function(id, a) addCounter++);
-                        s.a.onRemoved.add(function(id, a) removeCounter++);
-
                         for (i in 0...300) {
                             var e = new Entity();
                             e.add(new A());
@@ -36,8 +31,6 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(10);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(0));
                 });
 
                 describe("When remove components", {
@@ -55,8 +48,6 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(0);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
 
                 describe("When remove entities", {
@@ -74,9 +65,119 @@ class ViewTest extends buddy.BuddySuite {
 
                         s.abcd.entities.length.should.be(0);
                     });
-                    it("should correctly dispatch add signals", addCounter.should.be(300));
-                    it("should correctly dispatch remove signals", removeCounter.should.be(300));
                 });
+            });
+
+
+            describe("Signals", {
+                var s:MatchingViewSystem;
+                var e:Entity;
+                var r = "";
+
+                beforeAll({
+                    s = new MatchingViewSystem();
+                    Workflow.addSystem(s);
+                    s.ab.onAdded.add(function(id, a, b) r += '+');
+                    s.ab.onRemoved.add(function(id, a, b) r += '-');
+                    e = new Entity();
+                });
+
+                describe("When add Components", {
+                    beforeAll(e.add(new A(), new B()));
+                    it("should be dispatched", r.should.be("+"));
+                });
+
+                describe("Then add same Components", {
+                    beforeAll(e.add(new A(), new B()));
+                    it("should not be dispatched", r.should.be("+"));
+                });
+
+                describe("Then remove Components", {
+                    beforeAll(e.remove(A, B));
+                    it("should be dispatched", r.should.be("+-"));
+                });
+
+                describe("Then remove Components again", {
+                    beforeAll(e.remove(A, B));
+                    it("should not be dispatched", r.should.be("+-"));
+                });
+
+            });
+
+
+            describe("Iterating", {
+                var s = new IterViewSystem();
+
+                beforeEach({
+                    Workflow.dispose();
+                    Workflow.addSystem(s);
+                    s.result = '';
+                });
+
+                describe("Use Case", {
+
+                    beforeEach({
+                        for (i in 0...5) new Entity().add(new A(), new V(i));
+                    });
+
+                    describe("When remove Component while meta iterate", {
+                        beforeEach(Workflow.update(0));
+                        it("should has view with correct length", s.view.entities.length.should.be(2));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                    });
+
+                    describe("When remove Component while manually iterate", {
+                        beforeEach(s.whileIterManuallyRemoveComponent());
+                        it("should has view with correct length", s.view.entities.length.should.be(2));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                    });
+
+                    describe("When deactivate Entity while manually iterate", {
+                        beforeEach(s.whileIterManuallyDeactEntity());
+                        it("should has view with correct length", s.view.entities.length.should.be(2));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                    });
+
+                    describe("When destroy Entity while manually iterate", {
+                        beforeEach(s.whileIterManuallyDestroyEntity());
+                        it("should has view with correct length", s.view.entities.length.should.be(2));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                    });
+
+
+                    describe("When create Entity while manually iterate", {
+                        beforeEach(s.whileIterManuallyCreateEntity());
+                        it("should has view with correct length", s.view.entities.length.should.be(8));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4>_9>_1_9>_3_9>"));
+                    });
+
+                    describe("When destroy and create Entity while manually iterate", {
+                        beforeEach(s.whileIterManuallyDestroyAndCreateEntity());
+                        it("should has view with correct length", s.view.entities.length.should.be(5));
+                        it("should has correct result", s.result.should.be("0>1>2>3>4>_<09>_1_<29>_3_<49>"));
+                    });
+
+                });
+
+
+                describe("Stress", {
+
+                    beforeEach(new Entity().add(new A(), new V(0)));
+
+                    describe("When r/a/r/a Component while manually iterate", {
+                        beforeEach(s.whileIterRARA());
+                        it("should has view with correct length", s.view.entities.length.should.be(1));
+                        it("should has correct result", s.result.should.be("0>*<01><12>*"));
+                    });
+
+                    describe("When rr/aa/rr/aa Component while manually iterate", {
+                        beforeEach(s.whileIterRRAARRAA());
+                        it("should has view with correct length", s.view.entities.length.should.be(1));
+                        it("should has correct result", s.result.should.be("0>*<01><23>*"));
+                    });
+
+                });
+
             });
 
 
@@ -88,6 +189,7 @@ class ViewTest extends buddy.BuddySuite {
                     SameViewSystem.ab.should.be(SameViewSystem.ab1);
                     SameViewSystem.ab.should.be(SameViewSystem.ab2);
                     SameViewSystem.ab.should.be(SameViewSystem.ab3);
+                    SameViewSystem.ab.should.be(SameViewSystem.ab4);
                 });
                 it("should not add doublicates to the flow", {
                     Workflow.views.length.should.be(1);
@@ -95,13 +197,12 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Workflow::getView", {
+            describe("View Ref", {
                 describe("When view was defined somewhere already", {
                     var view = Workflow.getView(B, A);
                     beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-
                     it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
@@ -110,7 +211,6 @@ class ViewTest extends buddy.BuddySuite {
                     beforeAll(Workflow.dispose());
                     beforeAll(view.activate());
                     beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-
                     it("should be added to the flow", Workflow.views.length.should.be(1));
                     it("should matching entities correctly", view.entities.length.should.be(1));
                 });
@@ -121,7 +221,7 @@ class ViewTest extends buddy.BuddySuite {
     }
 }
 
-class ViewTestSystem1 extends echos.System {
+class MatchingViewSystem extends echos.System {
 
     public var a:View<A->Void>;
     public var b:View<B->Void>;
@@ -143,6 +243,7 @@ class SameViewSystem extends echos.System {
     public static var ab1:View<TAB>;
     public static var ab2:VAB;
     public static var ab3:View<{ a:A, b:B }>;
+    public static var ab4:View<A->B>;
 
     @u function abFunc(a:A, b:B) { }
     @u function baFunc(b:B, a:A) { }
@@ -173,4 +274,108 @@ abstract D(B) {
 
 class E extends A {
     public function new() super();
+}
+
+
+class IterViewSystem extends echos.System {
+    public var result = '';
+    public var view:View<A->V->Void>;
+
+    @a function ad(id:Entity, a:A, v:V) {
+        result += '$v>';
+    }
+
+    @r function rm(id:Entity, a:A, v:V) {
+        result += '<$v';
+    }
+
+    @u function whileIterByMetaRemoveComponent(id:Entity, a:A, v:V) {
+        if (v.val % 2 == 0) {
+            id.remove(A);
+            result += '-';
+        } else result += '$v';
+    }
+
+    public function whileIterManuallyRemoveComponent() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.remove(A);
+                result += '-';
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyDeactEntity() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.deactivate();
+                result += '-';
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyDestroyEntity() {
+        view.iter(function(id, a, v) {
+            if (v.val % 2 == 0) {
+                id.destroy();
+                result += '-';
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyCreateEntity() {
+        view.iter(function(id, a, v) {
+            result += '_';
+            if (v.val % 2 == 0) {
+                new Entity().add(new A(), new V(9));
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterManuallyDestroyAndCreateEntity() {
+        view.iter(function(id, a, v) {
+            result += '_';
+            if (v.val % 2 == 0) {
+                id.destroy();
+                new Entity().add(new A(), new V(9));
+            } else result += '$v';
+        });
+    }
+
+    public function whileIterRARA() {
+        view.iter(function(id, a, v) {
+            result += '*';
+            id.remove(V);
+            id.add(new V(1));
+            id.remove(V);
+            id.add(new V(2));
+            result += '*';
+        });
+    }
+
+    public function whileIterRRAARRAA() {
+        view.iter(function(id, a, v) {
+            result += '*';
+            id.remove(V);
+            id.remove(V);
+            id.add(new V(1));
+            id.add(new V(2));
+            id.remove(V);
+            id.remove(V);
+            id.add(new V(3));
+            id.add(new V(4));
+            result += '*';
+        });
+    }
+}
+
+
+class V {
+    public var val:Int;
+    public function new(val) {
+        this.val = val;
+    }
+    public function toString() {
+        return Std.string(val);
+    }
 }

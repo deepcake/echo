@@ -14,13 +14,18 @@ package echos;
 class System {
 
 
-    @:allow(echos.Workflow) function activate() {
+    @:allow(echos.Workflow) function __activate() {
         onactivate();
     }
 
-    @:allow(echos.Workflow) function deactivate() {
+    @:allow(echos.Workflow) function __deactivate() {
         ondeactivate();
     }
+
+    @:allow(echos.Workflow) function __update(dt:Float) {
+        // macro
+    }
+
 
     /**
      * Calls when system is added to the workflow
@@ -32,11 +37,6 @@ class System {
      */
     public function ondeactivate() { }
 
-    /**
-     * Calls on every `Workflow.update(dt)` call
-     * @param dt deltatime
-     */
-    public function update(dt:Float) { }
 
     public function toString():String return 'System';
 

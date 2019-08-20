@@ -35,12 +35,12 @@ class EntityTest extends buddy.BuddySuite {
                     it("should be activated", e.isActive().should.be(true));
                 });
 
-                describe("Then add a Void component", {
-                    beforeAll(e.add());
-                    it("should not exists a String component", e.exists(String).should.be(false));
-                    it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActive().should.be(true));
-                });
+                // describe("Then add a Void component", {
+                //     beforeAll(e.add());
+                //     it("should not exists a String component", e.exists(String).should.be(false));
+                //     it("should not get a String component", e.get(String).should.be(null));
+                //     it("should be activated", e.isActive().should.be(true));
+                // });
 
                 describe("Then add a String component 123", {
                     beforeAll(e.add("123"));
@@ -130,7 +130,7 @@ class EntityTest extends buddy.BuddySuite {
             });
 
 
-            describe("Status and Cache", {
+            describe("Status, Cache and Reuse", {
                 beforeAll(echos.Workflow.dispose());
 
                 describe("When init a non immediate Entity and then add a component", {
@@ -187,7 +187,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then activate after destroy", {
@@ -196,7 +196,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then deactivate after destroy", {
@@ -205,7 +205,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should not be activated", e.isActive().should.be(false));
                     it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(1));
+                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
                 });
 
                 describe("Then init a new immediate Entity", {
@@ -214,7 +214,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not exists a component", e.exists(ArrayComponent).should.be(false));
                     it("should be activated", e.isActive().should.be(true));
                     it("should have correct status", e.status().should.be(Active));
-                    it("should not exists cached", @:privateAccess echos.Workflow.idsCache.length.should.be(0));
+                    it("should not exists cached", @:privateAccess echos.Workflow.cache.length.should.be(0));
                 });
             });
 

@@ -10,9 +10,9 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Overview
  * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
- * `Entity` in that case is just an abstract over the `Int`. 
- * `View<T>` is a collection of the entities contained all components of requested types. 
- * `System` is a place for operating component data, collected by views. 
+ * `Entity` in that case is just an abstract over the `Int`, but with the ability to work with it as with a set of components like in other regular ECS frameworks. 
+ * `View<T>` is a collection of entities containing all of the required components of the requested types. 
+ * `System` is a place to process data collected by views. 
 
 #### Example
 ```haxe
@@ -53,9 +53,9 @@ class Example {
 
 // some visual component, openfl.dispaly.Sprite for example
 class Sprite { } 
-
-// abstracts can be used to create different Component classes from the same Base class without overhead
-class Vec2 { var x:Float; var y:Float; }
+// some 2d vector component
+class Vec2 { } 
+// abstracts can be used to create different component classes from the same base class without overhead
 @:forward abstract Velocity(Vec2) { 
   inline public function new(x, y) this = new Vec2(x, y);
 }
@@ -65,7 +65,7 @@ class Vec2 { var x:Float; var y:Float; }
 
 class Movement extends echos.System {
   // @update-functions will be called for each entity that contains all defined components;
-  // all types will became a component, except Float (reserved for delta time) and Int/Entity;
+  // all args become components, except Float (reserved for delta time) and Int/Entity;
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
@@ -78,7 +78,7 @@ class Movement extends echos.System {
 
   // @update-function without components will be called just once per system update;
   @update function printBodies(dt:Float) {
-    trace(bodies.entities.length);
+    trace(bodies.entities.length); // only one rabbit
     // another way to iterating over entities
     bodies.iter((entity, position, velocity) -> trace('#$entity vel = $velocity'));
   }
@@ -90,7 +90,7 @@ class Render extends echos.System {
   // @a, @u and @r are the shortcuts for @added, @update and @removed;
 
   // execution order of the @update-functions is the same to the definition order, 
-  // so it is possible to do some preparations before iterating over entities;
+  // so it is possible to do some preparations before or after iterating over entities;
   @u inline function beforeSpritePositionsUpdated() {
     trace('start updating sprite positions!');
   }
@@ -99,7 +99,7 @@ class Render extends echos.System {
     spr.y = pos.y;
   }
   @u inline function afterSpritePositionsUpdated() {
-    scene.sort(function(s1, s2) return s2.y - s1.y); // sort by y-axis for 2d
+    scene.sort(function(s1, s2) return s2.y - s1.y); // sort by y-axis for 2d, for example
     // rendering ...
   }
 
@@ -107,10 +107,10 @@ class Render extends echos.System {
   @a function onEntityWithSpriteAnpPositionAdded(spr:Sprite, pos:Position) {
     scene.push(spr);
   }
+  // even if callback was triggered by destroying the entity or removing a required component, 
+  // @removed-function will be called before that will actually happened, 
+  // so access to the component will be still exists;
   @r function onEntityWithSpriteAnpPositionRemoved(spr:Sprite, pos:Position, entity:Entity) {
-    // even if callback was triggered by destroying the entity or removing a Sprite component, 
-    // @removed-function will be called before that will actually happened, 
-    // so access to the component will be still exists;
     scene.remove(spr);
     trace('Oh My God! They removed $entity!');
   }

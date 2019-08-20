@@ -15,10 +15,14 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-    var entitiesMap:Map<Int, Int> = new Map(); // map (id : id) // TODO what keep in value ?
+    var iterating = false;
+
+    var incomplete = new Array<Entity>();
+
+    var statuses = new Map<Int, CollectingStatus>();
 
     /** List of matched entities */
-    public var entities(default, null):List<Entity> = new List();
+    public var entities(default, null) = new Array<Entity>();
 
 
     public function activate() {
@@ -30,7 +34,7 @@ class ViewBase {
 
     public function deactivate() {
         if (isActive()) {
-            while (entities.length > 0) entitiesMap.remove(entities.pop());
+            while (entities.length > 0) statuses.remove(entities.pop());
             Workflow.views.remove(this);
         }
     }
@@ -49,31 +53,68 @@ class ViewBase {
     }
 
     function isRequire(c:Int):Bool { // macro
+        // check that this component type is required
         return false;
     }
 
 
     function add(id:Int) {
-        entitiesMap.set(id, id);
-        entities.add(id);
+        if (iterating) {
+            addToIncomplete(id, status(id) == QueuedToRemove ? QueuedToRefresh : QueuedToAdd);
+        } else {
+            statuses[id] = Collected;
+            entities.push(id);
+        }
+        // macro on add call
     }
 
     function remove(id:Int) {
-        entities.remove(id);
-        entitiesMap.remove(id);
+        // macro on remove call
+        if (iterating) {
+            addToIncomplete(id, QueuedToRemove);
+        } else {
+            statuses.remove(id);
+            entities.remove(id);
+        }
     }
 
-    inline function exists(id:Int):Bool {
-        return entitiesMap.exists(id);
+
+    inline function status(id:Int):CollectingStatus {
+        return statuses.exists(id) ? statuses[id] : Candidate;
     }
 
 
     @:allow(echos.Workflow) function addIfMatch(id:Int) {
-        if (!exists(id) && isMatch(id)) add(id);
+        if (status(id) < QueuedToAdd && isMatch(id)) add(id);
     }
 
     @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        if (exists(id)) remove(id);
+        if (status(id) > QueuedToRemove) remove(id);
+    }
+
+
+    inline function addToIncomplete(id:Int, status:CollectingStatus) {
+        statuses[id] = status;
+        if (incomplete.indexOf(id) == -1) incomplete.push(id);
+    }
+
+    inline function flush() {
+        while (incomplete.length > 0) {
+            var id = incomplete.pop();
+            var status = status(id);
+            switch (status) {
+                case QueuedToRemove: 
+                    statuses.remove(id);
+                    entities.remove(id);
+                case QueuedToAdd: 
+                    statuses[id] = Collected;
+                    entities.push(id);
+                case QueuedToRefresh: 
+                    statuses[id] = Collected;
+                    // pushed already
+                default:
+            }
+        }
     }
 
 
@@ -82,6 +123,17 @@ class ViewBase {
     }
 
 
-    public function toString():String return 'ViewBase';
+    public function toString():String return 'View';
 
+
+}
+
+@:enum private abstract CollectingStatus(Int) {
+    var Candidate = 0;
+    var QueuedToRemove = 1;
+    var QueuedToAdd = 2;
+    var QueuedToRefresh = 3;
+    var Collected = 4;
+    @:op(A > B) static function gt(a:CollectingStatus, b:CollectingStatus):Bool;
+    @:op(A < B) static function lt(a:CollectingStatus, b:CollectingStatus):Bool;
 }

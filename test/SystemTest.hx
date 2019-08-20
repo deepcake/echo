@@ -137,7 +137,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2"));
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>22>2"));
+                    it("should has correct result", FlowSystem2.result.should.be(">2>>22"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -152,7 +152,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.destroy();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be("<<22<2"));
+                    it("should has correct result", FlowSystem2.result.should.be("<2<<22"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -183,7 +183,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.add(new FlowComponentA("3"));
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -199,7 +199,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.deactivate();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be("<<33<3"));
+                    it("should has correct result", FlowSystem2.result.should.be("<3<<33"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -214,7 +214,7 @@ class SystemTest extends buddy.BuddySuite {
                         FlowSystem2.result = "";
                         e.activate();
                     });
-                    it("should has correct result", FlowSystem2.result.should.be(">>33>3"));
+                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
                 });
                 describe("Then update", {
                     beforeAll({
@@ -294,7 +294,7 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using System with manually view", {
+            describe("System with manually defined View", {
                 var s = new ManualViewSystem();
                 var e:Entity;
 
@@ -329,57 +329,61 @@ class SystemTest extends buddy.BuddySuite {
             });
 
 
-            describe("Using System with overrided update", {
-                var s = new OverrideSystem();
-                var e:Entity;
+            describe("System on Activate/Deactivate", {
+                var s = new ActivateDeactivateSystem();
 
                 beforeAll({
                     Workflow.dispose();
                 });
 
-                describe("When add System", {
+                describe("Before add System", {
                     beforeAll({
-                        OverrideSystem.result = "";
+                        ActivateDeactivateSystem.result = "";
+                    });
+                    it("should not has views in the worklow", Workflow.views.length.should.be(0));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view not active", ActivateDeactivateSystem.view.isActive().should.be(false));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be(""));
+                });
+
+                describe("After add System", {
+                    beforeAll({
+                        ActivateDeactivateSystem.result = "";
                         Workflow.addSystem(s);
                     });
-                    it("should has correct result", OverrideSystem.result.should.be("a"));
-                });
-
-                describe("When add Entity", {
-                    beforeAll({
-                        OverrideSystem.result = "";
-                        e = new Entity().add(new FlowComponentA("1"));
-                    });
-                    it("should has correct result", OverrideSystem.result.should.be(""));
-                });
-
-                describe("Then update", {
-                    beforeAll({
-                        OverrideSystem.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", OverrideSystem.result.should.be("0u"));
-                });
-
-                describe("Then destroy Entity", {
-                    beforeAll({
-                        OverrideSystem.result = "";
-                        e.destroy();
-                    });
-                    it("should has correct result", OverrideSystem.result.should.be(""));
+                    it("should has views in the worklow", Workflow.views.length.should.be(2));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be("a"));
                 });
 
                 describe("When remove System", {
                     beforeAll({
-                        OverrideSystem.result = "";
+                        ActivateDeactivateSystem.result = "";
                         Workflow.removeSystem(s);
                     });
-                    it("should has correct result", OverrideSystem.result.should.be("d"));
+                    it("should has views in the worklow", Workflow.views.length.should.be(2));
+                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
+                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
+                    it("should has correct result", ActivateDeactivateSystem.result.should.be("d"));
                 });
             });
 
 
-            describe("Flow", {
+            describe("System with skipped funcs", {
+                var s = new IgnoredFunctionSystem();
+
+                beforeAll({
+                    Workflow.dispose();
+                    Workflow.addSystem(s);
+                    Workflow.update(0);
+                });
+
+                it("should skip", IgnoredFunctionSystem.result.should.be(''));
+            });
+
+
+            describe("Initialize/Dispose", {
                 var s1 = new FlowSystem1();
                 var s2 = new FlowSystem2();
                 var e:Entity;
@@ -405,12 +409,12 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of systems", Workflow.systems.length.should.be(2));
                     it("should have correct count of views", Workflow.views.length.should.be(3));
                     it("should have correct count of entities", Workflow.entities.length.should.be(81));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.idsCache.length.should.be(4));
-                    it("should have correct size of id map", @:privateAccess Workflow.ids.count().should.be(101));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(4));
+                    it("should have correct size of id map", @:privateAccess Workflow.statuses.count().should.be(101));
                     it("lost entity should have correct status", e.status().should.be(Active));
-                    describe("View<A>", {
+                    describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(81));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(81));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(1));
                     });
@@ -423,12 +427,12 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of systems", Workflow.systems.length.should.be(0));
                     it("should have correct count of views", Workflow.systems.length.should.be(0));
                     it("should have correct count of entities", Workflow.systems.length.should.be(0));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.idsCache.length.should.be(0));
-                    it("should have correct size of ids", @:privateAccess Workflow.ids.count().should.be(0));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(0));
+                    it("should have correct size of ids", @:privateAccess Workflow.statuses.count().should.be(0));
                     it("lost entity should have correct status", e.status().should.be(Invalid));
-                    describe("View<A>", {
+                    describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).entitiesMap.count().should.be(0));
+                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(0));
                     });
@@ -494,7 +498,6 @@ class FlowSystem2 extends System {
 }
 
 class ManualViewSystem extends echos.System {
-
     public static var result = "";
 
     var view:View<FlowComponentA->Void>;
@@ -507,14 +510,13 @@ class ManualViewSystem extends echos.System {
     @u inline function action() {
         view.iter(function(e, ca) result += '*${ca.value}*');
     }
-
 }
 
-class OverrideSystem extends echos.System {
+class ActivateDeactivateSystem extends echos.System {
     public static var result = "";
-    override function update(dt:Float) {
-        result += 'u';
-    }
+
+    public static var view:View<FlowComponentA->Void>;
+
     override function onactivate() {
         result += 'a';
     }
@@ -522,9 +524,37 @@ class OverrideSystem extends echos.System {
         result += 'd';
     }
 
-    @u function test(a:FlowComponentA, dt:Float) {
+    @u function test(a:FlowComponentB, dt:Float) {
         result += '$dt';
     }
+}
+
+class IgnoredFunctionSystem extends echos.System {
+    public static var result = "";
+
+    function shouldBeIgnored1() {
+        result += 'i';
+    }
+    function shouldBeIgnored2(a:FlowComponentA) {
+        result += 'i';
+    }
+    function shouldBeIgnored3(entity:Entity) {
+        result += 'i';
+    }
+
+    static inline function shouldBeIgnoredStatic() {
+        result += 'i';
+    }
+
+    @skip @u function shouldBeSkipped(a:FlowComponentA) {
+        result += 'i';
+    }
+
+    // override function __activate() { }
+
+    // override function __deactivate() { }
+
+    // override function __update(dt:Float) { }
 }
 
 class FlowComponentA {
