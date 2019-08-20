@@ -11,6 +11,7 @@ os:
 haxe:
   - "3.4.7"
   - "4.0.0-rc.2"
+  - "4.0.0-rc.3"
   - development
   
 matrix:
