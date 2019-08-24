@@ -220,11 +220,13 @@ class Workflow {
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {
+        if (status(id) == Active) {
+            for (v in views) {
+                v.removeIfMatch(id);
+            }
+        }
         for (cc in __componentContainers) {
             cc.remove(id);
-        }
-        for (v in views) {
-            v.removeIfMatch(id);
         }
     }
 
