@@ -36,6 +36,22 @@ class ViewTest extends buddy.BuddySuite {
                         s.abcd.entities.length.should.be(25);
                     });
 
+                    describe("When add one of Components", {
+                        beforeEach({
+                            for (e in entities) {
+                                e.add(new A());
+                            }
+                            Workflow.update(0);
+                        });
+                        it("should matching correctly", {
+                            s.a.entities.length.should.be(300);
+                            s.b.entities.length.should.be(150);
+                            s.ab.entities.length.should.be(150);
+                            s.bc.entities.length.should.be(50);
+                            s.abcd.entities.length.should.be(25);
+                        });
+                    });
+
                     describe("When remove one of Components", {
                         beforeEach({
                             for (e in entities) {
@@ -51,7 +67,7 @@ class ViewTest extends buddy.BuddySuite {
                             s.abcd.entities.length.should.be(0);
                         });
 
-                        describe("When add one of Components", {
+                        describe("When add one of Components back", {
                             beforeEach({
                                 for (e in entities) {
                                     e.add(new A());
@@ -136,38 +152,65 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("Signals", {
-                var s:MatchingViewSystem;
                 var e:Entity;
-                var r = "";
+                var r:String;
+                var s = new MatchingViewSystem();
+                var onad = (id:Entity, a:A, v:V) -> r += '+$v';
+                var onrm = (id:Entity, a:A, v:V) -> r += '-$v';
 
-                beforeAll({
-                    s = new MatchingViewSystem();
+                beforeEach({
+                    Workflow.dispose();
                     Workflow.addSystem(s);
-                    s.ab.onAdded.add(function(id, a, b) r += '+');
-                    s.ab.onRemoved.add(function(id, a, b) r += '-');
+                    s.av.onAdded.add(onad);
+                    s.av.onRemoved.add(onrm);
                     e = new Entity();
+                    r = '';
                 });
 
-                describe("When add Components", {
-                    beforeAll(e.add(new A(), new B()));
-                    it("should be dispatched", r.should.be("+"));
-                });
+                describe("When add matched Components", {
+                    beforeEach(e.add(new A(), new V(1)));
+                    it("should be dispatched", r.should.be("+1"));
 
-                describe("Then add same Components", {
-                    beforeAll(e.add(new A(), new B()));
-                    it("should not be dispatched", r.should.be("+"));
-                });
+                    describe("When add matched Components again", {
+                        beforeEach(e.add(new A(), new V(2)));
+                        it("should not be dispatched", r.should.be("+1"));
+                    });
 
-                describe("Then remove Components", {
-                    beforeAll(e.remove(A, B));
-                    it("should be dispatched", r.should.be("+-"));
-                });
+                    describe("When remove matched Components", {
+                        beforeEach(e.remove(A, V));
+                        it("should be dispatched", r.should.be("+1-1"));
 
-                describe("Then remove Components again", {
-                    beforeAll(e.remove(A, B));
-                    it("should not be dispatched", r.should.be("+-"));
-                });
+                        describe("When remove matched Components again", {
+                            beforeEach(e.remove(A, V));
+                            it("should not be dispatched", r.should.be("+1-1"));
+                        });
 
+                        describe("When add matched Components back", {
+                            beforeEach(e.add(new A(), new V(2)));
+                            it("should be dispatched", r.should.be("+1-1+2"));
+                        });
+                    });
+
+                    describe("When remove all of Components", {
+                        beforeEach(e.removeAll());
+                        it("should be dispatched", r.should.be("+1-1"));
+                    });
+
+                    describe("When deactivate Entity", {
+                        beforeEach(e.deactivate());
+                        it("should be dispatched", r.should.be("+1-1"));
+
+                        describe("When activate Entity", {
+                            beforeEach(e.activate());
+                            it("should be dispatched", r.should.be("+1-1+1"));
+                        });
+                    });
+
+                    describe("When destroy Entity", {
+                        beforeEach(e.destroy());
+                        it("should be dispatched", r.should.be("+1-1"));
+                    });
+                });
             });
 
 
@@ -295,6 +338,8 @@ class MatchingViewSystem extends echos.System {
     public var bc:View<B->C->Void>;
 
     public var abcd:View<A->B->C->D->Void>;
+
+    public var av:View<A->V->Void>;
 
 }
 
