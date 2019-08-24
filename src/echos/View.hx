@@ -15,12 +15,6 @@ class View<T> extends ViewBase { }
 class ViewBase {
 
 
-    var iterating = false;
-
-    var incomplete = new Array<Entity>();
-
-    var statuses = new Map<Int, CollectingStatus>();
-
     /** List of matched entities */
     public var entities(default, null) = new Array<Entity>();
 
@@ -34,7 +28,7 @@ class ViewBase {
 
     public function deactivate() {
         if (isActive()) {
-            while (entities.length > 0) statuses.remove(entities.pop());
+            while (entities.length > 0) entities.pop();
             Workflow.views.remove(this);
         }
     }
@@ -44,6 +38,14 @@ class ViewBase {
             if (v == this) return true;
         }
         return false;
+    }
+
+    public function size() {
+        var i = 0;
+        for (e in entities) {
+            if (e != Entity.NULL) i++;
+        }
+        return i;
     }
 
 
@@ -59,60 +61,42 @@ class ViewBase {
 
 
     function add(id:Int) {
-        if (iterating) {
-            addToIncomplete(id, status(id) == QueuedToRemove ? QueuedToRefresh : QueuedToAdd);
-        } else {
-            statuses[id] = Collected;
-            entities.push(id);
-        }
         // macro on add call
     }
 
     function remove(id:Int) {
         // macro on remove call
-        if (iterating) {
-            addToIncomplete(id, QueuedToRemove);
-        } else {
-            statuses.remove(id);
-            entities.remove(id);
-        }
-    }
-
-
-    inline function status(id:Int):CollectingStatus {
-        return statuses.exists(id) ? statuses[id] : Candidate;
     }
 
 
     @:allow(echos.Workflow) function addIfMatch(id:Int) {
-        if (status(id) < QueuedToAdd && isMatch(id)) add(id);
+        if (isMatch(id)) {
+            var index = entities.indexOf(id);
+            if (index == -1) {
+                entities.push(id);
+                add(id);
+            }
+        }
     }
 
     @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        if (status(id) > QueuedToRemove) remove(id);
+        var index = entities.indexOf(id);
+        if (index > -1) {
+            remove(id);
+            entities[index] = Entity.NULL;
+        }
     }
 
 
-    inline function addToIncomplete(id:Int, status:CollectingStatus) {
-        statuses[id] = status;
-        if (incomplete.indexOf(id) == -1) incomplete.push(id);
-    }
-
-    inline function flush() {
-        while (incomplete.length > 0) {
-            var id = incomplete.pop();
-            var status = status(id);
-            switch (status) {
-                case QueuedToRemove: 
-                    statuses.remove(id);
-                    entities.remove(id);
-                case QueuedToAdd: 
-                    statuses[id] = Collected;
-                    entities.push(id);
-                case QueuedToRefresh: 
-                    statuses[id] = Collected;
-                    // pushed already
-                default:
+    @:allow(echos.Workflow) function flush() {
+        var i = 0;
+        var length = entities.length;
+        while (i < length) {
+            if (entities[i] == Entity.NULL) {
+                entities.splice(i, 1);
+                length--;
+            } else {
+                i++;
             }
         }
     }
@@ -126,14 +110,4 @@ class ViewBase {
     public function toString():String return 'View';
 
 
-}
-
-@:enum private abstract CollectingStatus(Int) {
-    var Candidate = 0;
-    var QueuedToRemove = 1;
-    var QueuedToAdd = 2;
-    var QueuedToRefresh = 3;
-    var Collected = 4;
-    @:op(A > B) static function gt(a:CollectingStatus, b:CollectingStatus):Bool;
-    @:op(A < B) static function lt(a:CollectingStatus, b:CollectingStatus):Bool;
 }

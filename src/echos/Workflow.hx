@@ -88,6 +88,10 @@ class Workflow {
             #end
         }
 
+        for (v in views) {
+            v.flush();
+        }
+
         #if echos_profiling
         times.set("total", Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end
@@ -218,6 +222,9 @@ class Workflow {
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {
         for (cc in __componentContainers) {
             cc.remove(id);
+        }
+        for (v in views) {
+            v.removeIfMatch(id);
         }
     }
 

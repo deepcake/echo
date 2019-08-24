@@ -144,10 +144,12 @@ class ViewMacro {
                     var funcComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
                     var funcCallArgs = [ macro e ].concat(components.map(function(c) return macro ${ ccref(c.cls) }.get(e)));
                     var body = macro {
-                        this.iterating = true;
-                        for (e in entities) f($a{ funcCallArgs });
-                        this.flush();
-                        this.iterating = false;
+                        for (i in 0...entities.length) {
+                            var e = entities[i];
+                            if (e != echos.Entity.NULL) {
+                                f($a{ funcCallArgs });
+                            }
+                        }
                     }
                     def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', funcComplexType)], macro:Void, macro $body, Context.currentPos()));
                 }

@@ -16,6 +16,9 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
+    public static inline var NULL = -1;
+
+
     /**
      * Creates a new Entity instance  
      * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
