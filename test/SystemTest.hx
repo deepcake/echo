@@ -405,6 +405,7 @@ class SystemTest extends buddy.BuddySuite {
                             if (i % 5 == 0) e.deactivate(); // 20
                             if (i % 25 == 0) e.destroy(); // 4
                         }
+                        trace(Workflow.getView(FlowComponentA).entities);
                     });
                     it("should have correct count of systems", Workflow.systems.length.should.be(2));
                     it("should have correct count of views", Workflow.views.length.should.be(3));
@@ -413,8 +414,8 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct size of id map", @:privateAccess Workflow.statuses.count().should.be(101));
                     it("lost entity should have correct status", e.status().should.be(Active));
                     describe("View", {
-                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(81));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
+                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(81));
+                        //it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(1));
                     });
@@ -431,8 +432,8 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct size of ids", @:privateAccess Workflow.statuses.count().should.be(0));
                     it("lost entity should have correct status", e.status().should.be(Invalid));
                     describe("View", {
-                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).entities.length.should.be(0));
-                        it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
+                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(0));
+                        //it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
                         it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
                         it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(0));
                     });

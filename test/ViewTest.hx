@@ -5,65 +5,131 @@ using Lambda;
 
 class ViewTest extends buddy.BuddySuite {
     public function new() {
-        describe("Using Views", {
+        describe("View", {
 
             describe("Matching", {
                 var s = new MatchingViewSystem();
+                var entities = new Array<Entity>();
 
-                describe("When add entities", {
-                    beforeAll({
-                        Workflow.addSystem(s);
+                beforeEach({
+                    Workflow.dispose();
+                    Workflow.addSystem(s);
+                });
+
+                describe("When add Entities with random Components", {
+                    beforeEach({
                         for (i in 0...300) {
                             var e = new Entity();
                             e.add(new A());
                             if (i % 2 == 0) e.add(new B());
                             if (i % 3 == 0) e.add(new C());
-                            if (i % 5 == 0) e.add(new D());
-                            if (i % 6 == 0) e.add(new E());
+                            if (i % 4 == 0) e.add(new D());
+                            if (i % 5 == 0) e.add(new E());
+                            entities.push(e);
                         }
                     });
-                    it("should matching them correctly", {
+                    it("should matching correctly", {
                         s.a.entities.length.should.be(300);
                         s.b.entities.length.should.be(150);
-
                         s.ab.entities.length.should.be(150);
                         s.bc.entities.length.should.be(50);
-
-                        s.abcd.entities.length.should.be(10);
+                        s.abcd.entities.length.should.be(25);
                     });
-                });
 
-                describe("When remove components", {
-                    beforeAll({
-                        for(e in Workflow.entities) {
-                            e.remove(A);
-                        }
+                    describe("When remove one of Components", {
+                        beforeEach({
+                            for (e in entities) {
+                                e.remove(A);
+                            }
+                            Workflow.update(0);
+                        });
+                        it("should matching correctly", {
+                            s.a.entities.length.should.be(0);
+                            s.b.entities.length.should.be(150);
+                            s.ab.entities.length.should.be(0);
+                            s.bc.entities.length.should.be(50);
+                            s.abcd.entities.length.should.be(0);
+                        });
+
+                        describe("When add one of Components", {
+                            beforeEach({
+                                for (e in entities) {
+                                    e.add(new A());
+                                }
+                                Workflow.update(0);
+                            });
+                            it("should matching correctly", {
+                                s.a.entities.length.should.be(300);
+                                s.b.entities.length.should.be(150);
+                                s.ab.entities.length.should.be(150);
+                                s.bc.entities.length.should.be(50);
+                                s.abcd.entities.length.should.be(25);
+                            });
+                        });
                     });
-                    it("should matching them correctly", {
-                        s.a.entities.length.should.be(0);
-                        s.b.entities.length.should.be(150);
 
-                        s.ab.entities.length.should.be(0);
-                        s.bc.entities.length.should.be(50);
-
-                        s.abcd.entities.length.should.be(0);
+                    describe("When remove all of Components", {
+                        beforeEach({
+                            for (e in entities) {
+                                e.removeAll();
+                            }
+                            Workflow.update(0);
+                        });
+                        it("should matching correctly", {
+                            s.a.entities.length.should.be(0);
+                            s.b.entities.length.should.be(0);
+                            s.ab.entities.length.should.be(0);
+                            s.bc.entities.length.should.be(0);
+                            s.abcd.entities.length.should.be(0);
+                        });
                     });
-                });
 
-                describe("When remove entities", {
-                    beforeAll({
-                        for(e in Workflow.entities) {
-                            e.destroy();
-                        }
+                    describe("When deactivate Entity", {
+                        beforeEach({
+                            for(e in entities) {
+                                e.deactivate();
+                            }
+                            Workflow.update(0);
+                        });
+                        it("should matching correctly", {
+                            s.a.entities.length.should.be(0);
+                            s.b.entities.length.should.be(0);
+                            s.ab.entities.length.should.be(0);
+                            s.bc.entities.length.should.be(0);
+                            s.abcd.entities.length.should.be(0);
+                        });
+
+                        describe("When activate Entity", {
+                            beforeEach({
+                                for(e in entities) {
+                                    e.activate();
+                                }
+                                Workflow.update(0);
+                            });
+                            it("should matching correctly", {
+                                s.a.entities.length.should.be(300);
+                                s.b.entities.length.should.be(150);
+                                s.ab.entities.length.should.be(150);
+                                s.bc.entities.length.should.be(50);
+                                s.abcd.entities.length.should.be(25);
+                            });
+                        });
                     });
-                    it("should matching them correctly", {
-                        s.a.entities.length.should.be(0);
-                        s.b.entities.length.should.be(0);
 
-                        s.ab.entities.length.should.be(0);
-                        s.bc.entities.length.should.be(0);
-
-                        s.abcd.entities.length.should.be(0);
+                    describe("When destroy Entity", {
+                        beforeEach({
+                            for(e in entities) {
+                                e.destroy();
+                            }
+                            Workflow.update(0);
+                        });
+                        it("should matching correctly", {
+                            s.a.entities.length.should.be(0);
+                            s.b.entities.length.should.be(0);
+                            s.ab.entities.length.should.be(0);
+                            s.bc.entities.length.should.be(0);
+                            s.abcd.entities.length.should.be(0);
+                        });
                     });
                 });
             });
@@ -120,41 +186,40 @@ class ViewTest extends buddy.BuddySuite {
                         for (i in 0...5) new Entity().add(new A(), new V(i));
                     });
 
-                    describe("When remove Component while meta iterate", {
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
-                    });
-
                     describe("When remove Component while manually iterate", {
                         beforeEach(s.whileIterManuallyRemoveComponent());
+                        beforeEach(Workflow.update(0));
                         it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
                     });
 
                     describe("When deactivate Entity while manually iterate", {
                         beforeEach(s.whileIterManuallyDeactEntity());
+                        beforeEach(Workflow.update(0));
                         it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
                     });
 
                     describe("When destroy Entity while manually iterate", {
                         beforeEach(s.whileIterManuallyDestroyEntity());
+                        beforeEach(Workflow.update(0));
                         it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4><0-1<2-3<4-"));
+                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
                     });
 
 
                     describe("When create Entity while manually iterate", {
                         beforeEach(s.whileIterManuallyCreateEntity());
+                        beforeEach(Workflow.update(0));
                         it("should has view with correct length", s.view.entities.length.should.be(8));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4>_9>_1_9>_3_9>"));
+                        it("should has correct result", s.result.should.startWith("0>1>2>3>4>_9>_1_9>_3_9>"));
                     });
 
                     describe("When destroy and create Entity while manually iterate", {
                         beforeEach(s.whileIterManuallyDestroyAndCreateEntity());
+                        beforeEach(Workflow.update(0));
                         it("should has view with correct length", s.view.entities.length.should.be(5));
-                        it("should has correct result", s.result.should.be("0>1>2>3>4>_<09>_1_<29>_3_<49>"));
+                        it("should has correct result", s.result.should.startWith("0>1>2>3>4>_<09>_1_<29>_3_<49>"));
                     });
 
                 });
@@ -166,14 +231,14 @@ class ViewTest extends buddy.BuddySuite {
 
                     describe("When r/a/r/a Component while manually iterate", {
                         beforeEach(s.whileIterRARA());
-                        it("should has view with correct length", s.view.entities.length.should.be(1));
-                        it("should has correct result", s.result.should.be("0>*<01><12>*"));
+                        it("should has view with correct length", s.view.size().should.be(1));
+                        it("should has correct result", s.result.should.startWith("0>*<01><12>*"));
                     });
 
                     describe("When rr/aa/rr/aa Component while manually iterate", {
                         beforeEach(s.whileIterRRAARRAA());
-                        it("should has view with correct length", s.view.entities.length.should.be(1));
-                        it("should has correct result", s.result.should.be("0>*<01><23>*"));
+                        it("should has view with correct length", s.view.size().should.be(1));
+                        it("should has correct result", s.result.should.startWith("0>*<01><23>*"));
                     });
 
                 });
@@ -287,13 +352,6 @@ class IterViewSystem extends echos.System {
 
     @r function rm(id:Entity, a:A, v:V) {
         result += '<$v';
-    }
-
-    @u function whileIterByMetaRemoveComponent(id:Entity, a:A, v:V) {
-        if (v.val % 2 == 0) {
-            id.remove(A);
-            result += '-';
-        } else result += '$v';
     }
 
     public function whileIterManuallyRemoveComponent() {
