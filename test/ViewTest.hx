@@ -215,115 +215,124 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("Iterating", {
-                var s = new IterViewSystem();
+                var r:String;
+                var onad = (id:Entity, a:A, v:V) -> r += '+$v';
+                var onrm = (id:Entity, a:A, v:V) -> r += '-$v';
+                var s = new IteratingViewSystem();
 
                 beforeEach({
                     Workflow.dispose();
                     Workflow.addSystem(s);
-                    s.result = '';
+                    s.av.onAdded.add(onad);
+                    s.av.onRemoved.add(onrm);
+                    r = '';
+
+                    for (i in 0...5) {
+                        new Entity().add(new A(), new V(i));
+                    }
                 });
 
-                describe("Use Case", {
-
+                describe("When remove Component while iterating", {
                     beforeEach({
-                        for (i in 0...5) new Entity().add(new A(), new V(i));
+                        s.f = (id:Entity) -> id.remove(V);
+                        Workflow.update(0);
                     });
-
-                    describe("When remove Component while manually iterate", {
-                        beforeEach(s.whileIterManuallyRemoveComponent());
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
-                    });
-
-                    describe("When deactivate Entity while manually iterate", {
-                        beforeEach(s.whileIterManuallyDeactEntity());
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
-                    });
-
-                    describe("When destroy Entity while manually iterate", {
-                        beforeEach(s.whileIterManuallyDestroyEntity());
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(2));
-                        it("should has correct result", s.result.should.startWith("0>1>2>3>4><0-1<2-3<4-"));
-                    });
-
-
-                    describe("When create Entity while manually iterate", {
-                        beforeEach(s.whileIterManuallyCreateEntity());
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(8));
-                        it("should has correct result", s.result.should.startWith("0>1>2>3>4>_9>_1_9>_3_9>"));
-                    });
-
-                    describe("When destroy and create Entity while manually iterate", {
-                        beforeEach(s.whileIterManuallyDestroyAndCreateEntity());
-                        beforeEach(Workflow.update(0));
-                        it("should has view with correct length", s.view.entities.length.should.be(5));
-                        it("should has correct result", s.result.should.startWith("0>1>2>3>4>_<09>_1_<29>_3_<49>"));
-                    });
-
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-
-                describe("Stress", {
-
-                    beforeEach(new Entity().add(new A(), new V(0)));
-
-                    describe("When r/a/r/a Component while manually iterate", {
-                        beforeEach(s.whileIterRARA());
-                        it("should has view with correct length", s.view.size().should.be(1));
-                        it("should has correct result", s.result.should.startWith("0>*<01><12>*"));
+                describe("When remove all of Components while iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> id.removeAll();
+                        Workflow.update(0);
                     });
-
-                    describe("When rr/aa/rr/aa Component while manually iterate", {
-                        beforeEach(s.whileIterRRAARRAA());
-                        it("should has view with correct length", s.view.size().should.be(1));
-                        it("should has correct result", s.result.should.startWith("0>*<01><23>*"));
-                    });
-
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
+                describe("When destroy Entity while iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> id.destroy();
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
+
+                describe("When deactivate Entity while iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> id.deactivate();
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
+
+                describe("When create Entity while iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> new Entity().add(new A(), new V(9));
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(10));
+                    it("should has correct result", r.should.be("+0+1+2+3+4+9+9+9+9+9"));
+                });
+
+                describe("When destroy and create Entity while iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> {
+                            id.destroy();
+                            new Entity().add(new A(), new V(9));
+                        };
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(5));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
+                });
+
+                describe("When remove Component while inner iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> {
+                            s.av.iter((e, a, v) -> e.remove(V));
+                        }
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
+
+                describe("When remove all of Components while inner iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> {
+                            s.av.iter((e, a, v) -> e.removeAll());
+                        }
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
+
+                describe("When destroy Entity while inner iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> {
+                            s.av.iter((e, a, v) -> e.destroy());
+                        }
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
+
+                describe("When deactivate Entity while inner iterating", {
+                    beforeEach({
+                        s.f = (id:Entity) -> {
+                            s.av.iter((e, a, v) -> e.deactivate());
+                        }
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(0));
+                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                });
             });
-
-
-            describe("Same Param Types", {
-                beforeAll(Workflow.dispose());
-                beforeAll(Workflow.addSystem(new SameViewSystem()));
-                it("should not define doublicates", {
-                    SameViewSystem.ab.should.be(SameViewSystem.ba);
-                    SameViewSystem.ab.should.be(SameViewSystem.ab1);
-                    SameViewSystem.ab.should.be(SameViewSystem.ab2);
-                    SameViewSystem.ab.should.be(SameViewSystem.ab3);
-                    SameViewSystem.ab.should.be(SameViewSystem.ab4);
-                });
-                it("should not add doublicates to the flow", {
-                    Workflow.views.length.should.be(1);
-                });
-            });
-
-
-            describe("View Ref", {
-                describe("When view was defined somewhere already", {
-                    var view = Workflow.getView(B, A);
-                    beforeAll(Workflow.dispose());
-                    beforeAll(view.activate());
-                    beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-                    it("should be added to the flow", Workflow.views.length.should.be(1));
-                    it("should matching entities correctly", view.entities.length.should.be(1));
-                });
-                describe("When view was not defined before", {
-                    var view = Workflow.getView(D, C, B);
-                    beforeAll(Workflow.dispose());
-                    beforeAll(view.activate());
-                    beforeAll(new Entity().add(new A(), new B(), new C(), new D(), new E()));
-                    it("should be added to the flow", Workflow.views.length.should.be(1));
-                    it("should matching entities correctly", view.entities.length.should.be(1));
-                });
-            });
-
 
         });
     }
@@ -343,28 +352,19 @@ class MatchingViewSystem extends echos.System {
 
 }
 
-typedef TAB = { a:A, b:B };
-typedef VAB = View<{ a:A, b:B }>;
-class SameViewSystem extends echos.System {
+class IteratingViewSystem extends echos.System {
 
-    public static var ab:View<A->B->Void>;
-    public static var ba:View<B->A->Void>;
+    public var av:View<A->V->Void>;
 
-    public static var ab1:View<TAB>;
-    public static var ab2:VAB;
-    public static var ab3:View<{ a:A, b:B }>;
-    public static var ab4:View<A->B>;
+    @skip public var f:Entity->Void = null; // TODO fix skip
 
-    @u function abFunc(a:A, b:B) { }
-    @u function baFunc(b:B, a:A) { }
-    @u function cdFunc(c:B, d:A) { }
-
-    @u function abFloatEntityFunc(delta:Float, entity:Entity, a:A, b:B) { }
-    @u function abFloatIntFunc(a:A, delta:Float, id:Int, b:B) { }
-    @u function abEchoEntityFunc(entity:echos.Entity, a:A, b:B) { }
+    @u function update(id:Entity, a:A, v:V) {
+        if (f != null) {
+            f(id);
+        }
+    }
 
 }
-
 
 class A {
     public function new() { };
@@ -386,99 +386,8 @@ class E extends A {
     public function new() super();
 }
 
-
-class IterViewSystem extends echos.System {
-    public var result = '';
-    public var view:View<A->V->Void>;
-
-    @a function ad(id:Entity, a:A, v:V) {
-        result += '$v>';
-    }
-
-    @r function rm(id:Entity, a:A, v:V) {
-        result += '<$v';
-    }
-
-    public function whileIterManuallyRemoveComponent() {
-        view.iter(function(id, a, v) {
-            if (v.val % 2 == 0) {
-                id.remove(A);
-                result += '-';
-            } else result += '$v';
-        });
-    }
-
-    public function whileIterManuallyDeactEntity() {
-        view.iter(function(id, a, v) {
-            if (v.val % 2 == 0) {
-                id.deactivate();
-                result += '-';
-            } else result += '$v';
-        });
-    }
-
-    public function whileIterManuallyDestroyEntity() {
-        view.iter(function(id, a, v) {
-            if (v.val % 2 == 0) {
-                id.destroy();
-                result += '-';
-            } else result += '$v';
-        });
-    }
-
-    public function whileIterManuallyCreateEntity() {
-        view.iter(function(id, a, v) {
-            result += '_';
-            if (v.val % 2 == 0) {
-                new Entity().add(new A(), new V(9));
-            } else result += '$v';
-        });
-    }
-
-    public function whileIterManuallyDestroyAndCreateEntity() {
-        view.iter(function(id, a, v) {
-            result += '_';
-            if (v.val % 2 == 0) {
-                id.destroy();
-                new Entity().add(new A(), new V(9));
-            } else result += '$v';
-        });
-    }
-
-    public function whileIterRARA() {
-        view.iter(function(id, a, v) {
-            result += '*';
-            id.remove(V);
-            id.add(new V(1));
-            id.remove(V);
-            id.add(new V(2));
-            result += '*';
-        });
-    }
-
-    public function whileIterRRAARRAA() {
-        view.iter(function(id, a, v) {
-            result += '*';
-            id.remove(V);
-            id.remove(V);
-            id.add(new V(1));
-            id.add(new V(2));
-            id.remove(V);
-            id.remove(V);
-            id.add(new V(3));
-            id.add(new V(4));
-            result += '*';
-        });
-    }
-}
-
-
 class V {
-    public var val:Int;
-    public function new(val) {
-        this.val = val;
-    }
-    public function toString() {
-        return Std.string(val);
-    }
+    var val:Int;
+    public function new(val) this.val = val;
+    public function toString() return Std.string(val);
 }
