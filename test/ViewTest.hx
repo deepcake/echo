@@ -376,7 +376,7 @@ class IteratingViewSystem extends echos.System {
 
     public var av:View<A->V->Void>;
 
-    @skip public var f:Entity->Void = null; // TODO fix skip
+    public var f:Entity->Void = null; // TODO fix skip
 
     @u function update(id:Entity, a:A, v:V) {
         if (f != null) {

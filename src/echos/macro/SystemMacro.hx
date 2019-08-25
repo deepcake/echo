@@ -97,16 +97,21 @@ class SystemMacro {
             })
             .iter(function(field) {
                 switch (field.kind) {
+                    // defined var only
                     case FVar(cls, _) if (cls != null): {
                         var complexType = cls.followComplexType();
-                        var clsName = complexType.followName();
-
-                        // if it is a view
-                        if (viewDataCache.exists(clsName)) {
-                            // init
-                            field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
-
-                            definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
+                        switch (complexType) {
+                            // tpath only
+                            case TPath(_): {
+                                var clsName = complexType.followName();
+                                // if it is a view, it was built (and collected to cache) when followComplexType() was called
+                                if (viewDataCache.exists(clsName)) {
+                                    // init
+                                    field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
+                                    definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
+                                }
+                            }
+                            default:
                         }
                     }
                     default:
