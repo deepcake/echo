@@ -405,7 +405,6 @@ class SystemTest extends buddy.BuddySuite {
                             if (i % 5 == 0) e.deactivate(); // 20
                             if (i % 25 == 0) e.destroy(); // 4
                         }
-                        trace(Workflow.getView(FlowComponentA).entities);
                     });
                     it("should have correct count of systems", Workflow.systems.length.should.be(2));
                     it("should have correct count of views", Workflow.views.length.should.be(3));
