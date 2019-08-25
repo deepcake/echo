@@ -28,15 +28,15 @@ class BuildTest extends buddy.BuddySuite {
     }
 }
 
-abstract CompA(Int) {
+abstract CompA(String) {
     public function new() {
-        this = 1;
+        this = 'A';
     }
 }
 
-abstract CompB(Int) {
+abstract CompB(String) {
     public function new() {
-        this = 2;
+        this = 'B';
     }
 }
 
