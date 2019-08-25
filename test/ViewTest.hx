@@ -172,21 +172,21 @@ class ViewTest extends buddy.BuddySuite {
                     it("should be dispatched", r.should.be("+1"));
 
                     describe("When add matched Components again", {
-                        beforeEach(e.add(new A(), new V(2)));
+                        beforeEach(e.add(new V(2)));
                         it("should not be dispatched", r.should.be("+1"));
                     });
 
                     describe("When remove matched Components", {
-                        beforeEach(e.remove(A, V));
+                        beforeEach(e.remove(V));
                         it("should be dispatched", r.should.be("+1-1"));
 
                         describe("When remove matched Components again", {
-                            beforeEach(e.remove(A, V));
+                            beforeEach(e.remove(V));
                             it("should not be dispatched", r.should.be("+1-1"));
                         });
 
                         describe("When add matched Components back", {
-                            beforeEach(e.add(new A(), new V(2)));
+                            beforeEach(e.add(new V(2)));
                             it("should be dispatched", r.should.be("+1-1+2"));
                         });
                     });
@@ -194,21 +194,41 @@ class ViewTest extends buddy.BuddySuite {
                     describe("When remove all of Components", {
                         beforeEach(e.removeAll());
                         it("should be dispatched", r.should.be("+1-1"));
+
+                        describe("When remove all of Components again", {
+                            beforeEach(e.removeAll());
+                            it("should not be dispatched", r.should.be("+1-1"));
+                        });
                     });
 
                     describe("When deactivate Entity", {
                         beforeEach(e.deactivate());
                         it("should be dispatched", r.should.be("+1-1"));
 
+                        describe("When deactivate Entity again", {
+                            beforeEach(e.deactivate());
+                            it("should not be dispatched", r.should.be("+1-1"));
+                        });
+
                         describe("When activate Entity", {
                             beforeEach(e.activate());
                             it("should be dispatched", r.should.be("+1-1+1"));
+
+                            describe("When activate Entity again", {
+                                beforeEach(e.activate());
+                                it("should not be dispatched", r.should.be("+1-1+1"));
+                            });
                         });
                     });
 
                     describe("When destroy Entity", {
                         beforeEach(e.destroy());
                         it("should be dispatched", r.should.be("+1-1"));
+
+                        describe("When create new Entity (reuse)", {
+                            beforeEach(new Entity().add(new A(), new V(2)));
+                            it("should be dispatched", r.should.be("+1-1+2"));
+                        });
                     });
                 });
             });
