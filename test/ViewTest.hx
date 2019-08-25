@@ -252,9 +252,27 @@ class ViewTest extends buddy.BuddySuite {
                     }
                 });
 
+                describe("When iterating", {
+                    beforeEach({
+                        s.f = function(id, a, v) r += '$v';
+                        Workflow.update(0);
+                    });
+                    it("should has correct length", s.av.entities.length.should.be(5));
+                    it("should has correct result", r.should.be("+0+1+2+3+401234"));
+
+                    describe("When add an Entity and iterating", {
+                        beforeEach({
+                            new Entity().add(new A(), new V(5));
+                            Workflow.update(0);
+                        });
+                        it("should has correct length", s.av.entities.length.should.be(6));
+                        it("should has correct result", r.should.be("+0+1+2+3+401234+5012345"));
+                    });
+                });
+
                 describe("When remove Component while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) id.remove(V);
+                        s.f = function(id, a, v) id.remove(V);
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
@@ -263,7 +281,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When remove all of Components while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) id.removeAll();
+                        s.f = function(id, a, v) id.removeAll();
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
@@ -272,7 +290,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When destroy Entity while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) id.destroy();
+                        s.f = function(id, a, v) id.destroy();
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
@@ -281,7 +299,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When deactivate Entity while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) id.deactivate();
+                        s.f = function(id, a, v) id.deactivate();
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
@@ -290,7 +308,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When create Entity while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) new Entity().add(new A(), new V(9));
+                        s.f = function(id, a, v) new Entity().add(new A(), new V(9));
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(10));
@@ -299,7 +317,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When destroy and create Entity while iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) {
+                        s.f = function(id, a, v) {
                             id.destroy();
                             new Entity().add(new A(), new V(9));
                         };
@@ -311,7 +329,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When remove Component while inner iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) {
+                        s.f = function(id, a, v) {
                             s.av.iter(function(e, a, v) e.remove(V));
                         }
                         Workflow.update(0);
@@ -322,7 +340,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When remove all of Components while inner iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) {
+                        s.f = function(id, a, v) {
                             s.av.iter(function(e, a, v) e.removeAll());
                         }
                         Workflow.update(0);
@@ -333,7 +351,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When destroy Entity while inner iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) {
+                        s.f = function(id, a, v) {
                             s.av.iter(function(e, a, v) e.destroy());
                         }
                         Workflow.update(0);
@@ -344,7 +362,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When deactivate Entity while inner iterating", {
                     beforeEach({
-                        s.f = function(id:Entity) {
+                        s.f = function(id, a, v) {
                             s.av.iter(function(e, a, v) e.deactivate());
                         }
                         Workflow.update(0);
@@ -376,11 +394,11 @@ class IteratingViewSystem extends echos.System {
 
     public var av:View<A->V->Void>;
 
-    public var f:Entity->Void = null; // TODO fix skip
+    public var f:Entity->A->V->Void = null;
 
     @u function update(id:Entity, a:A, v:V) {
         if (f != null) {
-            f(id);
+            f(id, a, v);
         }
     }
 
