@@ -1,232 +1,339 @@
-import echos.Entity.Status;
 import echos.Entity;
 
 using buddy.Should;
 
 class EntityTest extends buddy.BuddySuite {
     public function new() {
-        describe("Using Entity", {
-
+        describe("Entity", {
             var e:Entity;
+            var a:ComponentA;
+            var b:ComponentB;
 
-            describe("Immediate Arg", {
-                describe("When init an immediate Entity", {
-                    beforeAll(echos.Workflow.dispose());
-                    beforeAll(e = new Entity());
-                    it("should be immediate added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should be activated", e.isActive().should.be(true));
+            beforeEach({
+                echos.Workflow.dispose();
+                a = new ComponentA(1);
+                b = new ComponentB(2);
+            });
+
+            describe("When create Entity (immediate = true)", {
+                beforeEach({
+                    e = new Entity(true);
                 });
-                describe("When init a non immediate Entity", {
-                    beforeAll(echos.Workflow.dispose());
-                    beforeAll(e = new Entity(false));
-                    it("should not be immediate added to the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActive().should.be(false));
+                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                it("should be activated", e.isActive().should.be(true));
+
+                describe("When add a ComponentA", {
+                    beforeEach({
+                        e.add(a);
+                    });
+                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                    it("should be activated", e.isActive().should.be(true));
+                    it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                    it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                    it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                    it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+
+                    describe("When add a ComponentB", {
+                        beforeEach({
+                            e.add(b);
+                        });
+                        it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                        it("should be activated", e.isActive().should.be(true));
+                        it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                        it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                        it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                        it("should get a ComponentB", e.get(ComponentB).should.be(b));
+
+                        describe("When add a new ComponentB", {
+                            var b2 = new ComponentB(2);
+                            beforeEach({
+                                e.add(b2);
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                            it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                            it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                            it("should not get an old ComponentB", e.get(ComponentB).should.not.be(b));
+                            it("should get a new ComponentB", e.get(ComponentB).should.be(b2));
+                        });
+
+                        describe("When remove a ComponentA", {
+                            beforeEach({
+                                e.remove(ComponentA);
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                            it("should get a ComponentB", e.get(ComponentB).should.be(b));
+
+                            describe("When remove a ComponentA again", {
+                                beforeEach({
+                                    e.remove(ComponentA);
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                                it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                                it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            });
+
+                            describe("When remove a ComponentB", {
+                                beforeEach({
+                                    e.remove(ComponentB);
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                                it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                                it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                            });
+
+                            describe("When add a ComponentA", {
+                                beforeEach({
+                                    e.add(a);
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                                it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                                it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                                it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            });
+                        });
+
+                        describe("When remove all of components", {
+                            beforeEach({
+                                e.removeAll();
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                            it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+
+                            describe("When remove all of components again", {
+                                beforeEach({
+                                    e.removeAll();
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                                it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                                it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                            });
+                        });
+
+                        describe("When activate Entity", {
+                            beforeEach({
+                                e.activate();
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                            it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                            it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                            it("should get a ComponentB", e.get(ComponentB).should.be(b));
+
+                            describe("When activate Entity again", {
+                                beforeEach({
+                                    e.activate();
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                                it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                                it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                                it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            });
+                        });
+
+                        describe("When deactivate Entity", {
+                            beforeEach({
+                                e.deactivate();
+                            });
+                            it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                            it("should not be activated", e.isActive().should.be(false));
+                            it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                            it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                            it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                            it("should get a ComponentB", e.get(ComponentB).should.be(b));
+
+                            describe("When deactivate Entity again", {
+                                beforeEach({
+                                    e.deactivate();
+                                });
+                                it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                                it("should not be activated", e.isActive().should.be(false));
+                                it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                                it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                                it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                                it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            });
+
+                            describe("When activate Entity", {
+                                beforeEach({
+                                    e.activate();
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                                it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                                it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                                it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            });
+                        });
+
+                        describe("When destroy Entity", {
+                            beforeEach({
+                                e.destroy();
+                            });
+                            it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                            it("should not be activated", e.isActive().should.be(false));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                            it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+
+                            describe("When create new Entity (reuse)", {
+                                beforeEach({
+                                    e = new Entity();
+                                });
+                                it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                                it("should be activated", e.isActive().should.be(true));
+                                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                                it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                                it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                            });
+                        });
+
+                        describe("When create new Entity", {
+                            beforeEach({
+                                e = new Entity();
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(2));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                            it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                        });
+
+                        describe("When remove ComponentA and ComponentB at once", {
+                            beforeEach({
+                                e.remove(ComponentA, ComponentB);
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                            it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                        });
+
+                        describe("When remove ComponentA and ComponentB chained", {
+                            beforeEach({
+                                e.remove(ComponentA).remove(ComponentB);
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                            it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                            it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                            it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                        });
+                    });
+                });
+
+                describe("When add a ComponentA and ComponentB at once", {
+                    beforeEach({
+                        e.add(a, b);
+                    });
+                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                    it("should be activated", e.isActive().should.be(true));
+                    it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                    it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                    it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                    it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                });
+
+                describe("When add a ComponentA and ComponentB chained", {
+                    beforeEach({
+                        e.add(a).add(b);
+                    });
+                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                    it("should be activated", e.isActive().should.be(true));
+                    it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                    it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                    it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                    it("should get a ComponentB", e.get(ComponentB).should.be(b));
                 });
             });
 
-
-            describe("Add a Component", {
-                beforeAll(echos.Workflow.dispose());
-
-                describe("When init an immediate Entity", {
-                    beforeAll(e = new Entity());
-                    it("should not exists a String component", e.exists(String).should.be(false));
-                    it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActive().should.be(true));
+            describe("When create Entity (immediate = false)", {
+                beforeEach({
+                    e = new Entity(false);
                 });
+                it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                it("should not be activated", e.isActive().should.be(false));
+                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+                it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                it("should not get a ComponentB", e.get(ComponentB).should.be(null));
 
-                // describe("Then add a Void component", {
-                //     beforeAll(e.add());
-                //     it("should not exists a String component", e.exists(String).should.be(false));
-                //     it("should not get a String component", e.get(String).should.be(null));
-                //     it("should be activated", e.isActive().should.be(true));
-                // });
-
-                describe("Then add a String component 123", {
-                    beforeAll(e.add("123"));
-                    it("should exists a String component 123", e.exists(String).should.be(true));
-                    it("should get a String component 123", e.get(String).should.be("123"));
-                    it("should be activated", e.isActive().should.be(true));
-                });
-
-                describe("Then add a String component 321", {
-                    beforeAll(e.add("321"));
-                    it("should exists a String component 321", e.exists(String).should.be(true));
-                    it("should get a String component 321", e.get(String).should.be("321"));
-                    it("should be activated", e.isActive().should.be(true));
-                });
-
-                describe("Then remove a String component", {
-                    beforeAll(e.remove(String));
-                    it("should not exists a String component", e.exists(String).should.be(false));
-                    it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActive().should.be(true));
-                });
-
-                describe("Then remove a String component again", {
-                    beforeAll(e.remove(String));
-                    it("should not exists a String component", e.exists(String).should.be(false));
-                    it("should not get a String component", e.get(String).should.be(null));
-                    it("should be activated", e.isActive().should.be(true));
-                });
-
-                describe("Then add a String component 123 after removing", {
-                    beforeAll(e.add("123"));
-                    it("should exists a String component 123", e.exists(String).should.be(true));
-                    it("should get a String component 123", e.get(String).should.be("123"));
-                    it("should be activated", e.isActive().should.be(true));
-                });
-            });
-
-
-            describe("Add a few Components at once", {
-                beforeAll(echos.Workflow.dispose());
-
-                describe("When init an immediate Entity and then add a few components at once", {
-                    var a = new ArrayComponent();
-                    var i8 = new IntComponent(8);
-                    beforeAll(e = new Entity().add(a, "a", i8));
-                    it("should exists all of components", {
-                        e.exists(ArrayComponent).should.be(true);
-                        e.exists(String).should.be(true);
-                        e.exists(IntComponent).should.be(true);
+                describe("When add a ComponentA", {
+                    beforeEach({
+                        e.add(a);
                     });
-                    it("should get all of components", {
-                        e.get(ArrayComponent).should.be(a);
-                        e.get(String).should.be("a");
-                        e.get(IntComponent).should.be(i8);
-                    });
-                });
-
-                describe("Then re-add all of components at once", {
-                    var b = new ArrayComponent();
-                    var i9 = new IntComponent(9);
-                    beforeAll(e.add(b, "b", i9));
-                    it("should exists all of components", {
-                        e.exists(ArrayComponent).should.be(true);
-                        e.exists(String).should.be(true);
-                        e.exists(IntComponent).should.be(true);
-                    });
-                    it("should get all of new components", {
-                        e.get(ArrayComponent).should.be(b);
-                        e.get(String).should.be("b");
-                        e.get(IntComponent).should.be(i9);
-                    });
-                });
-
-                describe("Then remove all of components at once", {
-                    beforeAll(e.remove(ArrayComponent, String, IntComponent));
-                    it("should not exists all of components", {
-                        e.exists(ArrayComponent).should.be(false);
-                        e.exists(String).should.be(false);
-                        e.exists(IntComponent).should.be(false);
-                    });
-                    it("should not get all of components", {
-                        e.get(ArrayComponent).should.be(null);
-                        e.get(String).should.be(null);
-                        e.get(IntComponent).should.be(null);
-                    });
-                });
-            });
-
-
-            describe("Status, Cache and Reuse", {
-                beforeAll(echos.Workflow.dispose());
-
-                describe("When init a non immediate Entity and then add a component", {
-                    beforeAll(e = new Entity(false).add(new ArrayComponent()));
                     it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be deactivated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Inactive));
-                });
-
-                describe("Then activate", {
-                    beforeAll(e.activate());
-                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActive().should.be(true));
-                    it("should have correct status", e.status().should.be(Active));
-                });
-
-                describe("Then activate again", {
-                    beforeAll(e.activate());
-                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActive().should.be(true));
-                    it("should have correct status", e.status().should.be(Active));
-                });
-
-                describe("Then deactivate", {
-                    beforeAll(e.deactivate());
-                    it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
                     it("should not be activated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Inactive));
-                });
+                    it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                    it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                    it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
+                    it("should not get a ComponentB", e.get(ComponentB).should.be(null));
 
-                describe("Then deactivate again", {
-                    beforeAll(e.deactivate());
-                    it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Inactive));
-                });
+                    describe("When add a ComponentB", {
+                        beforeEach({
+                            e.add(b);
+                        });
+                        it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                        it("should not be activated", e.isActive().should.be(false));
+                        it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                        it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                        it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                        it("should get a ComponentB", e.get(ComponentB).should.be(b));
 
-                describe("Then activate after deactivate", {
-                    beforeAll(e.activate());
-                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should exists a component", e.exists(ArrayComponent).should.be(true));
-                    it("should be activated", e.isActive().should.be(true));
-                    it("should have correct status", e.status().should.be(Active));
-                });
-
-                describe("Then destroy", {
-                    beforeAll(e.destroy());
-                    it("should be removed from the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
-                });
-
-                describe("Then activate after destroy", {
-                    beforeAll(e.activate());
-                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
-                });
-
-                describe("Then deactivate after destroy", {
-                    beforeAll(e.activate());
-                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
-                    it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should have correct status", e.status().should.be(Cached));
-                    it("should exists cached", @:privateAccess echos.Workflow.cache.length.should.be(1));
-                });
-
-                describe("Then init a new immediate Entity", {
-                    beforeAll(e = new Entity());
-                    it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
-                    it("should not exists a component", e.exists(ArrayComponent).should.be(false));
-                    it("should be activated", e.isActive().should.be(true));
-                    it("should have correct status", e.status().should.be(Active));
-                    it("should not exists cached", @:privateAccess echos.Workflow.cache.length.should.be(0));
+                        describe("When activate Entity", {
+                            beforeEach({
+                                e.activate();
+                            });
+                            it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
+                            it("should be activated", e.isActive().should.be(true));
+                            it("should has a ComponentA", e.exists(ComponentA).should.be(true));
+                            it("should get a ComponentA", e.get(ComponentA).should.be(a));
+                            it("should has a ComponentB", e.exists(ComponentB).should.be(true));
+                            it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                        });
+                    });
                 });
             });
-
-
         });
     }
 }
 
-abstract ArrayComponent(Array<String>) {
-    public function new() this = [ "hello" ];
+class ComponentA {
+    var val:Int;
+    public function new(val) this.val = val;
+    public function toString() return Std.string(val);
 }
 
-abstract IntComponent(Null<Int>) {
-    public function new(value:Int) this = value;
+abstract ComponentB(ComponentA) {
+    public function new(val) this = new ComponentA(val);
 }
