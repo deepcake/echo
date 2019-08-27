@@ -86,27 +86,15 @@ class Macro {
         #end
     }
 
-    
 
-    public static function followComplexType(cls:ComplexType) {
-        return ComplexTypeTools.toType(cls).follow().toComplexType();
+    public static function followComplexType(ct:ComplexType) {
+        return ComplexTypeTools.toType(ct).follow().toComplexType();
     }
 
-    public static function followName(cls:ComplexType):String {
-        var t = tp(followComplexType(cls));
-
-        function paramFollowName(p:TypeParam):String {
-            switch (p) {
-                case TPType(cls):
-                    return followName(cls);
-                case x: throw 'Unexp $x';
-            }
-        }
-        var params = '';
-        if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramFollowName).join(', ') + '>';
-
-        return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
+    public static function followName(ct:ComplexType):String {
+        return new Printer().printComplexType(followComplexType(ct));
     }
+
 
     public static function tp(t:ComplexType):TypePath {
         return switch(t) {
