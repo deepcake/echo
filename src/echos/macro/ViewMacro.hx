@@ -75,7 +75,7 @@ class ViewMacro {
 
 
     static function ccref(ct:ComplexType) {
-        return macro ${ getComponentContainer(ct).expr(Context.currentPos()) }.inst();
+        return macro $i{ getComponentContainer(ct).followName() }.inst();
     }
 
 

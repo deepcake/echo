@@ -88,7 +88,7 @@ abstract Entity(Int) from Int to Int {
         var componentExprs = components
             .map(function(c){
                 var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
-                return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().add(id, $c);
+                return macro @:privateAccess $i{ ct.followName() }.inst().add(id, $c);
             });
 
         var exprs = []
@@ -116,7 +116,7 @@ abstract Entity(Int) from Int to Int {
         var componentExprs = types
             .map(function(t){
                 var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
-                return macro @:privateAccess ${ ct.expr(Context.currentPos()) }.inst().remove(id);
+                return macro @:privateAccess $i{ ct.followName() }.inst().remove(id);
             });
 
         var requireExprs = types
@@ -151,7 +151,7 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().get(id) ];
+        var exprs = [ macro return $i{ ct.followName() }.inst().get(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose
@@ -168,7 +168,7 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return ${ ct.expr(Context.currentPos()) }.inst().exists(id) ];
+        var exprs = [ macro return $i{ ct.followName() }.inst().exists(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose

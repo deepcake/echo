@@ -107,7 +107,8 @@ class SystemMacro {
                                 // if it is a view, it was built (and collected to cache) when followComplexType() was called
                                 if (viewDataCache.exists(clsName)) {
                                     // init
-                                    field.kind = FVar(complexType, macro ${ complexType.expr(Context.currentPos()) }.inst());
+                                    field.kind = FVar(complexType, macro $i{clsName}.inst());
+
                                     definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
                                 }
                             }
@@ -143,7 +144,7 @@ class SystemMacro {
                                 var viewComplexType = getView(components);
 
                                 // instant define and init
-                                fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro ${ viewComplexType.expr(Context.currentPos()) }.inst(), Context.currentPos()));
+                                fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro $i{viewClsName}.inst(), Context.currentPos()));
 
                                 definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components });
                             }

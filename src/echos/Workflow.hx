@@ -135,7 +135,8 @@ class Workflow {
             .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
             .array();
         var viewComplexType = ViewMacro.createViewType(components).toComplexType();
-        return macro ${ viewComplexType.expr(Context.currentPos()) }.inst();
+        var viewClsName = viewComplexType.followName();
+        return macro $i{viewClsName}.inst();
     }
 
 
