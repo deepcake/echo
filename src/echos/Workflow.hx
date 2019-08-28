@@ -19,16 +19,10 @@ class Workflow {
 
     static var __nextEntityId = 0;
 
+    static var entityCache = new Array<Int>();
+    static var entityStatuses = new Map<Int, Status>();
 
-    static var __componentContainers = new Array<echos.macro.ComponentBuilder.ComponentContainer<Dynamic>>();
-
-    static function regComponentContainer(cc:echos.macro.ComponentBuilder.ComponentContainer<Dynamic>) {
-        __componentContainers.push(cc);
-    }
-
-
-    static var cache = new Array<Int>();
-    static var statuses = new Map<Int, Status>();
+    static var containers = new Array<echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer>();
 
     @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
     @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
@@ -49,7 +43,7 @@ class Workflow {
      * @return String
      */
     public static function toString():String {
-        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${cache.length} ]'; // TODO version or something
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${entityCache.length} ]'; // TODO version or something
 
         #if echos_profiling
         ret += ' : ${ times.get("total") } ms'; // total
@@ -109,14 +103,14 @@ class Workflow {
         for (v in views) {
             v.dispose();
         }
-        for (cc in __componentContainers) {
+        for (cc in containers) {
             cc.dispose();
         }
-        while (cache.length > 0) {
-            cache.pop();
+        while (entityCache.length > 0) {
+            entityCache.pop();
         }
         while (--__nextEntityId > -1) {
-            statuses.remove(__nextEntityId);
+            entityStatuses.remove(__nextEntityId);
         }
         __nextEntityId = 0;
     }
@@ -178,12 +172,12 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = cache.length > 0 ? cache.pop() : __nextEntityId++;
+        var id = entityCache.length > 0 ? entityCache.pop() : __nextEntityId++;
         if (immediate) {
-            statuses[id] = Active;
+            entityStatuses[id] = Active;
             entities.add(id);
         } else {
-            statuses[id] = Inactive;
+            entityStatuses[id] = Inactive;
         }
         return id;
     }
@@ -193,14 +187,14 @@ class Workflow {
         if (status(id) < Cached) { // Active or Inactive
             remove(id);
             removeComponents(id);
-            cache.push(id);
-            statuses[id] = Cached;
+            entityCache.push(id);
+            entityStatuses[id] = Cached;
         }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            statuses[id] = Active;
+            entityStatuses[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
@@ -210,12 +204,12 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
-            statuses[id] = Inactive;
+            entityStatuses[id] = Inactive;
         }
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return statuses.exists(id) ? statuses[id] : Invalid;
+        return entityStatuses.exists(id) ? entityStatuses[id] : Invalid;
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {
@@ -224,7 +218,7 @@ class Workflow {
                 v.removeIfMatch(id);
             }
         }
-        for (cc in __componentContainers) {
+        for (cc in containers) {
             cc.remove(id);
         }
     }

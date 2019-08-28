@@ -3,11 +3,9 @@ package echos.macro;
 #if macro
 import echos.macro.MacroTools.*;
 import echos.macro.MacroBuilder.*;
-
 import haxe.macro.Expr.ComplexType;
-
-using haxe.macro.Context;
 using echos.macro.MacroTools;
+using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 using Lambda;
 
@@ -39,11 +37,11 @@ class ComponentBuilder {
                 var componentContainerTypePath = tpath([], componentContainerClsName, []);
                 var componentContainerComplexType = TPath(componentContainerTypePath);
 
-                var def = macro class $componentContainerClsName {
+                var def = macro class $componentContainerClsName implements echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer {
 
                     static var instance = new $componentContainerTypePath();
 
-                    @:keep inline public static function inst():$componentContainerComplexType {
+                    @:keep public static inline function inst():$componentContainerComplexType {
                         return instance;
                     }
 
@@ -52,23 +50,27 @@ class ComponentBuilder {
                     var components = new echos.macro.ComponentBuilder.ComponentContainer<$componentCls>();
 
                     function new() {
-                        @:privateAccess echos.Workflow.regComponentContainer(this.components);
+                        @:privateAccess echos.Workflow.containers.push(this);
                     }
 
-                    inline public function get(id:Int):$componentCls {
+                    public inline function get(id:Int):$componentCls {
                         return components.get(id);
                     }
 
-                    inline public function exists(id:Int):Bool {
+                    public inline function exists(id:Int):Bool {
                         return components.exists(id);
                     }
 
-                    inline function add(id:Int, c:$componentCls) {
+                    public inline function add(id:Int, c:$componentCls) {
                         components.add(id, c);
                     }
 
-                    inline function remove(id:Int) {
+                    public inline function remove(id:Int) {
                         components.remove(id);
+                    }
+
+                    public inline function dispose() {
+                        components.dispose();
                     }
 
                 }
@@ -166,3 +168,8 @@ abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
 #end
 
 typedef ComponentContainer<T> = #if echos_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;
+
+interface DestroyableRemovableComponentContainer {
+    function remove(id:Int):Void;
+    function dispose():Void;
+}

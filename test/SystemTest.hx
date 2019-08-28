@@ -6,7 +6,7 @@ using Lambda;
 
 class SystemTest extends buddy.BuddySuite {
     public function new() {
-        describe("Using Systems", {
+        describe("System", {
 
 
             describe("Using @update functions", {
@@ -409,8 +409,8 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of systems", Workflow.systems.length.should.be(2));
                     it("should have correct count of views", Workflow.views.length.should.be(3));
                     it("should have correct count of entities", Workflow.entities.length.should.be(81));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(4));
-                    it("should have correct size of id map", @:privateAccess Workflow.statuses.count().should.be(101));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.entityCache.length.should.be(4));
+                    it("should have correct size of id map", @:privateAccess Workflow.entityStatuses.count().should.be(101));
                     it("lost entity should have correct status", e.status().should.be(Active));
                     describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(81));
@@ -427,8 +427,8 @@ class SystemTest extends buddy.BuddySuite {
                     it("should have correct count of systems", Workflow.systems.length.should.be(0));
                     it("should have correct count of views", Workflow.systems.length.should.be(0));
                     it("should have correct count of entities", Workflow.systems.length.should.be(0));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.cache.length.should.be(0));
-                    it("should have correct size of ids", @:privateAccess Workflow.statuses.count().should.be(0));
+                    it("should have correct count of cached ids", @:privateAccess Workflow.entityCache.length.should.be(0));
+                    it("should have correct size of ids", @:privateAccess Workflow.entityStatuses.count().should.be(0));
                     it("lost entity should have correct status", e.status().should.be(Invalid));
                     describe("View", {
                         it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(0));
@@ -444,6 +444,9 @@ class SystemTest extends buddy.BuddySuite {
         });
     }
 }
+
+
+
 
 class FlowSystem1 extends System {
 
