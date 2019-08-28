@@ -3,11 +3,9 @@ package echos;
 import echos.Entity.Status;
 
 #if macro
-import echos.macro.*;
 import haxe.macro.Expr;
-import haxe.macro.Type;
+using echos.macro.MacroTools;
 using haxe.macro.Context;
-using echos.macro.Macro;
 using Lambda;
 #end
 
@@ -22,9 +20,9 @@ class Workflow {
     static var __nextEntityId = 0;
 
 
-    static var __componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>();
+    static var __componentContainers = new Array<echos.macro.ComponentBuilder.ComponentContainer<Dynamic>>();
 
-    static function regComponentContainer(cc:echos.macro.ComponentMacro.ComponentContainer<Dynamic>) {
+    static function regComponentContainer(cc:echos.macro.ComponentBuilder.ComponentContainer<Dynamic>) {
         __componentContainers.push(cc);
     }
 
@@ -134,7 +132,7 @@ class Workflow {
             .map(function(type) return type.identName().getType().follow().toComplexType())
             .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
             .array();
-        var viewComplexType = ViewMacro.createViewType(components).toComplexType();
+        var viewComplexType = echos.macro.ViewBuilder.createViewType(components).toComplexType();
         var viewClsName = viewComplexType.followName();
         return macro $i{viewClsName}.inst();
     }

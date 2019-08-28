@@ -19,7 +19,7 @@ using Lambda;
  */
 @:final
 @:dce
-class Macro {
+class MacroTools {
 
     public static function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
         return {

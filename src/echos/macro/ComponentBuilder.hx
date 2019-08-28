@@ -1,17 +1,17 @@
 package echos.macro;
 
 #if macro
-import echos.macro.Macro.*;
+import echos.macro.MacroTools.*;
 import echos.macro.MacroBuilder.*;
 
 import haxe.macro.Expr.ComplexType;
 
 using haxe.macro.Context;
-using echos.macro.Macro;
+using echos.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using Lambda;
 
-class ComponentMacro {
+class ComponentBuilder {
 
 
     static var componentIndex = -1;
@@ -49,7 +49,7 @@ class ComponentMacro {
 
                     // instance
 
-                    var components = new echos.macro.ComponentMacro.ComponentContainer<$componentCls>();
+                    var components = new echos.macro.ComponentBuilder.ComponentContainer<$componentCls>();
 
                     function new() {
                         @:privateAccess echos.Workflow.regComponentContainer(this.components);

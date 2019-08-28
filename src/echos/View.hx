@@ -6,7 +6,7 @@ package echos;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echos.macro.ViewMacro.build())
+@:genericBuild(echos.macro.ViewBuilder.build())
 #end
 class View<T> extends ViewBase { }
 

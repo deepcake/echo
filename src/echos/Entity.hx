@@ -1,10 +1,10 @@
 package echos;
 
 #if macro
-import echos.macro.*;
+import echos.macro.ComponentBuilder;
 import haxe.macro.Expr;
+using echos.macro.MacroTools;
 using haxe.macro.Context;
-using echos.macro.Macro;
 using Lambda;
 #end
 
@@ -87,7 +87,7 @@ abstract Entity(Int) from Int to Int {
 
         var componentExprs = components
             .map(function(c){
-                var ct = ComponentMacro.getComponentContainer(c.typeof().follow().toComplexType());
+                var ct = ComponentBuilder.getComponentContainer(c.typeof().follow().toComplexType());
                 return macro @:privateAccess $i{ ct.followName() }.inst().add(id, $c);
             });
 
@@ -115,13 +115,13 @@ abstract Entity(Int) from Int to Int {
 
         var componentExprs = types
             .map(function(t){
-                var ct = ComponentMacro.getComponentContainer(t.identName().getType().follow().toComplexType());
+                var ct = ComponentBuilder.getComponentContainer(t.identName().getType().follow().toComplexType());
                 return macro @:privateAccess $i{ ct.followName() }.inst().remove(id);
             });
 
         var requireExprs = types
             .map(function(t){
-                return ComponentMacro.getComponentId(t.identName().getType().follow().toComplexType());
+                return ComponentBuilder.getComponentId(t.identName().getType().follow().toComplexType());
             })
             .map(function(i){
                 return macro @:privateAccess v.isRequire($v{i});
@@ -150,7 +150,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
+        var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return $i{ ct.followName() }.inst().get(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
@@ -167,7 +167,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var ct = ComponentMacro.getComponentContainer(type.identName().getType().follow().toComplexType());
+        var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return $i{ ct.followName() }.inst().exists(id) ];
         var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 

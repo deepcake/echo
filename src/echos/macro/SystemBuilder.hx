@@ -1,10 +1,10 @@
 package echos.macro;
 
 #if macro
-import echos.macro.Macro.*;
+import echos.macro.MacroTools.*;
 import echos.macro.MacroBuilder.*;
-import echos.macro.ViewMacro.*;
-import echos.macro.ComponentMacro.*;
+import echos.macro.ViewBuilder.*;
+import echos.macro.ComponentBuilder.*;
 
 import echos.macro.MacroBuilder;
 import haxe.macro.Context;
@@ -14,12 +14,12 @@ import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using echos.macro.Macro;
+using echos.macro.MacroTools;
 using echos.macro.MacroBuilder;
 using StringTools;
 using Lambda;
 
-class SystemMacro {
+class SystemBuilder {
 
 
     public static var EXCLUDE_META = [ 'skip' ];
