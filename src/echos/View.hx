@@ -8,7 +8,7 @@ package echos;
 #if !macro
 @:genericBuild(echos.macro.ViewBuilder.build())
 #end
-class View<T> extends ViewBase { }
+class View<Rest> extends ViewBase { }
 
 
 @:noCompletion
