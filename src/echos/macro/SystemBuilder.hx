@@ -22,13 +22,25 @@ using Lambda;
 class SystemBuilder {
 
 
-    public static var EXCLUDE_META = [ 'skip' ];
-    public static var ADD_META = [ 'added', 'ad', 'a' ];
-    public static var REMOVE_META = [ 'removed', 'rm', 'r' ];
-    public static var UPDATE_META = [ 'update', 'up', 'u' ];
+    static var SKIP_META = [ 'skip' ];
+    static var AD_META = [ 'added', 'ad', 'a' ];
+    static var RM_META = [ 'removed', 'rm', 'r' ];
+    static var UPD_META = [ 'update', 'up', 'u' ];
 
     public static var systemIndex = -1;
     public static var systemIds = new Map<String, Int>();
+
+
+    static function notSkipped(field:Field) {
+        return !containsMeta(field, SKIP_META);
+    }
+
+    static function containsMeta(field:Field, metas:Array<String>) {
+        return field.meta
+            .exists(function(me) {
+                return metas.exists(function(name) return me.name == name);
+            });
+    }
 
 
     public static function build() {
@@ -59,12 +71,20 @@ class SystemBuilder {
 
         function notNull<T>(e:Null<T>) return e != null;
 
+        // @meta f(a:T1, b:T2, deltatime:Float) --> a, b, dt
         function metaFuncArgToCallArg(a:FunctionArg) {
             return switch (a.type.followComplexType()) {
                 case macro:StdTypes.Float : macro dt;
                 case macro:StdTypes.Int : macro id;
                 case macro:echos.Entity : macro id;
                 default: macro $i{ a.name };
+            }
+        }
+
+        function metaFuncArgIsEntity(a:FunctionArg) {
+            return switch (a.type.followComplexType()) {
+                case macro:StdTypes.Int, macro:echos.Entity : true;
+                default: false;
             }
         }
 
@@ -92,9 +112,7 @@ class SystemBuilder {
 
         // find and init manually defined views
         fields
-            .filter(function(field) {
-                return !hasMeta(field, EXCLUDE_META);
-            })
+            .filter(notSkipped)
             .iter(function(field) {
                 switch (field.kind) {
                     // defined var only
@@ -123,12 +141,8 @@ class SystemBuilder {
 
         // find and init meta defined views
         fields
-            .filter(function(field) {
-                return field.hasMeta(UPDATE_META) || field.hasMeta(ADD_META) || field.hasMeta(REMOVE_META);
-            })
-            .filter(function(field) {
-                return !hasMeta(field, EXCLUDE_META);
-            })
+            .filter(notSkipped)
+            .filter(containsMeta.bind(_, UPD_META.concat(AD_META).concat(RM_META)))
             .iter(function(field) {
                 switch (field.kind) {
                     case FFun(func): {
@@ -156,33 +170,39 @@ class SystemBuilder {
             } );
 
 
-        function procMetaFunc(field:Field, meta:Array<String>) {
-            if (!hasMeta(field, EXCLUDE_META) && hasMeta(field, meta)) {
-                switch (field.kind) {
-                    case FFun(func):
-                        var funcName = field.name;
-                        var callArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
+        function procMetaFunc(field:Field) {
+            return switch (field.kind) {
+                case FFun(func): {
+                    var funcName = field.name;
+                    var funcCallArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
+                    var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
 
-                        var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
+                    if (components.length > 0) {
+                        // view iterate
 
-                        if (components.length > 0) {
+                        var viewClsName = getViewName(components);
+                        var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
+                        var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 
-                            var viewClsName = getViewName(components);
-                            var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-                            var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
+                        { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 
-                            return { name: funcName, args: callArgs, view: view, viewargs: viewArgs };
+                    } else {
+
+                        if (func.args.exists(metaFuncArgIsEntity)) {
+                            // every entity iterate
+                            Context.warning("Are you sure that you want to iterate over all of the entities? If not, you should to add some components", field.pos);
+
+                            { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER };
 
                         } else {
-
-                            return { name: funcName, args: callArgs, view: null, viewargs: null };
-
+                            // single call
+                            { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL };
                         }
-                    default:
-                }
-            }
 
-            return null;
+                    }
+                }
+                default: null;
+            }
         }
 
 
@@ -192,9 +212,9 @@ class SystemBuilder {
         }
 
 
-        var ufuncs = fields.map(procMetaFunc.bind(_, UPDATE_META)).filter(notNull);
-        var afuncs = fields.map(procMetaFunc.bind(_, ADD_META)).filter(notNull);
-        var rfuncs = fields.map(procMetaFunc.bind(_, REMOVE_META)).filter(notNull);
+        var ufuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
+        var afuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, AD_META)).map(procMetaFunc).filter(notNull);
+        var rfuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, RM_META)).map(procMetaFunc).filter(notNull);
 
         var listeners = afuncs.concat(rfuncs);
 
@@ -205,12 +225,20 @@ class SystemBuilder {
 
         var updateExprs = []
             .concat(
-                ufuncs.map(function(f){
-                    if (f.view == null) {
-                        return macro $i{ f.name }($a{ f.args });
-                    } else {
-                        var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                        return macro $i{ f.view.name }.iter($fwrapper);
+                ufuncs.map(function(f) {
+                    return switch (f.type) {
+                        case SINGLE_CALL: {
+                            macro $i{ f.name }($a{ f.args });
+                        }
+                        case VIEW_ITER: {
+                            var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
+                            macro $i{ f.view.name }.iter($fwrapper);
+                        }
+                        case ENTITY_ITER: {
+                            macro for (id in echos.Workflow.entities) {
+                                $i{ f.name }($a{ f.args });
+                            }
+                        }
                     }
                 })
             );
@@ -290,4 +318,11 @@ class SystemBuilder {
     }
 
 }
+
+@:enum abstract MetaFuncType(Int) {
+    var SINGLE_CALL;
+    var VIEW_ITER;
+    var ENTITY_ITER;
+}
+
 #end
