@@ -14,15 +14,15 @@ package echos;
 class System {
 
 
-    @:allow(echos.Workflow) function __activate() {
+    @:allow(echos.Workflow) function __activate__() {
         onactivate();
     }
 
-    @:allow(echos.Workflow) function __deactivate() {
+    @:allow(echos.Workflow) function __deactivate__() {
         ondeactivate();
     }
 
-    @:allow(echos.Workflow) function __update(dt:Float) {
+    @:allow(echos.Workflow) function __update__(dt:Float) {
         // macro
     }
 

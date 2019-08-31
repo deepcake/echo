@@ -56,12 +56,12 @@ class SystemBuilder {
             switch (field.kind) {
                 case FFun(func): 
                     switch (field.name) {
-                        case '__update':
-                            Context.error('Do not override the `__update` function! Use `@update` meta instead! More info at README example', field.pos);
-                        case '__activate':
-                            Context.error('Do not override the `__activate` function! `onactivate` can be overrided instead!', field.pos);
-                        case '__deactivate':
-                            Context.error('Do not override the `__deactivate` function! `ondeactivate` can be overrided instead!', field.pos);
+                        case '__update__':
+                            Context.error('Do not override the `__update__` function! Use `@update` meta instead! More info at README example', field.pos);
+                        case '__activate__':
+                            Context.error('Do not override the `__activate__` function! `onactivate` can be overrided instead!', field.pos);
+                        case '__deactivate__':
+                            Context.error('Do not override the `__deactivate__` function! `ondeactivate` can be overrided instead!', field.pos);
                         default:
                     }
                 default:
@@ -71,12 +71,12 @@ class SystemBuilder {
 
         function notNull<T>(e:Null<T>) return e != null;
 
-        // @meta f(a:T1, b:T2, deltatime:Float) --> a, b, dt
+        // @meta f(a:T1, b:T2, deltatime:Float) --> a, b, __dt__
         function metaFuncArgToCallArg(a:FunctionArg) {
             return switch (a.type.followComplexType()) {
-                case macro:StdTypes.Float : macro dt;
-                case macro:StdTypes.Int : macro id;
-                case macro:echos.Entity : macro id;
+                case macro:StdTypes.Float : macro __dt__;
+                case macro:StdTypes.Int : macro __entity__;
+                case macro:echos.Entity : macro __entity__;
                 default: macro $i{ a.name };
             }
         }
@@ -182,7 +182,7 @@ class SystemBuilder {
 
                         var viewClsName = getViewName(components);
                         var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-                        var viewArgs = [ arg('id', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
+                        var viewArgs = [ arg('__entity__', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 
                         { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 
@@ -220,7 +220,7 @@ class SystemBuilder {
 
         // define signal listener wrappers
         listeners.iter(function(f) {
-            fields.push(fvar([], [], '__${f.name}', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
+            fields.push(fvar([], [], '__${f.name}Signal__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
 
         var updateExprs = []
@@ -235,7 +235,7 @@ class SystemBuilder {
                             macro $i{ f.view.name }.iter($fwrapper);
                         }
                         case ENTITY_ITER: {
-                            macro for (id in echos.Workflow.entities) {
+                            macro for (__entity__ in echos.Workflow.entities) {
                                 $i{ f.name }($a{ f.args });
                             }
                         }
@@ -247,7 +247,7 @@ class SystemBuilder {
             .concat( // init signal listener wrappers
                 listeners.map(function(f){
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                    return macro $i{'__${f.name}'} = $fwrapper;
+                    return macro $i{'__${f.name}Signal__'} = $fwrapper;
                 })
             )
             .concat( // activate views
@@ -257,12 +257,12 @@ class SystemBuilder {
             )
             .concat( // add added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}Signal__' });
                 })
             )
             .concat( // add removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}Signal__' });
                 })
             )
             .concat(
@@ -270,14 +270,14 @@ class SystemBuilder {
             )
             .concat( // call added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Signal__' });
                 })
             );
 
         var deactivateExprs = []
             .concat( // call removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Signal__' });
                 })
             )
             .concat(
@@ -285,29 +285,29 @@ class SystemBuilder {
             )
             .concat( // remove added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}Signal__' });
                 })
             )
             .concat( // remove removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}' });
+                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Signal__' });
                 })
             )
             .concat( // null signal wrappers 
                 listeners.map(function(f) {
-                    return macro $i{'__${f.name}'} = null;
+                    return macro $i{'__${f.name}Signal__'} = null;
                 })
             );
 
 
         if (updateExprs.length > 0) {
 
-            fields.push(ffun([APublic, AOverride], '__update', [arg('dt', macro:Float)], null, macro $b{ updateExprs }, Context.currentPos()));
+            fields.push(ffun([APublic, AOverride], '__update__', [arg('__dt__', macro:Float)], null, macro $b{ updateExprs }, Context.currentPos()));
 
         }
 
-        fields.push(ffun([APublic, AOverride], '__activate', [], null, macro $b{ activateExprs }, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], '__deactivate', [], null, macro $b{ deactivateExprs }, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro $b{ activateExprs }, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro $b{ deactivateExprs }, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));
