@@ -32,7 +32,7 @@ script:
   - haxelib run travix java
 
   - haxelib run travix interp -D echos_array_cc
-  - haxelib run travix node -D echos_array_cc
+  # - haxelib run travix node -D echos_array_cc
   - haxelib run travix cpp -D echos_array_cc
   - haxelib run travix neko -D echos_array_cc
   - haxelib run travix python -D echos_array_cc
