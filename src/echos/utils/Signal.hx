@@ -39,6 +39,14 @@ abstract Signal<T>(Array<T>) {
         #end
     }
 
+    public function size() {
+        var i = 0;
+        for (listener in this) {
+            if (listener != null) i++;
+        }
+        return i;
+    }
+
 
     inline function del(i:Int) {
         this.splice(i, 1);

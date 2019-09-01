@@ -78,8 +78,8 @@ class BuildTest extends buddy.BuddySuite {
                 describe("When add System to the flow", {
                     beforeEach(Workflow.addSystem(arSys));
                     it("should correctly add listeners", {
-                        StandaloneA.a.onAdded.length.should.be(3);
-                        StandaloneA.a.onRemoved.length.should.be(3);
+                        StandaloneA.a.onAdded.size().should.be(3);
+                        StandaloneA.a.onRemoved.size().should.be(3);
                     });
 
                     describe("When create Entities", {
@@ -103,8 +103,8 @@ class BuildTest extends buddy.BuddySuite {
                     describe("When remove System from the flow", {
                         beforeEach(Workflow.removeSystem(arSys));
                         it("should correctly remove listeners", {
-                            StandaloneA.a.onAdded.length.should.be(0);
-                            StandaloneA.a.onRemoved.length.should.be(0);
+                            StandaloneA.a.onAdded.size().should.be(0);
+                            StandaloneA.a.onRemoved.size().should.be(0);
                         });
                     });
 
@@ -113,8 +113,8 @@ class BuildTest extends buddy.BuddySuite {
 
                         beforeEach(Workflow.addSystem(araSys));
                         it("should correctly add listeners", {
-                            StandaloneA.a.onAdded.length.should.be(4);
-                            StandaloneA.a.onRemoved.length.should.be(4);
+                            StandaloneA.a.onAdded.size().should.be(4);
+                            StandaloneA.a.onRemoved.size().should.be(4);
                         });
 
                         describe("When create Entities", {
@@ -138,8 +138,8 @@ class BuildTest extends buddy.BuddySuite {
                         describe("When remove a second System with equal View", {
                             beforeEach(Workflow.removeSystem(araSys));
                             it("should correctly remove listeners", {
-                                StandaloneA.a.onAdded.length.should.be(3);
-                                StandaloneA.a.onRemoved.length.should.be(3);
+                                StandaloneA.a.onAdded.size().should.be(3);
+                                StandaloneA.a.onRemoved.size().should.be(3);
                             });
 
                             describe("When create Entities", {
