@@ -220,7 +220,7 @@ class SystemBuilder {
 
         // define signal listener wrappers
         listeners.iter(function(f) {
-            fields.push(fvar([], [], '__${f.name}Signal__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
+            fields.push(fvar([], [], '__${f.name}Listener__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
 
         var updateExprs = []
@@ -247,7 +247,7 @@ class SystemBuilder {
             .concat( // init signal listener wrappers
                 listeners.map(function(f){
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                    return macro $i{'__${f.name}Signal__'} = $fwrapper;
+                    return macro $i{'__${f.name}Listener__'} = $fwrapper;
                 })
             )
             .concat( // activate views
@@ -257,12 +257,12 @@ class SystemBuilder {
             )
             .concat( // add added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}Listener__' });
                 })
             )
             .concat( // add removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}Listener__' });
                 })
             )
             .concat(
@@ -270,14 +270,14 @@ class SystemBuilder {
             )
             .concat( // call added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Listener__' });
                 })
             );
 
         var deactivateExprs = []
             .concat( // call removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Listener__' });
                 })
             )
             .concat(
@@ -285,17 +285,17 @@ class SystemBuilder {
             )
             .concat( // remove added-listeners
                 afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}Listener__' });
                 })
             )
             .concat( // remove removed-listeners
                 rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Signal__' });
+                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
                 })
             )
             .concat( // null signal wrappers 
                 listeners.map(function(f) {
-                    return macro $i{'__${f.name}Signal__'} = null;
+                    return macro $i{'__${f.name}Listener__'} = null;
                 })
             );
 
