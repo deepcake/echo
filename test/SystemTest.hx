@@ -1,571 +1,290 @@
-import echos.Entity.Status;
-import echos.*;
-
 using buddy.Should;
-using Lambda;
+
+import echos.View;
+import echos.Workflow;
+import echos.Entity;
 
 class SystemTest extends buddy.BuddySuite {
     public function new() {
-        describe("System", {
+        describe("Building", {
 
+            beforeEach({
+                Workflow.dispose();
+                BuildResult.value = '';
+            });
 
-            describe("Using @update functions", {
-                beforeAll(Workflow.dispose());
+            describe("Views", {
 
-                var s = new FlowSystem1();
+                describe("When View defined with same components but different ways", {
+                    it("should be equals", {
+                        DefineViewSystem.func.should.be(StandaloneAB.ab);
+                        DefineViewSystem.funcReversed.should.be(StandaloneAB.ab);
+                        DefineViewSystem.funcShort.should.be(StandaloneAB.ab);
+                        DefineViewSystem.anon.should.be(StandaloneAB.ab);
+                        DefineViewSystem.anonTypedef.should.be(StandaloneAB.ab);
+                        DefineViewSystem.viewTypedef.should.be(StandaloneAB.ab);
+                        DefineViewSystem.rest.should.be(StandaloneAB.ab);
+                    });
+
+                    describe("When add System to the flow", {
+                        beforeEach(Workflow.addSystem(new DefineViewSystem()));
+                        beforeEach(Workflow.addSystem(new StandaloneAB()));
+
+                        it("should be added to the flow only single time", {
+                            Workflow.views.length.should.be(1);
+                        });
+                    });
+                });
+
+            });
+
+            describe("Using @update metas", {
+                var updSys = new UpdateMetaGeneration();
 
                 describe("When add System", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.addSystem(s);
+                    beforeEach(Workflow.addSystem(updSys));
+                    it("should has correct result", {
+                        BuildResult.value.should.be('^');
                     });
-                    it("should be added to the flow", Workflow.systems.length.should.be(1));
-                    it("should has correct result", FlowSystem1.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be("[*]"));
-                });
 
-                describe("Then add Entity A1+B2", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        new Entity().add(new FlowComponentA("1"), new FlowComponentB("2"));
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be("[1*2]"));
-                });
+                    describe("When add Entities", {
+                        beforeEach({
+                            for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC());
+                        });
+                        it("should has correct result", {
+                            BuildResult.value.should.be('^');
+                        });
 
-                describe("Then add Entity A3+B4", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        new Entity().add(new FlowComponentA("3")).add(new FlowComponentB("4"));
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be("[13*24]"));
-                });
+                        describe("When update", {
+                            beforeEach(Workflow.update(0));
+                            it("should has correct result", {
+                                BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_');
+                            });
 
-                describe("Then remove System", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.removeSystem(s);
-                    });
-                    it("should be removed from the flow", Workflow.systems.length.should.be(0));
-                    it("should has correct result", FlowSystem1.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem1.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem1.result.should.be(""));
-                });
+                            describe("When remove System", {
+                                beforeEach(Workflow.removeSystem(updSys));
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_$');
+                                });
 
-            });
-
-
-            describe("Using @added/@removed functions", {
-                beforeAll(Workflow.dispose());
-
-                var s = new FlowSystem2();
-                var e:Entity;
-
-                describe("When add System", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.addSystem(s);
+                                describe("When update", {
+                                    beforeEach(Workflow.update(0));
+                                    it("should has correct result", {
+                                        BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_$');
+                                    });
+                                });
+                            });
+                        });
                     });
-                    it("should be added to the flow", Workflow.systems.length.should.be(1));
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-                describe("Then add Entity A1", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e = new Entity().add(new FlowComponentA("1"));
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(">1"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-                describe("Then remove A1", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.remove(FlowComponentA);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("<1"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-
-                describe("Then add Entity A2+B2", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e = new Entity().add(new FlowComponentA("2"), new FlowComponentB("2"));
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(">2>>22"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("*22*"));
-                });
-
-                describe("Then destroy Entity A2+B2", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.destroy();
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("<2<<22"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-
-                describe("Then add Entity B3", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e = new Entity().add(new FlowComponentB("3"));
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-                describe("Then add A3", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.add(new FlowComponentA("3"));
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("*33*"));
-                });
-
-
-                describe("Then deactivate Entity", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.deactivate();
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("<3<<33"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-                describe("Then activate Entity", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.activate();
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(">3>>33"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("*33*"));
-                });
-
-
-                describe("Then remove System", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.removeSystem(s);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("<3<<33"));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-
-                describe("Then destroy Entity", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        e.destroy();
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(""));
-                });
-
-            });
-
-
-            describe("Add System after Entity", {
-                var s = new FlowSystem2();
-                var e:Entity;
-
-                beforeAll({
-                    Workflow.dispose();
-                    e = new Entity().add(new FlowComponentA("1"), new FlowComponentB("1"));
-                });
-
-                describe("When add System", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.addSystem(s);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be(">1>>11"));
-                });
-
-                describe("Then update", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("*11*"));
-                });
-
-                describe("Then remove System", {
-                    beforeAll({
-                        FlowSystem2.result = "";
-                        Workflow.removeSystem(s);
-                    });
-                    it("should has correct result", FlowSystem2.result.should.be("<1<<11"));
                 });
             });
 
+            describe("Using @added and @removed metas", {
+                var arSys = new AddedRemovedMetaGeneration();
+                var entities:Array<Entity>;
 
-            describe("System with manually defined View", {
-                var s = new ManualViewSystem();
-                var e:Entity;
+                describe("When add System with already created Entities", {
+                    beforeEach({
+                        entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+                    });
 
-                beforeAll({
-                    Workflow.dispose();
-                    Workflow.addSystem(s);
+                    describe("When add System to the flow", {
+                        beforeEach(Workflow.addSystem(arSys));
+                        it("should has correct result", {
+                            BuildResult.value.should.be('+A+A>A>A+Ae+Ae');
+                        });
+
+                        describe("When remove System from the flow", {
+                            beforeEach(Workflow.removeSystem(arSys));
+                            it("should has correct result", {
+                                BuildResult.value.should.be('+A+A>A>A+Ae+Ae<A<A-A-A-Ae-Ae');
+                            });
+                        });
+                    });
                 });
 
-                describe("When add Entity", {
-                    beforeAll({
-                        ManualViewSystem.result = "";
-                        e = new Entity().add(new FlowComponentA("1"));
+                describe("When add System to the flow", {
+                    beforeEach(Workflow.addSystem(arSys));
+                    it("should correctly add listeners", {
+                        StandaloneA.a.onAdded.size().should.be(3);
+                        StandaloneA.a.onRemoved.size().should.be(3);
                     });
-                    it("should has correct result", ManualViewSystem.result.should.be(">1"));
-                });
 
-                describe("Then update", {
-                    beforeAll({
-                        ManualViewSystem.result = "";
-                        Workflow.update(0);
-                    });
-                    it("should has correct result", ManualViewSystem.result.should.be("*1*"));
-                });
+                    describe("When create Entities", {
+                        beforeEach({
+                            entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+                        });
+                        it("should has correct result", {
+                            BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
+                        });
 
-                describe("Then destroy Entity", {
-                    beforeAll({
-                        ManualViewSystem.result = "";
-                        e.destroy();
+                        describe("When destroy Entities", {
+                            beforeEach({
+                                for (e in entities) e.destroy();
+                            });
+                            it("should has correct result", {
+                                BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
+                            });
+                        });
                     });
-                    it("should has correct result", ManualViewSystem.result.should.be("<1"));
+
+                    describe("When remove System from the flow", {
+                        beforeEach(Workflow.removeSystem(arSys));
+                        it("should correctly remove listeners", {
+                            StandaloneA.a.onAdded.size().should.be(0);
+                            StandaloneA.a.onRemoved.size().should.be(0);
+                        });
+                    });
+
+                    describe("When add a second System with equal View", {
+                        var araSys = new AddedRemovedAdditionalMetaGeneration();
+
+                        beforeEach(Workflow.addSystem(araSys));
+                        it("should correctly add listeners", {
+                            StandaloneA.a.onAdded.size().should.be(4);
+                            StandaloneA.a.onRemoved.size().should.be(4);
+                        });
+
+                        describe("When create Entities", {
+                            beforeEach({
+                                entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+                            });
+                            it("should has correct result", {
+                                BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
+                            });
+
+                            describe("When destroy Entities", {
+                                beforeEach({
+                                    for (e in entities) e.destroy();
+                                });
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
+                                });
+                            });
+                        });
+
+                        describe("When remove a second System with equal View", {
+                            beforeEach(Workflow.removeSystem(araSys));
+                            it("should correctly remove listeners", {
+                                StandaloneA.a.onAdded.size().should.be(3);
+                                StandaloneA.a.onRemoved.size().should.be(3);
+                            });
+
+                            describe("When create Entities", {
+                                beforeEach({
+                                    entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+                                });
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
+                                });
+
+                                describe("When destroy Entities", {
+                                    beforeEach({
+                                        for (e in entities) e.destroy();
+                                    });
+                                    it("should has correct result", {
+                                        BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
+                                    });
+                                });
+                            });
+                        });
+                    });
                 });
             });
-
-
-            describe("System on Activate/Deactivate", {
-                var s = new ActivateDeactivateSystem();
-
-                beforeAll({
-                    Workflow.dispose();
-                });
-
-                describe("Before add System", {
-                    beforeAll({
-                        ActivateDeactivateSystem.result = "";
-                    });
-                    it("should not has views in the worklow", Workflow.views.length.should.be(0));
-                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
-                    it("should has view not active", ActivateDeactivateSystem.view.isActive().should.be(false));
-                    it("should has correct result", ActivateDeactivateSystem.result.should.be(""));
-                });
-
-                describe("After add System", {
-                    beforeAll({
-                        ActivateDeactivateSystem.result = "";
-                        Workflow.addSystem(s);
-                    });
-                    it("should has views in the worklow", Workflow.views.length.should.be(2));
-                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
-                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
-                    it("should has correct result", ActivateDeactivateSystem.result.should.be("a"));
-                });
-
-                describe("When remove System", {
-                    beforeAll({
-                        ActivateDeactivateSystem.result = "";
-                        Workflow.removeSystem(s);
-                    });
-                    it("should has views in the worklow", Workflow.views.length.should.be(2));
-                    it("should has view", ActivateDeactivateSystem.view.should.not.be(null));
-                    it("should has view active", ActivateDeactivateSystem.view.isActive().should.be(true));
-                    it("should has correct result", ActivateDeactivateSystem.result.should.be("d"));
-                });
-            });
-
-
-            describe("System with skipped funcs", {
-                var s = new IgnoredFunctionSystem();
-
-                beforeAll({
-                    Workflow.dispose();
-                    Workflow.addSystem(s);
-                    Workflow.update(0);
-                });
-
-                it("should skip", IgnoredFunctionSystem.result.should.be(''));
-            });
-
-
-            describe("Initialize/Dispose", {
-                var s1 = new FlowSystem1();
-                var s2 = new FlowSystem2();
-                var e:Entity;
-
-                beforeAll({
-                    Workflow.dispose();
-                });
-
-                describe("When initialize", {
-                    beforeAll({
-                        e = new Entity().add(new FlowComponentA('x'));
-                        Workflow.addSystem(s1);
-                        Workflow.addSystem(s2);
-                        var entities = [ for (i in 0...100) new Entity() ];
-                        for (i in 0...entities.length) {
-                            var e = entities[i];
-                            if (i % 1 == 0) e.add(new FlowComponentA('$i'));
-                            if (i % 2 == 0) e.add(new FlowComponentB('$i')); // 50
-                            if (i % 5 == 0) e.deactivate(); // 20
-                            if (i % 25 == 0) e.destroy(); // 4
-                        }
-                    });
-                    it("should have correct count of systems", Workflow.systems.length.should.be(2));
-                    it("should have correct count of views", Workflow.views.length.should.be(3));
-                    it("should have correct count of entities", Workflow.entities.length.should.be(81));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.entityCache.length.should.be(4));
-                    it("should have correct size of id map", @:privateAccess Workflow.entityStatuses.count().should.be(101));
-                    it("lost entity should have correct status", e.status().should.be(Active));
-                    describe("View", {
-                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(81));
-                        //it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(81));
-                        it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(1));
-                        it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(1));
-                    });
-                });
-
-                describe("Then dispose", {
-                    beforeAll({
-                        Workflow.dispose();
-                    });
-                    it("should have correct count of systems", Workflow.systems.length.should.be(0));
-                    it("should have correct count of views", Workflow.systems.length.should.be(0));
-                    it("should have correct count of entities", Workflow.systems.length.should.be(0));
-                    it("should have correct count of cached ids", @:privateAccess Workflow.entityCache.length.should.be(0));
-                    it("should have correct size of ids", @:privateAccess Workflow.entityStatuses.count().should.be(0));
-                    it("lost entity should have correct status", e.status().should.be(Invalid));
-                    describe("View", {
-                        it("should have correct matched entities count", Workflow.getView(FlowComponentA).size().should.be(0));
-                        //it("should have correct size of map", @:privateAccess Workflow.getView(FlowComponentA).statuses.count().should.be(0));
-                        it("should have correct add signals count", Workflow.getView(FlowComponentA).onAdded.length.should.be(0));
-                        it("should have correct remove signals count", Workflow.getView(FlowComponentA).onRemoved.length.should.be(0));
-                    });
-                });
-
-            });
-
-
         });
     }
 }
 
+abstract CompA(String) {
+    public function new() this = 'A';
+}
 
+abstract CompB(String) {
+    public function new() this = 'B';
+}
 
+abstract CompC(String) {
+    public function new() this = 'C';
+}
 
-class FlowSystem1 extends System {
+typedef ParamTypedef = { a:CompA, b:CompB };
 
-    public static var result = "";
+typedef ViewTypedef = View<{ a:CompA, b:CompB }>;
 
-    @u public static inline function beforeAll() {
-        result += "[";
-    }
+class DefineViewSystem extends echos.System {
 
-    @u public static inline function actionA(a:FlowComponentA) {
-        result += a.value;
-    }
+    public static var func:View<CompA->CompB->Void>;
 
-    @u public static inline function middleAction() {
-        result += "*";
-    }
+    public static var funcReversed:View<CompB->CompA->Void>;
 
-    @u public static inline function actionB(b:FlowComponentB) {
-        result += b.value;
-    }
+    public static var funcShort:View<CompA->CompB>;
 
-    @u public static inline function afterAll() {
-        result += "]";
-    }
+    public static var anon:View<{ a:CompA, b:CompB }>;
+
+    public static var anonTypedef:View<ParamTypedef>;
+
+    public static var viewTypedef:ViewTypedef;
+
+    public static var rest:View<CompA, CompB>;
+
+    @u function ab(a:CompA, b:CompB) { }
+
+    @u function ba(b:CompB, a:CompA) { }
+
+    @u function cd(c:CompB, d:CompA) { }
+
+    @u function fab(f:Float, a:CompA, b:CompB) { }
+
+    @u function eab(e:Entity, a:CompA, b:CompB) { }
+
+    @u function iab(i:Int, a:CompA, b:CompB) { }
+
+    @u function feab(f:Float, e:Entity, a:CompA, b:CompB) { }
 
 }
 
-class FlowSystem2 extends System {
-
-    public static var result = "";
-
-    @a function onAddA(a:FlowComponentA) {
-        result += '>${a.value}';
-    }
-
-    @a function onAddAB(a:FlowComponentA, b:FlowComponentB) {
-        result += '>>${a.value}${b.value}';
-    }
-
-    @r function onRemoveA(a:FlowComponentA) {
-        result += '<${a.value}';
-    }
-
-    @r function onRemoveAB(a:FlowComponentA, b:FlowComponentB) {
-        result += '<<${a.value}${b.value}';
-    }
-
-    @u function upd(a:FlowComponentA, b:FlowComponentB) {
-        result += '*${a.value}${b.value}*';
-    }
-
-}
-
-class ManualViewSystem extends echos.System {
-    public static var result = "";
-
-    var view:View<FlowComponentA->Void>;
-
+class UpdateMetaGeneration extends echos.System {
+    @u function empty0() BuildResult.value += '_';
+    @u function _f(f:Float) BuildResult.value += '$f';
+    @u function empty1() BuildResult.value += '_';
+    @u function _a(a:CompA) BuildResult.value += '$a';
+    @u function empty2() BuildResult.value += '_';
+    @u function _fa(f:Float, a:CompA) BuildResult.value += '${f}${a}';
+    @u function empty3() BuildResult.value += '_';
+    @u function _fe(f:Float, e:Entity) BuildResult.value += '${f}e';
+    @u function empty4() BuildResult.value += '_';
+    @u function _fea(f:Float, e:Entity, a:CompA) BuildResult.value += '${f}e${a}';
+    @u function empty5() BuildResult.value += '_';
     override function onactivate() {
-        view.onAdded.add(function(e, ca) result += '>${ca.value}');
-        view.onRemoved.add(function(e, ca) result += '<${ca.value}');
-    }
-
-    @u inline function action() {
-        view.iter(function(e, ca) result += '*${ca.value}*');
-    }
-}
-
-class ActivateDeactivateSystem extends echos.System {
-    public static var result = "";
-
-    public static var view:View<FlowComponentA->Void>;
-
-    override function onactivate() {
-        result += 'a';
+        BuildResult.value += '^';
     }
     override function ondeactivate() {
-        result += 'd';
-    }
-
-    @u function test(a:FlowComponentB, dt:Float) {
-        result += '$dt';
+        BuildResult.value += '$';
     }
 }
 
-class IgnoredFunctionSystem extends echos.System {
-    public static var result = "";
-
-    function shouldBeIgnored1() {
-        result += 'i';
-    }
-    function shouldBeIgnored2(a:FlowComponentA) {
-        result += 'i';
-    }
-    function shouldBeIgnored3(entity:Entity) {
-        result += 'i';
-    }
-
-    static inline function shouldBeIgnoredStatic() {
-        result += 'i';
-    }
-
-    @skip @u function shouldBeSkipped(a:FlowComponentA) {
-        result += 'i';
-    }
-
-    // override function __activate() { }
-
-    // override function __deactivate() { }
-
-    // override function __update(dt:Float) { }
+class AddedRemovedMetaGeneration extends echos.System {
+    @a function ad_a1(a:CompA) BuildResult.value += '+${a}';
+    @a function ad_a2(a:CompA) BuildResult.value += '>${a}';
+    @r function rm_a2(a:CompA) BuildResult.value += '<${a}';
+    @r function rm_a1(a:CompA) BuildResult.value += '-${a}';
+    @a function ad_ae(a:CompA, e:Entity) BuildResult.value += '+${a}e';
+    @r function rm_ae(a:CompA, e:Entity) BuildResult.value += '-${a}e';
 }
 
-class FlowComponentA {
-    public var value:String;
-    public function new(s:String) this.value = s;
+class AddedRemovedAdditionalMetaGeneration extends echos.System {
+    @a function ad_a(a:CompA) BuildResult.value += '!';
+    @r function rm_a(a:CompA) BuildResult.value += '#';
 }
 
-class FlowComponentB {
-    public var value:String;
-    public function new(s:String) this.value = s;
+class StandaloneA extends echos.System {
+    public static var a:View<CompA>;
+}
+
+class StandaloneAB extends echos.System {
+    public static var ab:View<CompA, CompB>;
+}
+
+class BuildResult {
+    public static var value = '';
 }
