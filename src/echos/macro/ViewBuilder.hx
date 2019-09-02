@@ -74,11 +74,6 @@ class ViewBuilder {
     }
 
 
-    static function ccref(ct:ComplexType) {
-        return macro $i{ getComponentContainer(ct).followName() }.inst();
-    }
-
-
     public static function createViewType(components:Array<ComponentDef>) {
         var viewClsName = getViewName(components);
         var viewType = viewTypeCache.get(viewClsName);
@@ -99,7 +94,7 @@ class ViewBuilder {
                 var signalTypePath = tpath(['echos', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
 
                 // signal args for dispatch() call
-                var signalArgs = [ macro id ].concat(components.map(function(c) return macro ${ ccref(c.cls) }.get(id)));
+                var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id)));
 
                 // type def
                 var def:TypeDefinition = macro class $viewClsName extends echos.View.ViewBase {
@@ -142,11 +137,11 @@ class ViewBuilder {
                 // iter
                 {
                     var funcComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
-                    var funcCallArgs = [ macro e ].concat(components.map(function(c) return macro ${ ccref(c.cls) }.get(e)));
+                    var funcCallArgs = [ macro __entity__ ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(__entity__)));
                     var body = macro {
                         for (i in 0...entities.length) {
-                            var e = entities[i];
-                            if (e != echos.Entity.NULL) {
+                            var __entity__ = entities[i];
+                            if (__entity__ != echos.Entity.NULL) {
                                 f($a{ funcCallArgs });
                             }
                         }
@@ -156,7 +151,7 @@ class ViewBuilder {
 
                 // isMatch
                 {
-                    var checks = components.map(function(c) return macro ${ ccref(c.cls) }.get(id) != null);
+                    var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id) != null);
                     var cond = checks.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checks[0]);
                     var body = macro return $cond;
                     def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
