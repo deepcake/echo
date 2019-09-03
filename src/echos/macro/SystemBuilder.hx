@@ -2,11 +2,8 @@ package echos.macro;
 
 #if macro
 import echos.macro.MacroTools.*;
-import echos.macro.MacroBuilder.*;
 import echos.macro.ViewBuilder.*;
 import echos.macro.ComponentBuilder.*;
-
-import echos.macro.MacroBuilder;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -15,7 +12,6 @@ import haxe.macro.Type.ClassField;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using echos.macro.MacroTools;
-using echos.macro.MacroBuilder;
 using StringTools;
 using Lambda;
 
@@ -88,13 +84,13 @@ class SystemBuilder {
             }
         }
 
-        function refComponentDefToFuncArg(c:ComponentDef, args:Array<FunctionArg>) {
+        function refComponentDefToFuncArg(c:{ cls:ComplexType }, args:Array<FunctionArg>) {
             var copmonentClsName = c.cls.followName();
             var a = args.find(function(a) return a.type.followName() == copmonentClsName);
             if (a != null) {
                 return arg(a.name, a.type);
             } else {
-                return arg(c.name, c.cls);
+                return arg(c.cls.typeName().toLowerCase(), c.cls);
             }
         }
 
@@ -103,12 +99,12 @@ class SystemBuilder {
                 case macro:StdTypes.Float : null;
                 case macro:StdTypes.Int : null;
                 case macro:echos.Entity : null;
-                default: { name: a.name, cls: a.type.followComplexType() };
+                default: { cls: a.type.followComplexType() };
             }
         }
 
 
-        var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComponentDef> }>();
+        var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<{ cls:ComplexType }> }>();
 
         // find and init manually defined views
         fields
@@ -123,11 +119,11 @@ class SystemBuilder {
                             case TPath(_): {
                                 var clsName = complexType.followName();
                                 // if it is a view, it was built (and collected to cache) when followComplexType() was called
-                                if (viewDataCache.exists(clsName)) {
+                                if (viewCache.exists(clsName)) {
                                     // init
                                     field.kind = FVar(complexType, macro $i{clsName}.inst());
 
-                                    definedViews.push({ name: field.name, cls: complexType, components: viewDataCache.get(clsName).components });
+                                    definedViews.push({ name: field.name, cls: complexType, components: viewCache.get(clsName).components });
                                 }
                             }
                             default:
@@ -160,7 +156,7 @@ class SystemBuilder {
                                 // instant define and init
                                 fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro $i{viewClsName}.inst(), Context.currentPos()));
 
-                                definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewDataCache.get(viewClsName).components });
+                                definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewCache.get(viewClsName).components });
                             }
 
                         }

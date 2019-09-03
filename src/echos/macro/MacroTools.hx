@@ -10,6 +10,7 @@ import haxe.macro.Expr.FunctionArg;
 import haxe.macro.Expr.TypePath;
 import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
+
 using haxe.macro.Context;
 using Lambda;
 
@@ -109,6 +110,46 @@ class MacroTools {
             case EField(path, name): identName(path) + '.' + name;
             case x: throw 'Unexpected $x';
         }
+    }
+
+
+    static function capitalize(s:String) {
+        return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
+    }
+
+    public static function typeName(ct:ComplexType):String {
+        return switch (followComplexType(ct)) {
+            case TPath(t): {
+
+                function paramFollowName(p:TypeParam):String {
+                    return switch (p) {
+                        case TPType(ct): typeName(ct);
+                        case x: Context.error('Unexpected $x', Context.currentPos());
+                    }
+                }
+
+                (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '') + 
+                t.name + 
+                (t.sub != null ? t.sub : '') + 
+                ((t.params != null && t.params.length > 0) ? t.params.map(paramFollowName).join('') : '');
+
+            }
+            case x: Context.error('Unexpected $x', Context.currentPos());
+        }
+    }
+
+    public static function compareStrings(a:String, b:String):Int {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
+
+    public static function packName(types:Array<ComplexType>) {
+        var typeNames = types.map(typeName);
+        typeNames.sort(compareStrings);
+        return typeNames.join('$');
     }
 
 }

@@ -2,7 +2,6 @@ package echos.macro;
 
 #if macro
 import echos.macro.MacroTools.*;
-import echos.macro.MacroBuilder.*;
 import haxe.macro.Expr.ComplexType;
 using echos.macro.MacroTools;
 using haxe.macro.Context;
@@ -14,30 +13,34 @@ class ComponentBuilder {
 
     static var componentIndex = -1;
 
-    // componentContainerClsName / componentContainerType
+    // componentContainerTypeName / componentContainerType
     static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
 
     public static var componentIds = new Map<String, Int>();
     public static var componentNames = new Array<String>();
 
 
+    static function getComponentContainerName(ct:ComplexType) {
+        return 'ContainerOf' + ct.typeName();
+    }
+
     public static function createComponentContainerType(componentCls:ComplexType) {
-        var componentClsName = componentCls.followName();
-        var componentContainerClsName = getClsName('ComponentContainer', componentClsName);
-        var componentContainerType = componentContainerTypeCache.get(componentContainerClsName);
+        var componentTypeName = componentCls.followName();
+        var componentContainerTypeName = getComponentContainerName(componentCls);
+        var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 
         if (componentContainerType == null) {
             // first time call in current macro phase
 
             var index = ++componentIndex;
 
-            try componentContainerType = Context.getType(componentContainerClsName) catch (err:String) {
+            try componentContainerType = Context.getType(componentContainerTypeName) catch (err:String) {
                 // type was not cached in previous macro phases
 
-                var componentContainerTypePath = tpath([], componentContainerClsName, []);
+                var componentContainerTypePath = tpath([], componentContainerTypeName, []);
                 var componentContainerComplexType = TPath(componentContainerTypePath);
 
-                var def = macro class $componentContainerClsName implements echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer {
+                var def = macro class $componentContainerTypeName implements echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer {
 
                     static var instance = new $componentContainerTypePath();
 
@@ -83,17 +86,18 @@ class ComponentBuilder {
             }
 
             // caching current macro phase
-            componentContainerTypeCache.set(componentContainerClsName, componentContainerType);
-            componentIds[componentClsName] = index;
-            componentNames.push(componentClsName);
+            componentContainerTypeCache.set(componentContainerTypeName, componentContainerType);
+            componentIds[componentTypeName] = index;
+            componentNames.push(componentTypeName);
         }
+
+        Report.gen();
 
         return componentContainerType;
     }
 
 
     public static function getComponentContainer(componentCls:ComplexType):ComplexType {
-        gen();
         return createComponentContainerType(componentCls).toComplexType();
     }
 
