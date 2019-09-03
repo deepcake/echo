@@ -17,10 +17,13 @@ using Lambda;
 class Workflow {
 
 
-    static var __nextEntityId = 0;
+    @:allow(echos.Entity) static inline var INVALID_ID = 0;
 
-    static var entityCache = new Array<Int>();
-    static var entityStatuses = new Map<Int, Status>();
+
+    static var nextId = INVALID_ID + 1;
+
+    static var idPool = new Array<Int>();
+    static var idStatuses = new Map<Int, Status>();
 
     static var containers = new Array<echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer>();
 
@@ -43,7 +46,7 @@ class Workflow {
      * @return String
      */
     public static function toString():String {
-        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${entityCache.length} ]'; // TODO version or something
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 
         #if echos_profiling
         ret += ' : ${ times.get("total") } ms'; // total
@@ -106,13 +109,13 @@ class Workflow {
         for (cc in containers) {
             cc.dispose();
         }
-        while (entityCache.length > 0) {
-            entityCache.pop();
+        while (idPool.length > 0) {
+            idPool.pop();
         }
-        while (--__nextEntityId > -1) {
-            entityStatuses.remove(__nextEntityId);
+        while (--nextId > -1) {
+            idStatuses.remove(nextId);
         }
-        __nextEntityId = 0;
+        nextId = INVALID_ID + 1;
     }
 
 
@@ -172,12 +175,12 @@ class Workflow {
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = entityCache.length > 0 ? entityCache.pop() : __nextEntityId++;
+        var id = idPool.length > 0 ? idPool.pop() : nextId++;
         if (immediate) {
-            entityStatuses[id] = Active;
+            idStatuses[id] = Active;
             entities.add(id);
         } else {
-            entityStatuses[id] = Inactive;
+            idStatuses[id] = Inactive;
         }
         return id;
     }
@@ -187,14 +190,14 @@ class Workflow {
         if (status(id) < Cached) { // Active or Inactive
             remove(id);
             removeComponents(id);
-            entityCache.push(id);
-            entityStatuses[id] = Cached;
+            idPool.push(id);
+            idStatuses[id] = Cached;
         }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            entityStatuses[id] = Active;
+            idStatuses[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
@@ -204,12 +207,12 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
-            entityStatuses[id] = Inactive;
+            idStatuses[id] = Inactive;
         }
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return entityStatuses.exists(id) ? entityStatuses[id] : Invalid;
+        return idStatuses.exists(id) ? idStatuses[id] : Invalid;
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {

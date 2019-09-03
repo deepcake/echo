@@ -2,6 +2,14 @@ package echos;
 
 /**
  * View  
+ * 
+ *  A View can be defined manually in the following simple ways:  
+ *  View<T1, T2, TN>  
+ *  View<T1->T2->TN>  
+ * 
+ *  __Note__ that when Entity is removed from the View, it becomes `Entity.INVALID` until the next `Workflow.update()` call. 
+ *  So be careful when iterating without using `iter()`, and if so, be sure to check `entity.isValid()`. 
+ *  It also means that `entities.length` may not show the actual number of entities. For actual count _right now right here_ you can use `size()` func.  
  *  
  * @author https://github.com/deepcake
  */
@@ -43,7 +51,7 @@ class ViewBase {
     public function size() {
         var i = 0;
         for (e in entities) {
-            if (e != Entity.NULL) i++;
+            if (e != Entity.INVALID) i++;
         }
         return i;
     }
@@ -83,7 +91,7 @@ class ViewBase {
         var index = entities.indexOf(id);
         if (index > -1) {
             remove(id);
-            entities[index] = Entity.NULL;
+            entities[index] = Entity.INVALID;
         }
     }
 
@@ -92,7 +100,7 @@ class ViewBase {
         var i = 0;
         var length = entities.length;
         while (i < length) {
-            if (entities[i] == Entity.NULL) {
+            if (entities[i] == Entity.INVALID) {
                 entities.splice(i, 1);
                 length--;
             } else {

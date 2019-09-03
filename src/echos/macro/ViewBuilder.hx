@@ -141,7 +141,7 @@ class ViewBuilder {
                     var body = macro {
                         for (i in 0...entities.length) {
                             var __entity__ = entities[i];
-                            if (__entity__ != echos.Entity.NULL) {
+                            if (__entity__ != echos.Entity.INVALID) {
                                 f($a{ funcCallArgs });
                             }
                         }

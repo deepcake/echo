@@ -21,6 +21,7 @@ class EntityTest extends buddy.BuddySuite {
                 });
                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                 it("should be activated", e.isActive().should.be(true));
+                it("should be valid", e.isValid().should.be(true));
 
                 describe("When add a ComponentA", {
                     beforeEach({
@@ -28,6 +29,7 @@ class EntityTest extends buddy.BuddySuite {
                     });
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should be activated", e.isActive().should.be(true));
+                    it("should be valid", e.isValid().should.be(true));
                     it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                     it("should get a ComponentA", e.get(ComponentA).should.be(a));
                     it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -39,6 +41,7 @@ class EntityTest extends buddy.BuddySuite {
                         });
                         it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                         it("should be activated", e.isActive().should.be(true));
+                        it("should be valid", e.isValid().should.be(true));
                         it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                         it("should get a ComponentA", e.get(ComponentA).should.be(a));
                         it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -51,6 +54,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -64,6 +68,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -75,6 +80,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                                 it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -87,18 +93,20 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                                 it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
                                 it("should not get a ComponentB", e.get(ComponentB).should.be(null));
                             });
 
-                            describe("When add a ComponentA", {
+                            describe("When add a ComponentA back", {
                                 beforeEach({
                                     e.add(a);
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                                 it("should get a ComponentA", e.get(ComponentA).should.be(a));
                                 it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -112,6 +120,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -123,6 +132,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                                 it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -136,6 +146,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -147,6 +158,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                                 it("should get a ComponentA", e.get(ComponentA).should.be(a));
                                 it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -160,6 +172,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                             it("should not be activated", e.isActive().should.be(false));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -171,6 +184,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                                 it("should not be activated", e.isActive().should.be(false));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                                 it("should get a ComponentA", e.get(ComponentA).should.be(a));
                                 it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -183,6 +197,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                                 it("should get a ComponentA", e.get(ComponentA).should.be(a));
                                 it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -196,6 +211,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                             it("should not be activated", e.isActive().should.be(false));
+                            it("should not be valid", e.isValid().should.be(false));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -207,6 +223,7 @@ class EntityTest extends buddy.BuddySuite {
                                 });
                                 it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                                 it("should be activated", e.isActive().should.be(true));
+                                it("should be valid", e.isValid().should.be(true));
                                 it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                                 it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -220,6 +237,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(2));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -232,6 +250,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -244,6 +263,7 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -258,6 +278,7 @@ class EntityTest extends buddy.BuddySuite {
                     });
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should be activated", e.isActive().should.be(true));
+                    it("should be valid", e.isValid().should.be(true));
                     it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                     it("should get a ComponentA", e.get(ComponentA).should.be(a));
                     it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -270,6 +291,7 @@ class EntityTest extends buddy.BuddySuite {
                     });
                     it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                     it("should be activated", e.isActive().should.be(true));
+                    it("should be valid", e.isValid().should.be(true));
                     it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                     it("should get a ComponentA", e.get(ComponentA).should.be(a));
                     it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -283,6 +305,7 @@ class EntityTest extends buddy.BuddySuite {
                 });
                 it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                 it("should not be activated", e.isActive().should.be(false));
+                it("should be valid", e.isValid().should.be(true));
                 it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                 it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -294,6 +317,7 @@ class EntityTest extends buddy.BuddySuite {
                     });
                     it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                     it("should not be activated", e.isActive().should.be(false));
+                    it("should be valid", e.isValid().should.be(true));
                     it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                     it("should get a ComponentA", e.get(ComponentA).should.be(a));
                     it("should not has a ComponentB", e.exists(ComponentB).should.be(false));
@@ -305,6 +329,7 @@ class EntityTest extends buddy.BuddySuite {
                         });
                         it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
                         it("should not be activated", e.isActive().should.be(false));
+                        it("should be valid", e.isValid().should.be(true));
                         it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                         it("should get a ComponentA", e.get(ComponentA).should.be(a));
                         it("should has a ComponentB", e.exists(ComponentB).should.be(true));
@@ -316,12 +341,108 @@ class EntityTest extends buddy.BuddySuite {
                             });
                             it("should be added to the flow", echos.Workflow.entities.length.should.be(1));
                             it("should be activated", e.isActive().should.be(true));
+                            it("should be valid", e.isValid().should.be(true));
                             it("should has a ComponentA", e.exists(ComponentA).should.be(true));
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should has a ComponentB", e.exists(ComponentB).should.be(true));
                             it("should get a ComponentB", e.get(ComponentB).should.be(b));
                         });
                     });
+                });
+            });
+
+            describe("When Entity is Invalid", {
+                beforeEach({
+                    e = Entity.INVALID;
+                });
+                it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                it("should not be activated", e.isActive().should.be(false));
+                it("should not be valid", e.isValid().should.be(false));
+                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+
+                describe("When activate Entity", {
+                    beforeEach({
+                        e.activate();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When deactivate Entity", {
+                    beforeEach({
+                        e.deactivate();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When destroy Entity", {
+                    beforeEach({
+                        e.destroy();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When remove all of components", {
+                    beforeEach({
+                        e.removeAll();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+            });
+
+            describe("When Entity is Cached", {
+                beforeEach({
+                    e = new Entity();
+                    e.destroy();
+                });
+                it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                it("should not be activated", e.isActive().should.be(false));
+                it("should not be valid", e.isValid().should.be(false));
+                it("should not has a ComponentA", e.exists(ComponentA).should.be(false));
+                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
+
+                describe("When activate Entity", {
+                    beforeEach({
+                        e.activate();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When deactivate Entity", {
+                    beforeEach({
+                        e.deactivate();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When destroy Entity", {
+                    beforeEach({
+                        e.destroy();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
+                });
+
+                describe("When remove all of components", {
+                    beforeEach({
+                        e.removeAll();
+                    });
+                    it("should not be added to the flow", echos.Workflow.entities.length.should.be(0));
+                    it("should not be activated", e.isActive().should.be(false));
+                    it("should not be valid", e.isValid().should.be(false));
                 });
             });
         });

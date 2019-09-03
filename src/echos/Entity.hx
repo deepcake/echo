@@ -16,14 +16,16 @@ using Lambda;
 abstract Entity(Int) from Int to Int {
 
 
-    public static inline var NULL = -1;
+    public static inline var INVALID:Entity = Workflow.INVALID_ID;
 
 
     /**
      * Creates a new Entity instance  
      * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
      */
-    public inline function new(immediate = true) this = Workflow.id(immediate);
+    public inline function new(immediate = true) {
+        this = Workflow.id(immediate);
+    }
 
 
     /**
@@ -47,6 +49,14 @@ abstract Entity(Int) from Int to Int {
      */
     public inline function isActive():Bool {
         return Workflow.status(this) == Active;
+    }
+
+    /**
+     * Returns `true` if this entity has not been destroyed and therefore can be used safely  
+     * @return Bool
+     */
+    public inline function isValid():Bool {
+        return Workflow.status(this) < Cached;
     }
 
     /**
