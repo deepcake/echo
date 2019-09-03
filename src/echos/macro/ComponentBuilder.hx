@@ -50,7 +50,7 @@ class ComponentBuilder {
                     var components = new echos.macro.ComponentBuilder.ComponentContainer<$componentCls>();
 
                     function new() {
-                        @:privateAccess echos.Workflow.containers.push(this);
+                        @:privateAccess echos.Workflow.definedContainers.push(this);
                     }
 
                     public inline function get(id:Int):$componentCls {

@@ -25,7 +25,10 @@ class Workflow {
     static var idPool = new Array<Int>();
     static var idStatuses = new Map<Int, Status>();
 
-    static var containers = new Array<echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer>();
+    // all of every defined component container
+    static var definedContainers = new Array<echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer>();
+    // all of every defined view
+    static var definedViews = new Array<View.ViewBase>();
 
     @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
     @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
@@ -103,11 +106,11 @@ class Workflow {
         for (s in systems) {
             removeSystem(s);
         }
-        for (v in views) {
+        for (v in definedViews) {
             v.dispose();
         }
-        for (cc in containers) {
-            cc.dispose();
+        for (c in definedContainers) {
+            c.dispose();
         }
         while (idPool.length > 0) {
             idPool.pop();
@@ -221,8 +224,8 @@ class Workflow {
                 v.removeIfMatch(id);
             }
         }
-        for (cc in containers) {
-            cc.remove(id);
+        for (c in definedContainers) {
+            c.remove(id);
         }
     }
 

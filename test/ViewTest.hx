@@ -6,6 +6,10 @@ using Lambda;
 class ViewTest extends buddy.BuddySuite {
     public function new() {
         describe("View", {
+            var log = '';
+
+            beforeEach(Workflow.dispose());
+            beforeEach(log = '');
 
             describe("Matching", {
                 var s = new MatchingViewSystem();
@@ -153,10 +157,9 @@ class ViewTest extends buddy.BuddySuite {
 
             describe("Signals", {
                 var e:Entity;
-                var r:String;
                 var s = new MatchingViewSystem();
-                var onad = function(id:Entity, a:A, v:V) r += '+$v';
-                var onrm = function(id:Entity, a:A, v:V) r += '-$v';
+                var onad = function(id:Entity, a:A, v:V) log += '+$v';
+                var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
                 beforeEach({
                     Workflow.dispose();
@@ -164,70 +167,69 @@ class ViewTest extends buddy.BuddySuite {
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
                     e = new Entity();
-                    r = '';
                 });
 
                 describe("When add matched Components", {
                     beforeEach(e.add(new A(), new V(1)));
-                    it("should be dispatched", r.should.be("+1"));
+                    it("should be dispatched", log.should.be("+1"));
 
                     describe("When add matched Components again", {
                         beforeEach(e.add(new V(2)));
-                        it("should not be dispatched", r.should.be("+1"));
+                        it("should not be dispatched", log.should.be("+1"));
                     });
 
                     describe("When remove matched Components", {
                         beforeEach(e.remove(V));
-                        it("should be dispatched", r.should.be("+1-1"));
+                        it("should be dispatched", log.should.be("+1-1"));
 
                         describe("When remove matched Components again", {
                             beforeEach(e.remove(V));
-                            it("should not be dispatched", r.should.be("+1-1"));
+                            it("should not be dispatched", log.should.be("+1-1"));
                         });
 
                         describe("When add matched Components back", {
                             beforeEach(e.add(new V(2)));
-                            it("should be dispatched", r.should.be("+1-1+2"));
+                            it("should be dispatched", log.should.be("+1-1+2"));
                         });
                     });
 
                     describe("When remove all of Components", {
                         beforeEach(e.removeAll());
-                        it("should be dispatched", r.should.be("+1-1"));
+                        it("should be dispatched", log.should.be("+1-1"));
 
                         describe("When remove all of Components again", {
                             beforeEach(e.removeAll());
-                            it("should not be dispatched", r.should.be("+1-1"));
+                            it("should not be dispatched", log.should.be("+1-1"));
                         });
                     });
 
                     describe("When deactivate Entity", {
                         beforeEach(e.deactivate());
-                        it("should be dispatched", r.should.be("+1-1"));
+                        it("should be dispatched", log.should.be("+1-1"));
 
                         describe("When deactivate Entity again", {
                             beforeEach(e.deactivate());
-                            it("should not be dispatched", r.should.be("+1-1"));
+                            it("should not be dispatched", log.should.be("+1-1"));
                         });
 
                         describe("When activate Entity", {
                             beforeEach(e.activate());
-                            it("should be dispatched", r.should.be("+1-1+1"));
+                            it("should be dispatched", log.should.be("+1-1+1"));
 
                             describe("When activate Entity again", {
                                 beforeEach(e.activate());
-                                it("should not be dispatched", r.should.be("+1-1+1"));
+                                it("should not be dispatched", log.should.be("+1-1+1"));
                             });
                         });
                     });
 
                     describe("When destroy Entity", {
                         beforeEach(e.destroy());
-                        it("should be dispatched", r.should.be("+1-1"));
+                        it("should be dispatched", log.should.be("+1-1"));
 
                         describe("When create new Entity (reuse)", {
                             beforeEach(new Entity().add(new A(), new V(2)));
-                            it("should be dispatched", r.should.be("+1-1+2"));
+                            it("should be dispatched", log.should.be("+1-1+2"));
                         });
                     });
                 });
@@ -235,9 +237,8 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("Iterating", {
-                var r:String;
-                var onad = function(id:Entity, a:A, v:V) r += '+$v';
-                var onrm = function(id:Entity, a:A, v:V) r += '-$v';
+                var onad = function(id:Entity, a:A, v:V) log += '+$v';
+                var onrm = function(id:Entity, a:A, v:V) log += '-$v';
                 var s = new IteratingViewSystem();
 
                 beforeEach({
@@ -245,20 +246,16 @@ class ViewTest extends buddy.BuddySuite {
                     Workflow.addSystem(s);
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
-                    r = '';
-
-                    for (i in 0...5) {
-                        new Entity().add(new A(), new V(i));
-                    }
+                    for (i in 0...5) new Entity().add(new A(), new V(i));
                 });
 
                 describe("When iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) r += '$v';
+                        s.f = function(id, a, v) log += '$v';
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(5));
-                    it("should has correct result", r.should.be("+0+1+2+3+401234"));
+                    it("should has correct log", log.should.be("+0+1+2+3+401234"));
 
                     describe("When add an Entity and iterating", {
                         beforeEach({
@@ -266,7 +263,7 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should has correct length", s.av.entities.length.should.be(6));
-                        it("should has correct result", r.should.be("+0+1+2+3+401234+5012345"));
+                        it("should has correct log", log.should.be("+0+1+2+3+401234+5012345"));
                     });
                 });
 
@@ -276,7 +273,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while iterating", {
@@ -285,7 +282,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while iterating", {
@@ -294,7 +291,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while iterating", {
@@ -303,7 +300,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When create Entity while iterating", {
@@ -312,7 +309,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(10));
-                    it("should has correct result", r.should.be("+0+1+2+3+4+9+9+9+9+9"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
                 });
 
                 describe("When destroy and create Entity while iterating", {
@@ -324,7 +321,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(5));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
                 });
 
                 describe("When remove Component while inner iterating", {
@@ -335,7 +332,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while inner iterating", {
@@ -346,7 +343,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while inner iterating", {
@@ -357,7 +354,7 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while inner iterating", {
@@ -368,10 +365,63 @@ class ViewTest extends buddy.BuddySuite {
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct result", r.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
             });
 
+
+            describe("Activate/Deactivate", {
+                var s = new MatchingViewSystem();
+                var onad = function(id:Entity, a:A, v:V) log += '+$v';
+                var onrm = function(id:Entity, a:A, v:V) log += '-$v';
+
+                beforeEach({
+                    s.av.onAdded.add(onad);
+                    s.av.onRemoved.add(onrm);
+                    for (i in 1...4) new Entity().add(new A(), new V(i));
+                });
+
+                describe("Initially", {
+                    it("should not be active", s.av.isActive().should.be(false));
+                    it("should not has entities", s.av.entities.length.should.be(0));
+                    it("should has on ad signals", s.av.onAdded.size().should.be(1));
+                    it("should has on rm signals", s.av.onRemoved.size().should.be(1));
+                    it("should has correct log", log.should.be(""));
+
+                    describe("When activate", {
+                        beforeEach({
+                            s.av.activate();
+                        });
+                        it("should be active", s.av.isActive().should.be(true));
+                        it("should has entities", s.av.entities.length.should.be(3));
+                        it("should has on ad signals", s.av.onAdded.size().should.be(1));
+                        it("should has on rm signals", s.av.onRemoved.size().should.be(1));
+                        it("should has correct log", log.should.be("+1+2+3"));
+
+                        describe("When deactivate", {
+                            beforeEach({
+                                s.av.deactivate();
+                            });
+                            it("should not be active", s.av.isActive().should.be(false));
+                            it("should not has entities", s.av.entities.length.should.be(0));
+                            it("should has on ad signals", s.av.onAdded.size().should.be(1));
+                            it("should has on rm signals", s.av.onRemoved.size().should.be(1));
+                            it("should has correct log", log.should.be("+1+2+3-3-2-1"));
+                        });
+
+                        describe("When dispose", {
+                            beforeEach({
+                                @:privateAccess s.av.dispose();
+                            });
+                            it("should not be active", s.av.isActive().should.be(false));
+                            it("should not has entities", s.av.entities.length.should.be(0));
+                            it("should not has on ad signals", s.av.onAdded.size().should.be(0));
+                            it("should not has on rm signals", s.av.onRemoved.size().should.be(0));
+                            it("should has correct log", log.should.be("+1+2+3-3-2-1"));
+                        });
+                    });
+                });
+            });
         });
     }
 }

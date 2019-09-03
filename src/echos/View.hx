@@ -36,7 +36,7 @@ class ViewBase {
 
     public function deactivate() {
         if (isActive()) {
-            while (entities.length > 0) entities.pop();
+            while (entities.length > 0) remove(entities.pop());
             Workflow.views.remove(this);
         }
     }

@@ -110,7 +110,9 @@ class ViewBuilder {
                     public var onAdded(default, null) = new $signalTypePath();
                     public var onRemoved(default, null) = new $signalTypePath();
 
-                    function new() { }
+                    function new() {
+                        @:privateAccess echos.Workflow.definedViews.push(this);
+                    }
 
                     override function add(id:Int) {
                         super.add(id);
