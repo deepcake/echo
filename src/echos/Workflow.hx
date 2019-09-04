@@ -30,9 +30,9 @@ class Workflow {
     // all of every defined view
     static var definedViews = new Array<View.ViewBase>();
 
-    @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
-    @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
-    @:noCompletion public static #if haxe4 final #else var #end systems = new List<System>();
+    @:noCompletion public static #if haxe3 var #else final #end entities = new List<Entity>();
+    @:noCompletion public static #if haxe3 var #else final #end views = new List<View.ViewBase>();
+    @:noCompletion public static #if haxe3 var #else final #end systems = new List<System>();
 
 
     #if echos_profiling

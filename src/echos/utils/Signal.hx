@@ -32,10 +32,10 @@ abstract Signal<T>(Array<T>) {
     }
 
     public inline function dispose() {
-        #if haxe4 
-        this.resize(0);
-        #else 
+        #if haxe3 
         this.splice(0, this.length);
+        #else 
+        this.resize(0);
         #end
     }
 

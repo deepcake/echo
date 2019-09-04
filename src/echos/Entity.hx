@@ -106,7 +106,7 @@ abstract Entity(Int) from Int to Int {
             .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
             .concat([ macro return id ]);
 
-        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -144,7 +144,7 @@ abstract Entity(Int) from Int to Int {
             .concat(componentExprs)
             .concat([ macro return id ]);
 
-        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -162,7 +162,7 @@ abstract Entity(Int) from Int to Int {
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return $i{ ct.followName() }.inst().get(id) ];
-        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -179,7 +179,7 @@ abstract Entity(Int) from Int to Int {
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
         var exprs = [ macro return $i{ ct.followName() }.inst().exists(id) ];
-        var ret = macro #if haxe4 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));

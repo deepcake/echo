@@ -117,24 +117,33 @@ class MacroTools {
         return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
     }
 
+    static function typeParamName(p:TypeParam):String {
+        return switch (p) {
+            case TPType(ct): typeName(ct);
+            case x: 
+                #if haxe3 
+                throw 'Unexpected $x';
+                #else
+                Context.error('Unexpected $x', Context.currentPos());
+                #end 
+        }
+    }
+
     public static function typeName(ct:ComplexType):String {
         return switch (followComplexType(ct)) {
-            case TPath(t): {
-
-                function paramFollowName(p:TypeParam):String {
-                    return switch (p) {
-                        case TPType(ct): typeName(ct);
-                        case x: Context.error('Unexpected $x', Context.currentPos());
-                    }
-                }
+            case TPath(t): 
 
                 (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '') + 
                 t.name + 
                 (t.sub != null ? t.sub : '') + 
-                ((t.params != null && t.params.length > 0) ? t.params.map(paramFollowName).join('') : '');
+                ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName).join('') : '');
 
-            }
-            case x: Context.error('Unexpected $x', Context.currentPos());
+            case x: 
+                #if haxe3 
+                throw 'Unexpected $x';
+                #else
+                Context.error('Unexpected $x', Context.currentPos());
+                #end 
         }
     }
 
