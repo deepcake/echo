@@ -149,7 +149,7 @@ class MacroTools {
     public static function packName(types:Array<ComplexType>) {
         var typeNames = types.map(typeName);
         typeNames.sort(compareStrings);
-        return typeNames.join('$');
+        return typeNames.join('_');
     }
 
 }

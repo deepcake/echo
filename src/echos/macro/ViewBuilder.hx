@@ -28,7 +28,7 @@ class ViewBuilder {
     }
 
     public static function getViewName(components:Array<{ cls:ComplexType }>) {
-        return 'ViewOf$' + components.map(function(c) return c.cls).packName();
+        return 'ViewOf' + components.map(function(c) return c.cls).packName();
     }
 
 
