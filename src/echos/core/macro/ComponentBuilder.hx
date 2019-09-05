@@ -1,9 +1,9 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
-import echos.macro.MacroTools.*;
+import echos.core.macro.MacroTools.*;
 import haxe.macro.Expr.ComplexType;
-using echos.macro.MacroTools;
+using echos.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 using Lambda;
@@ -40,7 +40,7 @@ class ComponentBuilder {
                 var componentContainerTypePath = tpath([], componentContainerTypeName, []);
                 var componentContainerComplexType = TPath(componentContainerTypePath);
 
-                var def = macro class $componentContainerTypeName implements echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer {
+                var def = macro class $componentContainerTypeName implements echos.core.ICleanableComponentContainer {
 
                     static var instance = new $componentContainerTypePath();
 
@@ -50,30 +50,30 @@ class ComponentBuilder {
 
                     // instance
 
-                    var components = new echos.macro.ComponentBuilder.ComponentContainer<$componentCls>();
+                    var storage = new echos.core.Storage<$componentCls>();
 
                     function new() {
                         @:privateAccess echos.Workflow.definedContainers.push(this);
                     }
 
                     public inline function get(id:Int):$componentCls {
-                        return components.get(id);
+                        return storage.get(id);
                     }
 
                     public inline function exists(id:Int):Bool {
-                        return components.exists(id);
+                        return storage.exists(id);
                     }
 
                     public inline function add(id:Int, c:$componentCls) {
-                        components.add(id, c);
+                        storage.add(id, c);
                     }
 
                     public inline function remove(id:Int) {
-                        components.remove(id);
+                        storage.remove(id);
                     }
 
                     public inline function dispose() {
-                        components.dispose();
+                        storage.dispose();
                     }
 
                 }
@@ -108,72 +108,3 @@ class ComponentBuilder {
 
 }
 #end
-
-#if echos_array_cc
-abstract ArrayComponentContainer<T>(Array<T>) {
-
-    public inline function new() this = new Array<T>();
-
-    public inline function add(id:Int, c:T) {
-        this[id] = c;
-    }
-
-    public inline function get(id:Int):T {
-        return this[id];
-    }
-
-    public inline function remove(id:Int) {
-        this[id] = null;
-    }
-
-    public inline function exists(id:Int) {
-        return this[id] != null;
-    }
-
-    public function dispose() {
-        #if haxe3 
-        this.splice(0, this.length);
-        #else 
-        this.resize(0);
-        #end
-    }
-
-}
-
-#else
-
-abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
-
-    public function new() this = new haxe.ds.IntMap<T>();
-
-    public inline function add(id:Int, c:T) {
-        this.set(id, c);
-    }
-
-    public inline function get(id:Int):T {
-        return this.get(id);
-    }
-
-    public inline function remove(id:Int) {
-        this.remove(id);
-    }
-
-    public inline function exists(id:Int) {
-        return this.exists(id);
-    }
-
-    public function dispose() {
-        // for (k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
-        var i = @:privateAccess echos.Workflow.nextId;
-        while (--i > -1) this.remove(i); 
-    }
-
-}
-#end
-
-typedef ComponentContainer<T> = #if echos_array_cc ArrayComponentContainer<T> #else IntMapComponentContainer<T> #end;
-
-interface DestroyableRemovableComponentContainer {
-    function remove(id:Int):Void;
-    function dispose():Void;
-}

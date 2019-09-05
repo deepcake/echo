@@ -9,7 +9,7 @@ package echos;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:autoBuild(echos.macro.SystemBuilder.build())
+@:autoBuild(echos.core.macro.SystemBuilder.build())
 #end
 class System {
 

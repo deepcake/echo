@@ -1,12 +1,12 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
-import echos.macro.MacroTools.*;
-import echos.macro.ComponentBuilder.*;
+import echos.core.macro.MacroTools.*;
+import echos.core.macro.ComponentBuilder.*;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassField;
 
-using echos.macro.MacroTools;
+using echos.core.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
@@ -95,7 +95,7 @@ class ViewBuilder {
                 var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id)));
 
                 // type def
-                var def:TypeDefinition = macro class $viewClsName extends echos.View.ViewBase {
+                var def:TypeDefinition = macro class $viewClsName extends echos.core.AbstractView {
 
                     static var instance = new $viewTypePath();
 

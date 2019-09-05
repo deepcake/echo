@@ -1,9 +1,9 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
-import echos.macro.MacroTools.*;
-import echos.macro.ViewBuilder.*;
-import echos.macro.ComponentBuilder.*;
+import echos.core.macro.MacroTools.*;
+import echos.core.macro.ViewBuilder.*;
+import echos.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -11,7 +11,7 @@ import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using echos.macro.MacroTools;
+using echos.core.macro.MacroTools;
 using StringTools;
 using Lambda;
 

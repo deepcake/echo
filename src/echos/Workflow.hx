@@ -1,10 +1,12 @@
 package echos;
 
 import echos.Entity.Status;
+import echos.core.AbstractView;
+import echos.core.ICleanableComponentContainer;
 
 #if macro
 import haxe.macro.Expr;
-using echos.macro.MacroTools;
+using echos.core.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
 #end
@@ -26,12 +28,12 @@ class Workflow {
     static var idStatuses = new Map<Int, Status>();
 
     // all of every defined component container
-    static var definedContainers = new Array<echos.macro.ComponentBuilder.DestroyableRemovableComponentContainer>();
+    static var definedContainers = new Array<ICleanableComponentContainer>();
     // all of every defined view
-    static var definedViews = new Array<View.ViewBase>();
+    static var definedViews = new Array<AbstractView>();
 
     @:noCompletion public static #if haxe3 var #else final #end entities = new List<Entity>();
-    @:noCompletion public static #if haxe3 var #else final #end views = new List<View.ViewBase>();
+    @:noCompletion public static #if haxe3 var #else final #end views = new List<AbstractView>();
     @:noCompletion public static #if haxe3 var #else final #end systems = new List<System>();
 
 
@@ -132,7 +134,7 @@ class Workflow {
             .map(function(type) return type.identName().getType().follow().toComplexType())
             .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
             .array();
-        var viewComplexType = echos.macro.ViewBuilder.createViewType(components).toComplexType();
+        var viewComplexType = echos.core.macro.ViewBuilder.createViewType(components).toComplexType();
         var viewClsName = viewComplexType.followName();
         return macro $i{viewClsName}.inst();
     }

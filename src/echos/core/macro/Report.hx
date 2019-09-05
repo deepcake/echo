@@ -1,9 +1,9 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
-import echos.macro.MacroTools.*;
-import echos.macro.ViewBuilder.*;
-import echos.macro.ComponentBuilder.*;
+import echos.core.macro.MacroTools.*;
+import echos.core.macro.ViewBuilder.*;
+import echos.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 
 using Lambda;

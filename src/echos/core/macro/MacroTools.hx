@@ -1,4 +1,4 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
 import haxe.macro.ComplexTypeTools;

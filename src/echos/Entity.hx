@@ -1,9 +1,9 @@
 package echos;
 
 #if macro
-import echos.macro.ComponentBuilder;
+import echos.core.macro.ComponentBuilder;
 import haxe.macro.Expr;
-using echos.macro.MacroTools;
+using echos.core.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
 #end
