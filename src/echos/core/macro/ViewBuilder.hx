@@ -133,7 +133,6 @@ class ViewBuilder {
                 //var iteratorTypePath = getViewIterator(components).tp();
                 //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echos, this.entities.iterator()), Context.currentPos()));
 
-
                 // iter
                 {
                     var funcComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
@@ -141,9 +140,7 @@ class ViewBuilder {
                     var body = macro {
                         for (i in 0...entities.length) {
                             var __entity__ = entities[i];
-                            if (__entity__ != echos.Entity.INVALID) {
-                                f($a{ funcCallArgs });
-                            }
+                            f($a{ funcCallArgs });
                         }
                     }
                     def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', funcComplexType)], macro:Void, macro $body, Context.currentPos()));
