@@ -305,7 +305,11 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("When create Entity while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) new Entity().add(new A(), new V(9));
+                        s.f = function(id, a, v) {
+                            if ('$v' != '9') {
+                                new Entity().add(new A(), new V(9));
+                            }
+                        }
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(10));
@@ -315,9 +319,11 @@ class ViewTest extends buddy.BuddySuite {
                 describe("When destroy and create Entity while iterating", {
                     beforeEach({
                         s.f = function(id, a, v) {
-                            id.destroy();
-                            new Entity().add(new A(), new V(9));
-                        };
+                            if ('$v' != '9') {
+                                id.destroy();
+                                new Entity().add(new A(), new V(9));
+                            }
+                        }
                         Workflow.update(0);
                     });
                     it("should has correct length", s.av.entities.length.should.be(5));
@@ -406,7 +412,7 @@ class ViewTest extends buddy.BuddySuite {
                             it("should not has entities", s.av.entities.length.should.be(0));
                             it("should has on ad signals", s.av.onAdded.size().should.be(1));
                             it("should has on rm signals", s.av.onRemoved.size().should.be(1));
-                            it("should has correct log", log.should.be("+1+2+3-3-2-1"));
+                            it("should has correct log", log.should.be("+1+2+3-1-2-3"));
                         });
 
                         describe("When dispose", {
@@ -417,7 +423,7 @@ class ViewTest extends buddy.BuddySuite {
                             it("should not has entities", s.av.entities.length.should.be(0));
                             it("should not has on ad signals", s.av.onAdded.size().should.be(0));
                             it("should not has on rm signals", s.av.onRemoved.size().should.be(0));
-                            it("should has correct log", log.should.be("+1+2+3-3-2-1"));
+                            it("should has correct log", log.should.be("+1+2+3-1-2-3"));
                         });
                     });
                 });
