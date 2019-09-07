@@ -47,7 +47,7 @@ class LinkedList<T> {
         }
     }
 
-    public function remove(value:T) {
+    public function remove(value:T):Bool {
         var prev:LinkedNode<T> = null;
         var node = head;
         while (node != null) {
@@ -61,10 +61,12 @@ class LinkedList<T> {
                     tail = prev;
                 }
                 length--;
+                return true;
             }
             prev = node;
             node = node.next;
         }
+        return false;
     }
 
     public function exists(value:T):Bool {

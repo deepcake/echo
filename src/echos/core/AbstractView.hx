@@ -66,9 +66,9 @@ class AbstractView {
     }
 
     @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        if (entities.exists(id)) {
+        // if remove is success - true returned
+        if (entities.remove(id)) {
             remove(id);
-            entities.remove(id);
         }
     }
 
