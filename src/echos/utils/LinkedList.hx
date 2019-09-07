@@ -33,7 +33,7 @@ class LinkedList<T> {
         length++;
     }
 
-    public function pop():T {
+    public function pop():Null<T> {
         if (head != null) {
             var value = head.value;
             head = head.next;
