@@ -321,18 +321,19 @@ class Render extends System {
 }
 
 class Play extends System {
-    var del = [];
+
     var animals:View<Animal->Position>;
 
     @u inline function interaction(dt:Float) {
-        // dummy everyone with everyone
-        for (i1 in 0...animals.entities.length) {
-            var id1 = animals.entities[i1];
+        var n1 = animals.entities.head;
+        while (n1 != null) {
+            var id1 = n1.value;
             var a1 = id1.get(Animal);
             var pos1 = id1.get(Position);
 
-            for (i2 in i1+1...animals.entities.length) {
-                var id2 = animals.entities[i2];
+            var n2 = n1.next;
+            while (n2 != null) {
+                var id2 = n2.value;
                 var a2 = id2.get(Animal);
                 var pos2 = id2.get(Position);
 
@@ -341,12 +342,16 @@ class Play extends System {
                     switch (a1) {
                         case Tiger: 
                             switch (a2) {
-                                case Rabbit(_): eats(id1, id2);
+                                case Rabbit(_): {
+                                    eats(id1, id2);
+                                }
                                 default: 
                             }
                         case Rabbit(lastlove1): 
                             switch (a2) {
-                                case Tiger: eats(id2, id1);
+                                case Tiger: {
+                                    eats(id2, id1);
+                                }
                                 case Rabbit(lastlove2): {
 
                                     if (id1 != lastlove2 && id2 != lastlove1) {
@@ -362,17 +367,19 @@ class Play extends System {
                     }
 
                 }
-            }
-        }
 
-        while (del.length > 0) del.pop().destroy();
+                n2 = n2.next;
+            }
+
+            n1 = n1.next;
+        }
     }
 
     function eats(tiger:Entity, rabbit:Entity) {
         trace('#$tiger eats #$rabbit');
         Main.deathEvent(rabbit.get(Position).x, rabbit.get(Position).y);
-        del.push(rabbit);
         Info.eaten++;
+        rabbit.destroy();
     }
 
     function test(pos1:Position, pos2:Position, radius:Float) {
