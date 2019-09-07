@@ -88,10 +88,6 @@ class Workflow {
             #end
         }
 
-        for (v in views) {
-            v.flush();
-        }
-
         #if echos_profiling
         times.set("total", Std.int(Date.now().getTime() - engineUpdateStartTimestamp));
         #end

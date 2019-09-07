@@ -1,10 +1,12 @@
 package echos.core;
 
+import echos.utils.LinkedList;
+
 class AbstractView {
 
 
     /** List of matched entities */
-    public var entities(default, null) = new Array<Entity>();
+    public var entities(default, null) = new LinkedList<Entity>();
 
 
     public function activate() {
@@ -21,19 +23,16 @@ class AbstractView {
         }
     }
 
-    public function isActive() {
+    public function isActive():Bool {
         for (v in Workflow.views) {
             if (v == this) return true;
         }
         return false;
     }
 
-    public function size() {
-        var i = 0;
-        for (e in entities) {
-            if (e != Entity.INVALID) i++;
-        }
-        return i;
+
+    public inline function size():Int {
+        return entities.length;
     }
 
 
@@ -59,33 +58,17 @@ class AbstractView {
 
     @:allow(echos.Workflow) function addIfMatch(id:Int) {
         if (isMatch(id)) {
-            var index = entities.indexOf(id);
-            if (index == -1) {
-                entities.push(id);
+            if (!entities.exists(id)) {
+                entities.add(id);
                 add(id);
             }
         }
     }
 
     @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        var index = entities.indexOf(id);
-        if (index > -1) {
+        if (entities.exists(id)) {
             remove(id);
-            entities[index] = Entity.INVALID;
-        }
-    }
-
-
-    @:allow(echos.Workflow) function flush() {
-        var i = 0;
-        var length = entities.length;
-        while (i < length) {
-            if (entities[i] == Entity.INVALID) {
-                entities.splice(i, 1);
-                length--;
-            } else {
-                i++;
-            }
+            entities.remove(id);
         }
     }
 

@@ -138,8 +138,7 @@ class ViewBuilder {
                     var funcComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
                     var funcCallArgs = [ macro __entity__ ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(__entity__)));
                     var body = macro {
-                        for (i in 0...entities.length) {
-                            var __entity__ = entities[i];
+                        for (__entity__ in entities) {
                             f($a{ funcCallArgs });
                         }
                     }
