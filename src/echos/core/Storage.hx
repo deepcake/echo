@@ -1,12 +1,9 @@
 package echos.core;
 
 
-typedef Storage<T> = #if echos_array_cc ArrayComponentContainer<T>; #else IntMapComponentContainer<T>; #end
-
-
 #if echos_array_cc
 
-abstract ArrayComponentContainer<T>(Array<T>) {
+abstract Storage<T>(Array<T>) {
 
     public inline function new() this = new Array<T>();
 
@@ -26,7 +23,7 @@ abstract ArrayComponentContainer<T>(Array<T>) {
         return this[id] != null;
     }
 
-    public function dispose() {
+    public inline function dispose() {
         #if haxe3 
         this.splice(0, this.length);
         #else 
@@ -39,9 +36,9 @@ abstract ArrayComponentContainer<T>(Array<T>) {
 #else
 
 @:forward(get, remove, exists)
-abstract IntMapComponentContainer<T>(haxe.ds.IntMap<T>) {
+abstract Storage<T>(haxe.ds.IntMap<T>) {
 
-    public function new() this = new haxe.ds.IntMap<T>();
+    public inline function new() this = new haxe.ds.IntMap<T>();
 
     public inline function add(id:Int, c:T) {
         this.set(id, c);
