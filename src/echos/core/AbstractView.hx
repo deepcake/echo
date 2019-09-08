@@ -1,12 +1,14 @@
 package echos.core;
 
-import echos.utils.LinkedList;
-
+/**
+ * ...
+ * @author https://github.com/deepcake
+ */
 class AbstractView {
 
 
     /** List of matched entities */
-    public var entities(default, null) = new LinkedList<Entity>();
+    public var entities(default, null) = new RestrictedLinkedList<Entity>();
 
 
     public function activate() {
@@ -24,10 +26,7 @@ class AbstractView {
     }
 
     public function isActive():Bool {
-        for (v in Workflow.views) {
-            if (v == this) return true;
-        }
-        return false;
+        return Workflow.views.exists(this);
     }
 
 

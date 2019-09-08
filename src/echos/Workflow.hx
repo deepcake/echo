@@ -3,6 +3,7 @@ package echos;
 import echos.Entity.Status;
 import echos.core.AbstractView;
 import echos.core.ICleanableComponentContainer;
+import echos.core.RestrictedLinkedList;
 
 #if macro
 import haxe.macro.Expr;
@@ -32,9 +33,10 @@ class Workflow {
     // all of every defined view
     static var definedViews = new Array<AbstractView>();
 
-    @:noCompletion public static #if haxe3 var #else final #end entities = new List<Entity>();
-    @:noCompletion public static #if haxe3 var #else final #end views = new List<AbstractView>();
-    @:noCompletion public static #if haxe3 var #else final #end systems = new List<System>();
+
+    public static var entities(default, null) = new RestrictedLinkedList<Entity>();
+    public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
+    public static var systems(default, null) = new RestrictedLinkedList<System>();
 
 
     #if echos_profiling
@@ -166,10 +168,7 @@ class Workflow {
      * @return `Bool`
      */
     public static function hasSystem(s:System):Bool {
-        for (system in systems) {
-            if (system == s) return true;
-        }
-        return false;
+        return systems.exists(s);
     }
 
 

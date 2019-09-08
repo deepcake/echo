@@ -14,9 +14,8 @@ class LinkedList<T> {
     public var length(default, null) = 0;
 
 
-    public function new() {
-        
-    }
+    public function new() { }
+
 
     public inline function iterator():LinkedListIterator<T> {
         return new LinkedListIterator<T>(head);
@@ -76,11 +75,6 @@ class LinkedList<T> {
             node = node.next;
         }
         return false;
-    }
-
-    public function clear() : Void {
-        head = tail = null;
-        length = 0;
     }
 
 }
