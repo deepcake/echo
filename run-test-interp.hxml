@@ -1,0 +1,8 @@
+-cp src
+-cp test
+-lib buddy
+-main Run.hx
+--interp
+-D echos_profiling
+-D echos_report
+-D echos_array_cc
