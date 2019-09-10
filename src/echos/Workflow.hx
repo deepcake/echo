@@ -5,13 +5,6 @@ import echos.core.AbstractView;
 import echos.core.ICleanableComponentContainer;
 import echos.core.RestrictedLinkedList;
 
-#if macro
-import haxe.macro.Expr;
-using echos.core.macro.MacroTools;
-using haxe.macro.Context;
-using Lambda;
-#end
-
 /**
  *  
  *  
@@ -119,22 +112,6 @@ class Workflow {
             idStatuses.remove(nextId);
         }
         nextId = INVALID_ID + 1;
-    }
-
-
-    /**
-     * Returns the view of passed component types 
-     * @param types list of component types
-     * @return `View`
-     */
-    macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
-        var components = types
-            .map(function(type) return type.identName().getType().follow().toComplexType())
-            .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
-            .array();
-        var viewComplexType = echos.core.macro.ViewBuilder.createViewType(components).toComplexType();
-        var viewClsName = viewComplexType.followName();
-        return macro $i{viewClsName}.inst();
     }
 
 
