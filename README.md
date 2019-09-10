@@ -67,7 +67,7 @@ class Render extends echos.System {
   // @added/@removed-function are the callback called when entity is added or removed from the view;
   @a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
     scene.push(spr);
-    trace('New $entity added to the scene!');
+    trace('New entity added to the scene!');
   }
   // Even if callback was triggered by destroying the entity,
   // @removed-function will be called before this happens,
@@ -100,7 +100,7 @@ class AverageSpeedCalculator extends echos.System {
   @u function calcAverageSpeed() {
     var speedSum = 0;
     bodies.iter((entity, pos, vel) -> speedSum += Math.sqrt(vel.x * vel.x + vel.y * vel.y));
-    trace('Average speed is ${ speedSum / bodies.length }');
+    trace('Average speed is ${ speedSum / bodies.entities.length }');
   }
 }
 ```
