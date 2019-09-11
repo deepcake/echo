@@ -18,6 +18,7 @@ class FlowTest extends buddy.BuddySuite {
                 });
                 it("should be added", Workflow.systems.length.should.be(1));
                 it("should be added", Workflow.hasSystem(x).should.be(true));
+                it("should has correct count of views", Workflow.views.length.should.be(2));
 
                 describe("When remove System X", {
                     beforeEach({
@@ -25,6 +26,7 @@ class FlowTest extends buddy.BuddySuite {
                     });
                     it("should be removed", Workflow.systems.length.should.be(0));
                     it("should be removed", Workflow.hasSystem(x).should.be(false));
+                    it("should has correct count of views", Workflow.views.length.should.be(2));
                 });
 
                 describe("When add System Y", {
@@ -33,6 +35,7 @@ class FlowTest extends buddy.BuddySuite {
                     });
                     it("should be added", Workflow.systems.length.should.be(2));
                     it("should be added", Workflow.hasSystem(y).should.be(true));
+                    it("should has correct count of views", Workflow.views.length.should.be(3));
 
                     describe("When remove System Y", {
                         beforeEach({
@@ -40,6 +43,7 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
+                        it("should has correct count of views", Workflow.views.length.should.be(3));
                     });
 
                     describe("When remove System X", {
@@ -48,6 +52,7 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));
+                        it("should has correct count of views", Workflow.views.length.should.be(3));
                     });
 
                     describe("When dispose", {
@@ -57,6 +62,7 @@ class FlowTest extends buddy.BuddySuite {
                         it("should be removed", Workflow.systems.length.should.be(0));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
+                        it("should has correct count of views", Workflow.views.length.should.be(0));
                     });
                 });
             });
@@ -64,10 +70,20 @@ class FlowTest extends buddy.BuddySuite {
     }
 }
 
-class SystemX extends echos.System {
+class X {
+    public function new() { };
+}
 
+class Y {
+    public function new() { };
+}
+
+class SystemX extends echos.System {
+    var x:View<X>;
+    var xy:View<X, Y>;
 }
 
 class SystemY extends echos.System {
-
+    @u inline function update(y:Y) { }
+    @u inline function updatexy(x:X, y:Y, dt:Float) { }
 }
