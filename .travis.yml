@@ -10,7 +10,7 @@ os:
 # you can specify futher versions as found at http://haxe.org/website-content/downloads/versions.json
 haxe:
   - "3.4.7"
-  - "4.0.0-rc.4"
+  - "4.0.0-rc.5"
   - development
   
 matrix:
