@@ -6,7 +6,7 @@ import echos.core.ICleanableComponentContainer;
 import echos.core.RestrictedLinkedList;
 
 /**
- *  
+ *  Workflow  
  *  
  * @author https://github.com/deepcake
  */

@@ -9,7 +9,8 @@ using Lambda;
 #end
 
 /**
- * Entity is an abstract over the `Int` id  
+ * Entity is an abstract over the `Int` key.  
+ * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused again  
  *  
  * @author https://github.com/deepcake
  */
