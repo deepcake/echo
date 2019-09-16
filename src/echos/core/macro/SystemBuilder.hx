@@ -271,9 +271,9 @@ class SystemBuilder {
             );
 
         var deactivateExprs = []
-            .concat( // call removed-listeners
-                rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Listener__' });
+            .concat( // deactivate views
+                definedViews.map(function(v){
+                    return macro $i{ v.name }.deactivate();
                 })
             )
             .concat(
@@ -287,11 +287,6 @@ class SystemBuilder {
             .concat( // remove removed-listeners
                 rfuncs.map(function(f){
                     return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
-                })
-            )
-            .concat( // deactivate views
-                definedViews.map(function(v){
-                    return macro $i{ v.name }.deactivate();
                 })
             )
             .concat( // null signal wrappers 

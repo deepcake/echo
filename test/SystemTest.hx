@@ -80,7 +80,7 @@ class SystemTest extends buddy.BuddySuite {
             });
 
             describe("Using @added and @removed metas", {
-                var arSys = new AddedRemovedMetaGeneration();
+                var sys1 = new AddedRemovedMetaGeneration();
                 var entities:Array<Entity>;
 
                 describe("When add System with already created Entities", {
@@ -89,22 +89,22 @@ class SystemTest extends buddy.BuddySuite {
                     });
 
                     describe("When add System to the flow", {
-                        beforeEach(Workflow.addSystem(arSys));
+                        beforeEach(Workflow.addSystem(sys1));
                         it("should has correct result", {
                             BuildResult.value.should.be('+A+A>A>A+Ae+Ae');
                         });
 
                         describe("When remove System from the flow", {
-                            beforeEach(Workflow.removeSystem(arSys));
+                            beforeEach(Workflow.removeSystem(sys1));
                             it("should has correct result", {
-                                BuildResult.value.should.be('+A+A>A>A+Ae+Ae<A<A-A-A-Ae-Ae');
+                                BuildResult.value.should.be('+A+A>A>A+Ae+Ae<A-A-Ae<A-A-Ae');
                             });
                         });
                     });
                 });
 
-                describe("When add System to the flow", {
-                    beforeEach(Workflow.addSystem(arSys));
+                describe("When add a first System", {
+                    beforeEach(Workflow.addSystem(sys1));
                     it("should correctly add listeners", {
                         StandaloneA.a.onAdded.size().should.be(3);
                         StandaloneA.a.onRemoved.size().should.be(3);
@@ -128,8 +128,8 @@ class SystemTest extends buddy.BuddySuite {
                         });
                     });
 
-                    describe("When remove System from the flow", {
-                        beforeEach(Workflow.removeSystem(arSys));
+                    describe("When remove a first System", {
+                        beforeEach(Workflow.removeSystem(sys1));
                         it("should correctly remove listeners", {
                             StandaloneA.a.onAdded.size().should.be(0);
                             StandaloneA.a.onRemoved.size().should.be(0);
@@ -137,9 +137,9 @@ class SystemTest extends buddy.BuddySuite {
                     });
 
                     describe("When add a second System with equal View", {
-                        var araSys = new AddedRemovedAdditionalMetaGeneration();
+                        var sys2 = new AddedRemovedAdditionalMetaGeneration();
 
-                        beforeEach(Workflow.addSystem(araSys));
+                        beforeEach(Workflow.addSystem(sys2));
                         it("should correctly add listeners", {
                             StandaloneA.a.onAdded.size().should.be(4);
                             StandaloneA.a.onRemoved.size().should.be(4);
@@ -161,10 +161,49 @@ class SystemTest extends buddy.BuddySuite {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
                                 });
                             });
+
+                            describe("When remove a first System", {
+                                beforeEach(Workflow.removeSystem(sys1));
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
+                                });
+
+                                describe("When destroy Entities", {
+                                    beforeEach({
+                                        for (e in entities) e.destroy();
+                                    });
+                                    it("should has correct result", {
+                                        BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!##');
+                                    });
+                                });
+                            });
+
+                            describe("When remove a second System with equal View", {
+                                beforeEach(Workflow.removeSystem(sys2));
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
+                                });
+
+                                describe("When destroy Entities", {
+                                    beforeEach({
+                                        for (e in entities) e.destroy();
+                                    });
+                                    it("should has correct result", {
+                                        BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae<A-A-Ae');
+                                    });
+                                });
+                            });
+
+                            describe("When dispose", {
+                                beforeEach(Workflow.dispose());
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
+                                });
+                            });
                         });
 
                         describe("When remove a second System with equal View", {
-                            beforeEach(Workflow.removeSystem(araSys));
+                            beforeEach(Workflow.removeSystem(sys2));
                             it("should correctly remove listeners", {
                                 StandaloneA.a.onAdded.size().should.be(3);
                                 StandaloneA.a.onRemoved.size().should.be(3);
@@ -184,6 +223,32 @@ class SystemTest extends buddy.BuddySuite {
                                     });
                                     it("should has correct result", {
                                         BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
+                                    });
+                                });
+                            });
+                        });
+
+                        describe("When remove a first System", {
+                            beforeEach(Workflow.removeSystem(sys1));
+                            it("should correctly remove listeners", {
+                                StandaloneA.a.onAdded.size().should.be(1);
+                                StandaloneA.a.onRemoved.size().should.be(1);
+                            });
+
+                            describe("When create Entities", {
+                                beforeEach({
+                                    entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+                                });
+                                it("should has correct result", {
+                                    BuildResult.value.should.be('!!');
+                                });
+
+                                describe("When destroy Entities", {
+                                    beforeEach({
+                                        for (e in entities) e.destroy();
+                                    });
+                                    it("should has correct result", {
+                                        BuildResult.value.should.be('!!##');
                                     });
                                 });
                             });
