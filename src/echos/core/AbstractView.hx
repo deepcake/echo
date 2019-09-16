@@ -10,23 +10,31 @@ class AbstractView {
     /** List of matched entities */
     public var entities(default, null) = new RestrictedLinkedList<Entity>();
 
+    var activations = 0;
+
 
     public function activate() {
-        if (!isActive()) {
+        activations++;
+        if (activations == 1) {
             Workflow.views.add(this);
-            for (e in Workflow.entities) addIfMatch(e);
+            for (e in Workflow.entities) {
+                addIfMatch(e);
+            }
         }
     }
 
     public function deactivate() {
-        if (isActive()) {
-            while (entities.length > 0) remove(entities.pop());
+        activations--;
+        if (activations == 0) {
             Workflow.views.remove(this);
+            while (entities.length > 0) {
+                remove(entities.pop());
+            }
         }
     }
 
     public function isActive():Bool {
-        return Workflow.views.exists(this);
+        return activations > 0;
     }
 
 
@@ -73,7 +81,11 @@ class AbstractView {
 
 
     @:allow(echos.Workflow) function dispose() {
-        deactivate();
+        activations = 0;
+        Workflow.views.remove(this);
+        while (entities.length > 0) {
+            remove(entities.pop());
+        }
     }
 
 

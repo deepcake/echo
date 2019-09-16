@@ -26,7 +26,7 @@ class FlowTest extends buddy.BuddySuite {
                     });
                     it("should be removed", Workflow.systems.length.should.be(0));
                     it("should be removed", Workflow.hasSystem(x).should.be(false));
-                    it("should has correct count of views", Workflow.views.length.should.be(2));
+                    it("should has correct count of views", Workflow.views.length.should.be(0));
                 });
 
                 describe("When add System Y", {
@@ -43,7 +43,7 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
-                        it("should has correct count of views", Workflow.views.length.should.be(3));
+                        it("should has correct count of views", Workflow.views.length.should.be(2));
                     });
 
                     describe("When remove System X", {
@@ -52,7 +52,7 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));
-                        it("should has correct count of views", Workflow.views.length.should.be(3));
+                        it("should has correct count of views", Workflow.views.length.should.be(2));
                     });
 
                     describe("When dispose", {

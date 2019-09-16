@@ -289,6 +289,11 @@ class SystemBuilder {
                     return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
                 })
             )
+            .concat( // deactivate views
+                definedViews.map(function(v){
+                    return macro $i{ v.name }.deactivate();
+                })
+            )
             .concat( // null signal wrappers 
                 listeners.map(function(f) {
                     return macro $i{'__${f.name}Listener__'} = null;
