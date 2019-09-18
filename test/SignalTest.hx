@@ -58,14 +58,6 @@ class SignalTest extends buddy.BuddySuite {
                     it("should be dispatched", r.should.be("1_11"));
                 });
 
-                describe("When dispose", {
-                    beforeEach({
-                        s.dispose();
-                    });
-                    it("should be removed", s.has(f1).should.be(false));
-                    it("should has correct size", s.size().should.be(0));
-                });
-
                 describe("When add a second listener", {
                     var f2 = function(i:Int, o:O) r += '2_$i$o';
                     beforeEach({
@@ -111,15 +103,6 @@ class SignalTest extends buddy.BuddySuite {
                             s.dispatch(1, new O('1'));
                         });
                         it("should be dispatched", r.should.be("1_112_11"));
-                    });
-
-                    describe("When dispose", {
-                        beforeEach({
-                            s.dispose();
-                        });
-                        it("should be removed", s.has(f1).should.be(false));
-                        it("should be removed", s.has(f2).should.be(false));
-                        it("should has correct size", s.size().should.be(0));
                     });
                 });
             });

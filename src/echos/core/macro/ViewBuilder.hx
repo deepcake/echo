@@ -124,8 +124,8 @@ class ViewBuilder {
 
                     override function dispose() {
                         super.dispose();
-                        onAdded.dispose();
-                        onRemoved.dispose();
+                        onAdded.removeAll();
+                        onRemoved.removeAll();
                     }
 
                 }

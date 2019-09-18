@@ -276,9 +276,6 @@ class SystemBuilder {
                     return macro $i{ v.name }.deactivate();
                 })
             )
-            .concat(
-                [ macro ondeactivate() ]
-            )
             .concat( // remove added-listeners
                 afuncs.map(function(f){
                     return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}Listener__' });
@@ -288,6 +285,9 @@ class SystemBuilder {
                 rfuncs.map(function(f){
                     return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
                 })
+            )
+            .concat(
+                [ macro ondeactivate() ]
             )
             .concat( // null signal wrappers 
                 listeners.map(function(f) {
