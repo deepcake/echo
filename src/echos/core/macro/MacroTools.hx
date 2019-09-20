@@ -1,4 +1,4 @@
-package echos.macro;
+package echos.core.macro;
 
 #if macro
 import haxe.macro.ComplexTypeTools;
@@ -10,6 +10,7 @@ import haxe.macro.Expr.FunctionArg;
 import haxe.macro.Expr.TypePath;
 import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
+
 using haxe.macro.Context;
 using Lambda;
 
@@ -19,7 +20,7 @@ using Lambda;
  */
 @:final
 @:dce
-class Macro {
+class MacroTools {
 
     public static function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
         return {
@@ -86,66 +87,15 @@ class Macro {
         #end
     }
 
-    
 
-    public static function followComplexType(cls:ComplexType) {
-        return ComplexTypeTools.toType(cls).follow().toComplexType();
+    public static function followComplexType(ct:ComplexType) {
+        return ComplexTypeTools.toType(ct).follow().toComplexType();
     }
 
-    public static function followName(cls:ComplexType):String {
-        var t = tp(followComplexType(cls));
-
-        function paramFollowName(p:TypeParam):String {
-            switch (p) {
-                case TPType(cls):
-                    return followName(cls);
-                case x: throw 'Unexp $x';
-            }
-        }
-        var params = '';
-        if (t.params != null && t.params.length > 0) params = '<' + t.params.map(paramFollowName).join(', ') + '>';
-
-        return (t.pack.length > 0 ? t.pack.join('.') + '.' : '') + t.name + (t.sub != null ? '.' + t.sub : '') + params;
+    public static function followName(ct:ComplexType):String {
+        return new Printer().printComplexType(followComplexType(ct));
     }
 
-    public static function expr(cls:ComplexType, pos:Position):Expr {
-        return Context.parse(followName(cls), pos);
-    }
-
-    public static function underscoredFullName(cls:ComplexType) {
-        var t = tp(followComplexType(cls));
-        var name = '';
-
-        name += t.pack.join('_');
-
-        name += '_' + t.name;
-
-        if (t.sub != null) {
-            name += '_' + t.sub;
-        }
-
-        if (t.params != null) {
-
-            for (p in t.params) {
-                switch (p) {
-                    case TPType(paramComplexType):
-                        name += '_' + underscoredFullName(paramComplexType);
-                    case x:
-                        trace('Unexpected type param: $x');
-                }
-            }
-
-        }
-
-        return name;
-    }
-
-    public static function shortName(cls:ComplexType) {
-        var t = tp(followComplexType(cls));
-        return t.sub == null ? t.name : t.sub;
-    }
-
-    
 
     public static function tp(t:ComplexType):TypePath {
         return switch(t) {
@@ -160,6 +110,55 @@ class Macro {
             case EField(path, name): identName(path) + '.' + name;
             case x: throw 'Unexpected $x';
         }
+    }
+
+
+    static function capitalize(s:String) {
+        return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
+    }
+
+    static function typeParamName(p:TypeParam):String {
+        return switch (p) {
+            case TPType(ct): typeName(ct);
+            case x: 
+                #if haxe3 
+                throw 'Unexpected $x';
+                #else
+                Context.error('Unexpected $x', Context.currentPos());
+                #end 
+        }
+    }
+
+    public static function typeName(ct:ComplexType):String {
+        return switch (followComplexType(ct)) {
+            case TPath(t): 
+
+                (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '') + 
+                t.name + 
+                (t.sub != null ? t.sub : '') + 
+                ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName).join('') : '');
+
+            case x: 
+                #if haxe3 
+                throw 'Unexpected $x';
+                #else
+                Context.error('Unexpected $x', Context.currentPos());
+                #end 
+        }
+    }
+
+    public static function compareStrings(a:String, b:String):Int {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
+
+    public static function packName(types:Array<ComplexType>) {
+        var typeNames = types.map(typeName);
+        typeNames.sort(compareStrings);
+        return typeNames.join('_');
     }
 
 }

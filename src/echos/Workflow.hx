@@ -1,40 +1,35 @@
 package echos;
 
 import echos.Entity.Status;
-
-#if macro
-import echos.macro.*;
-import haxe.macro.Expr;
-import haxe.macro.Type;
-using haxe.macro.Context;
-using echos.macro.Macro;
-using Lambda;
-#end
+import echos.core.AbstractView;
+import echos.core.ICleanableComponentContainer;
+import echos.core.RestrictedLinkedList;
 
 /**
- *  
+ *  Workflow  
  *  
  * @author https://github.com/deepcake
  */
 class Workflow {
 
 
-    static var __nextEntityId = 0;
+    @:allow(echos.Entity) static inline var INVALID_ID = 0;
 
 
-    static var __componentContainers = new Array<echos.macro.ComponentMacro.ComponentContainer<Dynamic>>();
+    static var nextId = INVALID_ID + 1;
 
-    static function regComponentContainer(cc:echos.macro.ComponentMacro.ComponentContainer<Dynamic>) {
-        __componentContainers.push(cc);
-    }
+    static var idPool = new Array<Int>();
+    static var idStatuses = new Map<Int, Status>();
+
+    // all of every defined component container
+    static var definedContainers = new Array<ICleanableComponentContainer>();
+    // all of every defined view
+    static var definedViews = new Array<AbstractView>();
 
 
-    static var cache = new Array<Int>();
-    static var statuses = new Map<Int, Status>();
-
-    @:noCompletion public static #if haxe4 final #else var #end entities = new List<Entity>();
-    @:noCompletion public static #if haxe4 final #else var #end views = new List<View.ViewBase>();
-    @:noCompletion public static #if haxe4 final #else var #end systems = new List<System>();
+    public static var entities(default, null) = new RestrictedLinkedList<Entity>();
+    public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
+    public static var systems(default, null) = new RestrictedLinkedList<System>();
 
 
     #if echos_profiling
@@ -50,8 +45,8 @@ class Workflow {
      * _{ view name } [ collected entities count ]_  
      * @return String
      */
-    public static function toString():String {
-        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${cache.length} ]'; // TODO version or something
+    public static function info():String {
+        var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 
         #if echos_profiling
         ret += ' : ${ times.get("total") } ms'; // total
@@ -81,7 +76,7 @@ class Workflow {
             var systemUpdateStartTimestamp = Date.now().getTime();
             #end
 
-            s.__update(dt);
+            s.__update__(dt);
 
             #if echos_profiling
             times.set(s.toString(), Std.int(Date.now().getTime() - systemUpdateStartTimestamp));
@@ -104,34 +99,19 @@ class Workflow {
         for (s in systems) {
             removeSystem(s);
         }
-        for (v in views) {
+        for (v in definedViews) {
             v.dispose();
         }
-        for (cc in __componentContainers) {
-            cc.dispose();
+        for (c in definedContainers) {
+            c.dispose();
         }
-        while (cache.length > 0) {
-            cache.pop();
+        while (idPool.length > 0) {
+            idPool.pop();
         }
-        while (--__nextEntityId > -1) {
-            statuses.remove(__nextEntityId);
+        while (--nextId > -1) {
+            idStatuses.remove(nextId);
         }
-        __nextEntityId = 0;
-    }
-
-
-    /**
-     * Returns the view of passed component types 
-     * @param types list of component types
-     * @return `View`
-     */
-    macro public static inline function getView(types:Array<ExprOf<Class<Any>>>) {
-        var components = types
-            .map(function(type) return type.identName().getType().follow().toComplexType())
-            .map(function(ct)return { name: ct.tp().name.toLowerCase(), cls: ct })
-            .array();
-        var viewComplexType = ViewMacro.createViewType(components).toComplexType();
-        return macro ${ viewComplexType.expr(Context.currentPos()) }.inst();
+        nextId = INVALID_ID + 1;
     }
 
 
@@ -144,7 +124,7 @@ class Workflow {
     public static function addSystem(s:System) {
         if (!hasSystem(s)) {
             systems.add(s);
-            s.__activate();
+            s.__activate__();
         }
     }
 
@@ -154,7 +134,7 @@ class Workflow {
      */
     public static function removeSystem(s:System) {
         if (hasSystem(s)) {
-            s.__deactivate();
+            s.__deactivate__();
             systems.remove(s);
         }
     }
@@ -165,22 +145,19 @@ class Workflow {
      * @return `Bool`
      */
     public static function hasSystem(s:System):Bool {
-        for (system in systems) {
-            if (system == s) return true;
-        }
-        return false;
+        return systems.exists(s);
     }
 
 
     // Entity
 
     @:allow(echos.Entity) static function id(immediate:Bool):Int {
-        var id = cache.length > 0 ? cache.pop() : __nextEntityId++;
+        var id = idPool.length > 0 ? idPool.pop() : nextId++;
         if (immediate) {
-            statuses[id] = Active;
+            idStatuses[id] = Active;
             entities.add(id);
         } else {
-            statuses[id] = Inactive;
+            idStatuses[id] = Inactive;
         }
         return id;
     }
@@ -190,14 +167,14 @@ class Workflow {
         if (status(id) < Cached) { // Active or Inactive
             remove(id);
             removeComponents(id);
-            cache.push(id);
-            statuses[id] = Cached;
+            idPool.push(id);
+            idStatuses[id] = Cached;
         }
     }
 
     @:allow(echos.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            statuses[id] = Active;
+            idStatuses[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatch(id);
         }
@@ -207,17 +184,22 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
-            statuses[id] = Inactive;
+            idStatuses[id] = Inactive;
         }
     }
 
     @:allow(echos.Entity) static inline function status(id:Int):Status {
-        return statuses.exists(id) ? statuses[id] : Invalid;
+        return idStatuses.exists(id) ? idStatuses[id] : Invalid;
     }
 
     @:allow(echos.Entity) static inline function removeComponents(id:Int) {
-        for (cc in __componentContainers) {
-            cc.remove(id);
+        if (status(id) == Active) {
+            for (v in views) {
+                v.removeIfMatch(id);
+            }
+        }
+        for (c in definedContainers) {
+            c.remove(id);
         }
     }
 

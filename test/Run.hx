@@ -1,8 +1,13 @@
 package;
 
-class Run implements buddy.Buddy<[ 
-    new SignalTest(),
-    new ComponentTypeTest(), 
+class Run implements buddy.Buddy<[
+
+    new SignalTest(), 
+
+    new FlowTest(), 
     new EntityTest(), 
-    new ViewTest(), 
-    new SystemTest() ]> {}
+    new SystemTest(), 
+    new ComponentTypeTest(), 
+    new ViewTest() 
+
+]> {}
