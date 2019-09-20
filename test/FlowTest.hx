@@ -64,6 +64,22 @@ class FlowTest extends buddy.BuddySuite {
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
                         it("should has correct count of views", Workflow.views.length.should.be(0));
                     });
+
+                    describe("When use info", {
+                        var expectedResult = "";
+                        expectedResult += "# ( 2 ) { 3 } [ 0 | 0 ] : 0 ms";
+                        #if echos_profiling
+                        expectedResult += "\n        (FlowTest.SystemX) : 0 ms";
+                        expectedResult += "\n        (FlowTest.SystemY) : 0 ms";
+                        expectedResult += "\n    {FlowTest.X} [0]";
+                        expectedResult += "\n    {FlowTest.X+FlowTest.Y} [0]";
+                        expectedResult += "\n    {FlowTest.Y} [0]";
+                        #end
+                        beforeEach({
+                            Workflow.update(0);
+                        });
+                        it("should has correct result", Workflow.info().should.be(expectedResult));
+                    });
                 });
             });
         });

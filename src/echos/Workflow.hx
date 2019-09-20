@@ -45,7 +45,7 @@ class Workflow {
      * _{ view name } [ collected entities count ]_  
      * @return String
      */
-    public static function toString():String {
+    public static function info():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 
         #if echos_profiling
