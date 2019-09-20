@@ -67,8 +67,9 @@ class FlowTest extends buddy.BuddySuite {
 
                     describe("When use info", {
                         var expectedResult = "";
-                        expectedResult += "# ( 2 ) { 3 } [ 0 | 0 ] : 0 ms";
+                        expectedResult += "# ( 2 ) { 3 } [ 0 | 0 ]";
                         #if echos_profiling
+                        expectedResult += " : 0 ms";
                         expectedResult += "\n        (FlowTest.SystemX) : 0 ms";
                         expectedResult += "\n        (FlowTest.SystemY) : 0 ms";
                         expectedResult += "\n    {FlowTest.X} [0]";
