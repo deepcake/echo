@@ -111,7 +111,7 @@ class AverageSpeedCalculator extends echos.System {
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echos_profiling` - collecting some more info in `Workflow.toString()` method for debug purposes
+ * `-D echos_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
  * `-D echos_report` - traces a short report of built components and views
  * `-D echos_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
 
