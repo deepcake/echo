@@ -257,7 +257,7 @@ class Info extends System {
         this.element = element;
     }
     @u function print() {
-        element.innerHTML = 'EATEN: $eaten\n\n${ Workflow.toString() }';
+        element.innerHTML = 'EATEN: $eaten\n\n${ Workflow.info() }';
     }
 }
 
