@@ -3,6 +3,7 @@ package echos;
 import echos.Entity.Status;
 import echos.core.AbstractView;
 import echos.core.ICleanableComponentContainer;
+import echos.core.ISystem;
 import echos.core.RestrictedLinkedList;
 
 /**
@@ -29,7 +30,7 @@ class Workflow {
 
     public static var entities(default, null) = new RestrictedLinkedList<Entity>();
     public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
-    public static var systems(default, null) = new RestrictedLinkedList<System>();
+    public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 
 
     #if echos_profiling
@@ -51,7 +52,7 @@ class Workflow {
         #if echos_profiling
         ret += ' : ${ updateTime } ms'; // total
         for (s in systems) {
-            ret += '\n        ($s) : ${ s.__updateTime__ } ms';
+            ret += '\n        ${ s.info() }';
         }
         for (v in views) {
             ret += '\n    {$v} [${v.entities.length}]';
@@ -115,7 +116,7 @@ class Workflow {
      * Adds the system to the workflow
      * @param s `System` instance
      */
-    public static function addSystem(s:System) {
+    public static function addSystem(s:ISystem) {
         if (!hasSystem(s)) {
             systems.add(s);
             s.__activate__();
@@ -126,7 +127,7 @@ class Workflow {
      * Removes the system from the workflow
      * @param s `System` instance
      */
-    public static function removeSystem(s:System) {
+    public static function removeSystem(s:ISystem) {
         if (hasSystem(s)) {
             s.__deactivate__();
             systems.remove(s);
@@ -138,7 +139,7 @@ class Workflow {
      * @param s `System` instance
      * @return `Bool`
      */
-    public static function hasSystem(s:System):Bool {
+    public static function hasSystem(s:ISystem):Bool {
         return systems.exists(s);
     }
 

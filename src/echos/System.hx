@@ -28,24 +28,24 @@ package echos;
 #if !macro
 @:autoBuild(echos.core.macro.SystemBuilder.build())
 #end
-class System {
+class System implements echos.core.ISystem {
 
 
     #if echos_profiling
-    @:allow(echos.Workflow) var __updateTime__ = 0.0;
+    @:allow(echos) var __updateTime__ = 0.0;
     #end
 
 
-    @:allow(echos.Workflow) function __activate__() {
+    @:noCompletion public function __activate__() {
         onactivate();
     }
 
-    @:allow(echos.Workflow) function __deactivate__() {
-        ondeactivate();
+    @:noCompletion public function __update__(dt:Float) {
+        // macro
     }
 
-    @:allow(echos.Workflow) function __update__(dt:Float) {
-        // macro
+    @:noCompletion public function __deactivate__() {
+        ondeactivate();
     }
 
 
@@ -61,6 +61,13 @@ class System {
 
 
     public function toString():String return 'System';
+
+
+    #if echos_profiling
+    @:noCompletion public function info():String {
+        return '($this) : ${ this.__updateTime__ } ms';
+    }
+    #end
 
 
 }
