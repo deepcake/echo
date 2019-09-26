@@ -220,6 +220,11 @@ class SystemBuilder {
         });
 
         var updateExprs = []
+            #if echos_profilig
+            .concat([
+                macro var __timestamp__ = Date.now().getTime()
+            ])
+            #end
             .concat(
                 ufuncs.map(function(f) {
                     return switch (f.type) {
@@ -237,7 +242,12 @@ class SystemBuilder {
                         }
                     }
                 })
-            );
+            )
+            #if echos_profilig
+            .concat([
+                macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
+            ])
+            #end;
 
         var activateExprs = []
             .concat( // init signal listener wrappers

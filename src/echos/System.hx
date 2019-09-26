@@ -31,6 +31,11 @@ package echos;
 class System {
 
 
+    #if echos_profiling
+    @:allow(echos.Workflow) var __updateTime__ = 0.0;
+    #end
+
+
     @:allow(echos.Workflow) function __activate__() {
         onactivate();
     }
