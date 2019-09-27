@@ -186,7 +186,7 @@ class SystemBuilder {
 
                         if (func.args.exists(metaFuncArgIsEntity)) {
                             // every entity iterate
-                            Context.warning("Are you sure that you want to iterate over all of the entities? If not, you should to add some components", field.pos);
+                            Context.warning("Are you sure you want to iterate over all the entities? If not, you should add some components or remove the Entity / Int argument", field.pos);
 
                             { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER };
 
