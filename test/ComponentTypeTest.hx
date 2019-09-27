@@ -9,7 +9,7 @@ class ComponentTypeTest extends buddy.BuddySuite {
             var s:ComponentTypeSystem;
 
             beforeEach({
-                Workflow.dispose();
+                Workflow.reset();
                 e = new Entity();
                 s = new ComponentTypeSystem();
                 Workflow.addSystem(s);

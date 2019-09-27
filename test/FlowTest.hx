@@ -9,7 +9,7 @@ class FlowTest extends buddy.BuddySuite {
             var y = new SystemY();
 
             beforeEach({
-                Workflow.dispose();
+                Workflow.reset();
             });
 
             describe("When add System X", {
@@ -55,9 +55,9 @@ class FlowTest extends buddy.BuddySuite {
                         it("should has correct count of views", Workflow.views.length.should.be(2));
                     });
 
-                    describe("When dispose", {
+                    describe("When reset", {
                         beforeEach({
-                            Workflow.dispose();
+                            Workflow.reset();
                         });
                         it("should be removed", Workflow.systems.length.should.be(0));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));

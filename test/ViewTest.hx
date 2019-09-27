@@ -8,7 +8,7 @@ class ViewTest extends buddy.BuddySuite {
         describe("View", {
             var log = '';
 
-            beforeEach(Workflow.dispose());
+            beforeEach(Workflow.reset());
             beforeEach(log = '');
 
             describe("Matching", {
@@ -16,7 +16,7 @@ class ViewTest extends buddy.BuddySuite {
                 var entities = new Array<Entity>();
 
                 beforeEach({
-                    Workflow.dispose();
+                    Workflow.reset();
                     Workflow.addSystem(s);
                 });
 
@@ -162,7 +162,7 @@ class ViewTest extends buddy.BuddySuite {
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
                 beforeEach({
-                    Workflow.dispose();
+                    Workflow.reset();
                     Workflow.addSystem(s);
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
@@ -242,7 +242,7 @@ class ViewTest extends buddy.BuddySuite {
                 var s = new IteratingViewSystem();
 
                 beforeEach({
-                    Workflow.dispose();
+                    Workflow.reset();
                     Workflow.addSystem(s);
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
@@ -415,9 +415,9 @@ class ViewTest extends buddy.BuddySuite {
                             it("should has correct log", log.should.be("+1+2+3-1-2-3"));
                         });
 
-                        describe("When dispose", {
+                        describe("When reset", {
                             beforeEach({
-                                @:privateAccess s.av.dispose();
+                                @:privateAccess s.av.reset();
                             });
                             it("should not be active", s.av.isActive().should.be(false));
                             it("should not has entities", s.av.entities.length.should.be(0));

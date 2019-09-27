@@ -87,7 +87,7 @@ class Workflow {
     /**
      * Removes all views, systems and entities from the workflow, and resets the id sequence 
      */
-    public static function dispose() {
+    public static function reset() {
         for (e in entities) {
             e.destroy();
         }
@@ -95,10 +95,10 @@ class Workflow {
             removeSystem(s);
         }
         for (v in definedViews) {
-            v.dispose();
+            v.reset();
         }
         for (c in definedContainers) {
-            c.dispose();
+            c.reset();
         }
         while (idPool.length > 0) {
             idPool.pop();

@@ -72,8 +72,8 @@ class ComponentBuilder {
                         storage.remove(id);
                     }
 
-                    public inline function dispose() {
-                        storage.dispose();
+                    public inline function reset() {
+                        storage.reset();
                     }
 
                 }

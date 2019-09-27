@@ -10,7 +10,7 @@ class EntityTest extends buddy.BuddySuite {
             var b:ComponentB;
 
             beforeEach({
-                echos.Workflow.dispose();
+                echos.Workflow.reset();
                 a = new ComponentA(1);
                 b = new ComponentB(2);
             });

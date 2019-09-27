@@ -122,8 +122,8 @@ class ViewBuilder {
                         super.remove(id);
                     }
 
-                    override function dispose() {
-                        super.dispose();
+                    override function reset() {
+                        super.reset();
                         onAdded.removeAll();
                         onRemoved.removeAll();
                     }

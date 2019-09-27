@@ -9,7 +9,7 @@ class SystemTest extends buddy.BuddySuite {
         describe("Building", {
 
             beforeEach({
-                Workflow.dispose();
+                Workflow.reset();
                 BuildResult.value = '';
             });
 
@@ -194,8 +194,8 @@ class SystemTest extends buddy.BuddySuite {
                                 });
                             });
 
-                            describe("When dispose", {
-                                beforeEach(Workflow.dispose());
+                            describe("When reset", {
+                                beforeEach(Workflow.reset());
                                 it("should has correct result", {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
                                 });

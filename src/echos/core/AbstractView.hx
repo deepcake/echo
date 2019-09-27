@@ -80,7 +80,7 @@ class AbstractView {
     }
 
 
-    @:allow(echos.Workflow) function dispose() {
+    @:allow(echos.Workflow) function reset() {
         activations = 0;
         Workflow.views.remove(this);
         while (entities.length > 0) {
