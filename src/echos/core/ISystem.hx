@@ -9,7 +9,7 @@ interface ISystem {
     function __deactivate__():Void;
 
     #if echos_profiling
-    function info():String;
+    function info(indent:String = ''):String;
     #end
 
 }

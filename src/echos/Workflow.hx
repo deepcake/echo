@@ -52,7 +52,7 @@ class Workflow {
         #if echos_profiling
         ret += ' : ${ updateTime } ms'; // total
         for (s in systems) {
-            ret += '\n        ${ s.info() }';
+            ret += '\n${ s.info("    ") }';
         }
         for (v in views) {
             ret += '\n    {$v} [${v.entities.length}]';

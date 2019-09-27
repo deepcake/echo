@@ -64,8 +64,8 @@ class System implements echos.core.ISystem {
 
 
     #if echos_profiling
-    @:noCompletion public function info():String {
-        return '($this) : ${ this.__updateTime__ } ms';
+    @:noCompletion public function info(indent:String = ''):String {
+        return '$indent($this) : ${ this.__updateTime__ } ms';
     }
     #end
 

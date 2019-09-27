@@ -14,6 +14,7 @@ class SystemList implements echos.core.ISystem {
 
 
     @:noCompletion @:final public function __activate__() {
+        activated = true;
         for (s in systems) {
             s.__activate__();
         }
@@ -26,6 +27,7 @@ class SystemList implements echos.core.ISystem {
     }
 
     @:noCompletion @:final public function __deactivate__() {
+        activated = false;
         for (s in systems) {
             s.__deactivate__();
         }
@@ -41,7 +43,7 @@ class SystemList implements echos.core.ISystem {
 
     public function remove(s:System) {
         systems.remove(s);
-        if (!activated) {
+        if (activated) {
             s.__deactivate__();
         }
     }
@@ -55,12 +57,12 @@ class SystemList implements echos.core.ISystem {
 
 
     #if echos_profiling
-    @:noCompletion public function info():String {
-        var ret = '[';
+    @:noCompletion public function info(indent:String = ''):String {
+        var ret = '$indent(';
         for (s in systems) {
-            ret += '\n    ${ s.info() }';
+            ret += '\n$indent${ s.info(indent) }';
         }
-        ret += '\n]';
+        ret += '\n$indent)';
         return ret;
     }
     #end
