@@ -220,7 +220,7 @@ class SystemBuilder {
         });
 
         var updateExprs = []
-            #if echos_profilig
+            #if echos_profiling
             .concat([
                 macro var __timestamp__ = Date.now().getTime()
             ])
@@ -243,7 +243,7 @@ class SystemBuilder {
                     }
                 })
             )
-            #if echos_profilig
+            #if echos_profiling
             .concat([
                 macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
             ])
