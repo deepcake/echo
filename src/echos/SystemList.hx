@@ -33,6 +33,15 @@ class SystemList implements echos.core.ISystem {
         }
     }
 
+    public function info(indent:String = ''):String {
+        var ret = '$indent(';
+        for (s in systems) {
+            ret += '\n$indent${ s.info(indent) }';
+        }
+        ret += '\n$indent)';
+        return ret;
+    }
+
 
     public function add(s:System) {
         systems.add(s);
@@ -54,18 +63,6 @@ class SystemList implements echos.core.ISystem {
 
 
     public function toString():String return 'SystemList';
-
-
-    #if echos_profiling
-    @:noCompletion public function info(indent:String = ''):String {
-        var ret = '$indent(';
-        for (s in systems) {
-            ret += '\n$indent${ s.info(indent) }';
-        }
-        ret += '\n$indent)';
-        return ret;
-    }
-    #end
 
 
 }

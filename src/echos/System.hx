@@ -48,6 +48,13 @@ class System implements echos.core.ISystem {
         ondeactivate();
     }
 
+    public function info(indent:String = ''):String {
+        #if echos_profiling
+        return '$indent($this) : ${ this.__updateTime__ } ms';
+        #else
+        return '$indent($this)';
+        #end
+    }
 
     /**
      * Calls when system is added to the workflow
@@ -61,13 +68,6 @@ class System implements echos.core.ISystem {
 
 
     public function toString():String return 'System';
-
-
-    #if echos_profiling
-    @:noCompletion public function info(indent:String = ''):String {
-        return '$indent($this) : ${ this.__updateTime__ } ms';
-    }
-    #end
 
 
 }
