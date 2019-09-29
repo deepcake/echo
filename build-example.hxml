@@ -1,8 +1,0 @@
--cp src
--cp example
--main Main
--js web/example.js
--dce full
--D analyzer-optimize
--D echos_profiling
--D echos_report
