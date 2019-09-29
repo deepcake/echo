@@ -2,7 +2,7 @@ package echos.core;
 
 @:allow(echos)
 @:forward(head, tail, length, iterator)
-abstract RestrictedLinkedList<T>(echos.utils.LinkedList<T>) {
+abstract RestrictedLinkedList<T>(echos.utils.LinkedList<T>) to echos.utils.LinkedList<T> {
 
     inline function new() this = new echos.utils.LinkedList<T>();
 
