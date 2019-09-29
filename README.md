@@ -106,7 +106,7 @@ class AverageSpeedCalculator extends echos.System {
 ```
 
 #### Live
-[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/echo/blob/master/example/TigerInTheMeatdow.hx))
+[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow))
 
 
 #### Also
