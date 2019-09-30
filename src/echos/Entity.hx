@@ -74,7 +74,7 @@ abstract Entity(Int) from Int to Int {
      * If entity is not required anymore - `destroy()` should be called 
      */
     public inline function removeAll() {
-        Workflow.removeComponents(this);
+        Workflow.removeAllComponentsOf(this);
     }
 
     /**
@@ -83,7 +83,7 @@ abstract Entity(Int) from Int to Int {
      * __Note__ that using this entity after call this method is incorrect!
      */
     public function destroy() {
-        Workflow.free(this);
+        Workflow.cache(this);
     }
 
 

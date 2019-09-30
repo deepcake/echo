@@ -166,11 +166,11 @@ class Workflow {
         return id;
     }
 
-    @:allow(echos.Entity) static function free(id:Int) {
+    @:allow(echos.Entity) static function cache(id:Int) {
         // TODO debug check Unknown status
         if (status(id) < Cached) { // Active or Inactive
-            remove(id);
-            removeComponents(id);
+            removeAllComponentsOf(id);
+            entities.remove(id);
             idPool.push(id);
             idStatuses[id] = Cached;
         }
@@ -196,7 +196,7 @@ class Workflow {
         return idStatuses.exists(id) ? idStatuses[id] : Invalid;
     }
 
-    @:allow(echos.Entity) static inline function removeComponents(id:Int) {
+    @:allow(echos.Entity) static inline function removeAllComponentsOf(id:Int) {
         if (status(id) == Active) {
             for (v in views) {
                 v.removeIfMatch(id);
