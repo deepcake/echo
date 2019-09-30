@@ -1,11 +1,12 @@
 package echos;
 
+import echos.core.ISystem;
 import echos.utils.LinkedList;
 
-class SystemList implements echos.core.ISystem {
+class SystemList implements ISystem {
 
 
-    var systems = new LinkedList<System>();
+    var systems = new LinkedList<ISystem>();
 
     var activated = false;
 
@@ -36,29 +37,33 @@ class SystemList implements echos.core.ISystem {
     public function info(indent:String = ''):String {
         var ret = '$indent(';
         for (s in systems) {
-            ret += '\n$indent${ s.info(indent) }';
+            ret += '\n${ s.info("    " + indent) }';
         }
         ret += '\n$indent)';
         return ret;
     }
 
 
-    public function add(s:System) {
-        systems.add(s);
-        if (activated) {
-            s.__activate__();
+    public function add(s:ISystem) {
+        if (!exists(s)) {
+            systems.add(s);
+            if (activated) {
+                s.__activate__();
+            }
         }
     }
 
-    public function remove(s:System) {
-        systems.remove(s);
-        if (activated) {
-            s.__deactivate__();
+    public function remove(s:ISystem) {
+        if (exists(s)) {
+            systems.remove(s);
+            if (activated) {
+                s.__deactivate__();
+            }
         }
     }
 
-    public function exists(s:System) {
-        systems.exists(s);
+    public function exists(s:ISystem):Bool {
+        return systems.exists(s);
     }
 
 
