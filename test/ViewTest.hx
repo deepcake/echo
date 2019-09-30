@@ -13,11 +13,11 @@ class ViewTest extends buddy.BuddySuite {
 
             describe("Matching", {
                 var s = new MatchingViewSystem();
-                var entities = new Array<Entity>();
+                var entities:Array<Entity>;
 
                 beforeEach({
-                    Workflow.reset();
                     Workflow.addSystem(s);
+                    entities = new Array<Entity>();
                 });
 
                 describe("When add Entities with random Components", {
@@ -162,7 +162,6 @@ class ViewTest extends buddy.BuddySuite {
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
                 beforeEach({
-                    Workflow.reset();
                     Workflow.addSystem(s);
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
@@ -242,7 +241,6 @@ class ViewTest extends buddy.BuddySuite {
                 var s = new IteratingViewSystem();
 
                 beforeEach({
-                    Workflow.reset();
                     Workflow.addSystem(s);
                     s.av.onAdded.add(onad);
                     s.av.onRemoved.add(onrm);
@@ -428,6 +426,80 @@ class ViewTest extends buddy.BuddySuite {
                     });
                 });
             });
+
+
+            describe("Sorting", {
+                var s = new IteratingViewSystem();
+                var printer = function(e:Entity) return '${ e.get(V) }';
+
+                var gt = function(e1:Entity, e2:Entity) return e2.get(V).val - e1.get(V).val;
+                var lr = function(e1:Entity, e2:Entity) return e1.get(V).val - e2.get(V).val;
+
+                describe("Initially", {
+                    beforeEach({
+                        Workflow.addSystem(s);
+                        for (i in 0...3) {
+                            for (j in 1...4) {
+                                new Entity().add(new V(j * 2), new A());
+                            }
+                        }
+                    });
+
+                    it("should has correct order", s.av.entities.map(printer).join("").should.be("246246246"));
+
+                    describe("When sort desc", {
+                        beforeEach({
+                            s.av.entities.sort(gt);
+                        });
+                        it("should has correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+
+                        describe("When add one more Entity", {
+                            var e:Entity;
+
+                            beforeEach(e = new Entity().add(new V(3), new A()));
+                            it("should has correct order", s.av.entities.map(printer).join("").should.be("6664442223"));
+
+                            describe("When sort asc", {
+                                beforeEach({
+                                    s.av.entities.sort(lr);
+                                });
+                                it("should has correct order", s.av.entities.map(printer).join("").should.be("2223444666"));
+
+                                describe("When destroy an Entity", {
+                                    beforeEach(e.destroy());
+                                    it("should has correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+                                });
+                            });
+                        });
+                    });
+
+                    describe("When sort asc", {
+                        beforeEach({
+                            s.av.entities.sort(lr);
+                        });
+                        it("should has correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+
+                        describe("When add one more Entity", {
+                            var e:Entity;
+
+                            beforeEach(e = new Entity().add(new V(3), new A()));
+                            it("should has correct order", s.av.entities.map(printer).join("").should.be("2224446663"));
+
+                            describe("When sort desc", {
+                                beforeEach({
+                                    s.av.entities.sort(gt);
+                                });
+                                it("should has correct order", s.av.entities.map(printer).join("").should.be("6664443222"));
+
+                                describe("When destroy an Entity", {
+                                    beforeEach(e.destroy());
+                                    it("should has correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+                                });
+                            });
+                        });
+                    });
+                });
+            });
         });
     }
 }
@@ -481,7 +553,7 @@ class E extends A {
 }
 
 class V {
-    var val:Int;
+    public var val:Int;
     public function new(val) this.val = val;
     public function toString() return Std.string(val);
 }

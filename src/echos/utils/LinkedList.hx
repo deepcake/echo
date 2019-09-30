@@ -1,5 +1,7 @@
 package echos.utils;
 
+import haxe.ds.ListSort;
+
 /**
  * ...
  * @author https://github.com/deepcake
@@ -76,6 +78,63 @@ class LinkedList<T> {
         }
         return false;
     }
+
+    /**
+     * Sorts this LinkedList according to the comparison function `f`, where `f(x,y)` returns 0 if `x == y`, a positive Int if `x > y` and a negative Int if `x < y`  
+     * 
+     * __Based on `haxe.ds.ListSort.sortSingleLinked()` function with minor changes__.
+     */
+    public function sort(f:T->T->Int) {
+        var insize = 1, nmerges, psize = 0, qsize = 0;
+        var p, q, e:LinkedNode<T>;
+        while (true) {
+            p = head;
+            head = null;
+            tail = null;
+            nmerges = 0;
+            while (p != null) {
+                nmerges++;
+                q = p;
+                psize = 0;
+                for (i in 0...insize) {
+                    psize++;
+                    q = q.next;
+                    if (q == null) {
+                        break;
+                    }
+                }
+                qsize = insize;
+                while (psize > 0 || (qsize > 0 && q != null)) {
+                    if (psize == 0) {
+                        e = q;
+                        q = q.next;
+                        qsize--;
+                    } else if (qsize == 0 || q == null || f(p.value, q.value) <= 0) {
+                        e = p;
+                        p = p.next;
+                        psize--;
+                    } else {
+                        e = q;
+                        q = q.next;
+                        qsize--;
+                    }
+                    if (tail != null) {
+                        tail.next = e;
+                    } else {
+                        head = e;
+                    }
+                    tail = e;
+                }
+                p = q;
+            }
+            tail.next = null;
+            if (nmerges <= 1) {
+                break;
+            }
+            insize *= 2;
+        }
+    }
+
 
 }
 
