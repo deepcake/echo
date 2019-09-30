@@ -434,21 +434,21 @@ class ViewTest extends buddy.BuddySuite {
 
 class MatchingViewSystem extends echos.System {
 
-    public var a:View<A->Void>;
-    public var b:View<B->Void>;
+    public var a:View<A>;
+    public var b:View<B>;
 
-    public var ab:View<A->B->Void>;
-    public var bc:View<B->C->Void>;
+    public var ab:View<A, B>;
+    public var bc:View<B, C>;
 
-    public var abcd:View<A->B->C->D->Void>;
+    public var abcd:View<A, B, C, D>;
 
-    public var av:View<A->V->Void>;
+    public var av:View<A, V>;
 
 }
 
 class IteratingViewSystem extends echos.System {
 
-    public var av:View<A->V->Void>;
+    public var av:View<A, V>;
 
     public var f:Entity->A->V->Void = null;
 

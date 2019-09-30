@@ -6,36 +6,11 @@ import echos.Entity;
 
 class SystemTest extends buddy.BuddySuite {
     public function new() {
-        describe("Building", {
+        describe("System", {
 
             beforeEach({
                 Workflow.reset();
                 BuildResult.value = '';
-            });
-
-            describe("Views", {
-
-                describe("When View defined with same components but different ways", {
-                    it("should be equals", {
-                        DefineViewSystem.func.should.be(StandaloneAB.ab);
-                        DefineViewSystem.funcReversed.should.be(StandaloneAB.ab);
-                        DefineViewSystem.funcShort.should.be(StandaloneAB.ab);
-                        DefineViewSystem.anon.should.be(StandaloneAB.ab);
-                        DefineViewSystem.anonTypedef.should.be(StandaloneAB.ab);
-                        DefineViewSystem.viewTypedef.should.be(StandaloneAB.ab);
-                        DefineViewSystem.rest.should.be(StandaloneAB.ab);
-                    });
-
-                    describe("When add System to the flow", {
-                        beforeEach(Workflow.addSystem(new DefineViewSystem()));
-                        beforeEach(Workflow.addSystem(new StandaloneAB()));
-
-                        it("should be added to the flow only single time", {
-                            Workflow.views.length.should.be(1);
-                        });
-                    });
-                });
-
             });
 
             describe("Using @update metas", {
@@ -272,42 +247,6 @@ abstract CompC(String) {
     public function new() this = 'C';
 }
 
-typedef ParamTypedef = { a:CompA, b:CompB };
-
-typedef ViewTypedef = View<{ a:CompA, b:CompB }>;
-
-class DefineViewSystem extends echos.System {
-
-    public static var func:View<CompA->CompB->Void>;
-
-    public static var funcReversed:View<CompB->CompA->Void>;
-
-    public static var funcShort:View<CompA->CompB>;
-
-    public static var anon:View<{ a:CompA, b:CompB }>;
-
-    public static var anonTypedef:View<ParamTypedef>;
-
-    public static var viewTypedef:ViewTypedef;
-
-    public static var rest:View<CompA, CompB>;
-
-    @u function ab(a:CompA, b:CompB) { }
-
-    @u function ba(b:CompB, a:CompA) { }
-
-    @u function cd(c:CompB, d:CompA) { }
-
-    @u function fab(f:Float, a:CompA, b:CompB) { }
-
-    @u function eab(e:Entity, a:CompA, b:CompB) { }
-
-    @u function iab(i:Int, a:CompA, b:CompB) { }
-
-    @u function feab(f:Float, e:Entity, a:CompA, b:CompB) { }
-
-}
-
 class UpdateMetaGeneration extends echos.System {
     @u function empty0() BuildResult.value += '_';
     @u function _f(f:Float) BuildResult.value += '$f';
@@ -344,10 +283,6 @@ class AddedRemovedAdditionalMetaGeneration extends echos.System {
 
 class StandaloneA extends echos.System {
     public static var a:View<CompA>;
-}
-
-class StandaloneAB extends echos.System {
-    public static var ab:View<CompA, CompB>;
 }
 
 class BuildResult {
