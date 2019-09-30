@@ -27,9 +27,18 @@ class Workflow {
     // all of every defined view
     static var definedViews = new Array<AbstractView>();
 
-
+    /**
+     * All active entities
+     */
     public static var entities(default, null) = new RestrictedLinkedList<Entity>();
+    /**
+     * All active views
+     */
     public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
+
+    /**
+     * All systems that will be called when `update()` is called
+     */
     public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 
 
