@@ -97,15 +97,15 @@ class MacroTools {
     }
 
 
-    public static function identName(e:Expr) {
+    public static function parseClassName(e:Expr) {
         return switch(e.expr) {
             case EConst(CIdent(name)): name;
-            case EField(path, name): identName(path) + '.' + name;
+            case EField(path, name): parseClassName(path) + '.' + name;
             case x: 
                 #if (haxe_ver < 4) 
-                throw 'Unexpected $x';
+                throw 'Unexpected $x!';
                 #else
-                Context.error('Unexpected $x', Context.currentPos());
+                Context.error('Unexpected $x!', e.pos);
                 #end 
         }
     }
@@ -120,9 +120,9 @@ class MacroTools {
             case TPType(ct): typeName(ct);
             case x: 
                 #if (haxe_ver < 4) 
-                throw 'Unexpected $x';
+                throw 'Unexpected $x!';
                 #else
-                Context.error('Unexpected $x', Context.currentPos());
+                Context.error('Unexpected $x!', Context.currentPos());
                 #end 
         }
     }
@@ -138,9 +138,9 @@ class MacroTools {
 
             case x: 
                 #if (haxe_ver < 4) 
-                throw 'Unexpected $x';
+                throw 'Unexpected $x!';
                 #else
-                Context.error('Unexpected $x', Context.currentPos());
+                Context.error('Unexpected $x!', Context.currentPos());
                 #end 
         }
     }

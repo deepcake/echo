@@ -140,7 +140,7 @@ abstract Entity(Int) from Int to Int {
 
         var cts = types
             .map(function(type) {
-                return type.identName().getType().follow().toComplexType();
+                return type.parseClassName().getType().follow().toComplexType();
             });
 
         var removeComponentsFromContainersExprs = cts
@@ -199,7 +199,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var containerName = (type.identName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
@@ -217,7 +217,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var containerName = (type.identName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);

@@ -24,9 +24,9 @@ class ComponentBuilder {
         return 'ContainerOf' + ct.typeName();
     }
 
-    public static function createComponentContainerType(componentCls:ComplexType) {
-        var componentTypeName = componentCls.followName();
-        var componentContainerTypeName = getComponentContainerName(componentCls);
+    public static function createComponentContainerType(componentComplexType:ComplexType) {
+        var componentTypeName = componentComplexType.followName();
+        var componentContainerTypeName = getComponentContainerName(componentComplexType);
         var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 
         if (componentContainerType == null) {
@@ -50,13 +50,13 @@ class ComponentBuilder {
 
                     // instance
 
-                    var storage = new echos.core.Storage<$componentCls>();
+                    var storage = new echos.core.Storage<$componentComplexType>();
 
                     function new() {
                         @:privateAccess echos.Workflow.definedContainers.push(this);
                     }
 
-                    public inline function get(id:Int):$componentCls {
+                    public inline function get(id:Int):$componentComplexType {
                         return storage.get(id);
                     }
 
@@ -64,7 +64,7 @@ class ComponentBuilder {
                         return storage.exists(id);
                     }
 
-                    public inline function add(id:Int, c:$componentCls) {
+                    public inline function add(id:Int, c:$componentComplexType) {
                         storage.add(id, c);
                     }
 
@@ -97,13 +97,13 @@ class ComponentBuilder {
     }
 
 
-    public static function getComponentContainer(componentCls:ComplexType):ComplexType {
-        return createComponentContainerType(componentCls).toComplexType();
+    public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
+        return createComponentContainerType(componentComplexType).toComplexType();
     }
 
-    public static function getComponentId(componentCls:ComplexType):Int {
-        getComponentContainer(componentCls);
-        return componentIds[componentCls.followName()];
+    public static function getComponentId(componentComplexType:ComplexType):Int {
+        getComponentContainer(componentComplexType);
+        return componentIds[componentComplexType.followName()];
     }
 
 }
