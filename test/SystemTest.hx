@@ -18,7 +18,7 @@ class SystemTest extends buddy.BuddySuite {
 
                 describe("When add System", {
                     beforeEach(Workflow.addSystem(updSys));
-                    it("should has correct result", {
+                    it("should have correct result", {
                         BuildResult.value.should.be('^');
                     });
 
@@ -26,25 +26,25 @@ class SystemTest extends buddy.BuddySuite {
                         beforeEach({
                             for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC());
                         });
-                        it("should has correct result", {
+                        it("should have correct result", {
                             BuildResult.value.should.be('^');
                         });
 
                         describe("When update", {
                             beforeEach(Workflow.update(0));
-                            it("should has correct result", {
+                            it("should have correct result", {
                                 BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_');
                             });
 
                             describe("When remove System", {
                                 beforeEach(Workflow.removeSystem(updSys));
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_$');
                                 });
 
                                 describe("When update", {
                                     beforeEach(Workflow.update(0));
-                                    it("should has correct result", {
+                                    it("should have correct result", {
                                         BuildResult.value.should.be('^_0_AA_0A0A_0e0e_0eA0eA_$');
                                     });
                                 });
@@ -65,13 +65,13 @@ class SystemTest extends buddy.BuddySuite {
 
                     describe("When add System to the flow", {
                         beforeEach(Workflow.addSystem(sys1));
-                        it("should has correct result", {
+                        it("should have correct result", {
                             BuildResult.value.should.be('+A+A>A>A+Ae+Ae');
                         });
 
                         describe("When remove System from the flow", {
                             beforeEach(Workflow.removeSystem(sys1));
-                            it("should has correct result", {
+                            it("should have correct result", {
                                 BuildResult.value.should.be('+A+A>A>A+Ae+Ae<A-A-Ae<A-A-Ae');
                             });
                         });
@@ -89,7 +89,7 @@ class SystemTest extends buddy.BuddySuite {
                         beforeEach({
                             entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
                         });
-                        it("should has correct result", {
+                        it("should have correct result", {
                             BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
                         });
 
@@ -97,7 +97,7 @@ class SystemTest extends buddy.BuddySuite {
                             beforeEach({
                                 for (e in entities) e.destroy();
                             });
-                            it("should has correct result", {
+                            it("should have correct result", {
                                 BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
                             });
                         });
@@ -124,7 +124,7 @@ class SystemTest extends buddy.BuddySuite {
                             beforeEach({
                                 entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
                             });
-                            it("should has correct result", {
+                            it("should have correct result", {
                                 BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
                             });
 
@@ -132,14 +132,14 @@ class SystemTest extends buddy.BuddySuite {
                                 beforeEach({
                                     for (e in entities) e.destroy();
                                 });
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
                                 });
                             });
 
                             describe("When remove a first System", {
                                 beforeEach(Workflow.removeSystem(sys1));
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
                                 });
 
@@ -147,7 +147,7 @@ class SystemTest extends buddy.BuddySuite {
                                     beforeEach({
                                         for (e in entities) e.destroy();
                                     });
-                                    it("should has correct result", {
+                                    it("should have correct result", {
                                         BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!##');
                                     });
                                 });
@@ -155,7 +155,7 @@ class SystemTest extends buddy.BuddySuite {
 
                             describe("When remove a second System with equal View", {
                                 beforeEach(Workflow.removeSystem(sys2));
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
                                 });
 
@@ -163,7 +163,7 @@ class SystemTest extends buddy.BuddySuite {
                                     beforeEach({
                                         for (e in entities) e.destroy();
                                     });
-                                    it("should has correct result", {
+                                    it("should have correct result", {
                                         BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae<A-A-Ae');
                                     });
                                 });
@@ -171,7 +171,7 @@ class SystemTest extends buddy.BuddySuite {
 
                             describe("When reset", {
                                 beforeEach(Workflow.reset());
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');
                                 });
                             });
@@ -188,7 +188,7 @@ class SystemTest extends buddy.BuddySuite {
                                 beforeEach({
                                     entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
                                 });
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
                                 });
 
@@ -196,7 +196,7 @@ class SystemTest extends buddy.BuddySuite {
                                     beforeEach({
                                         for (e in entities) e.destroy();
                                     });
-                                    it("should has correct result", {
+                                    it("should have correct result", {
                                         BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
                                     });
                                 });
@@ -214,7 +214,7 @@ class SystemTest extends buddy.BuddySuite {
                                 beforeEach({
                                     entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
                                 });
-                                it("should has correct result", {
+                                it("should have correct result", {
                                     BuildResult.value.should.be('!!');
                                 });
 
@@ -222,7 +222,7 @@ class SystemTest extends buddy.BuddySuite {
                                     beforeEach({
                                         for (e in entities) e.destroy();
                                     });
-                                    it("should has correct result", {
+                                    it("should have correct result", {
                                         BuildResult.value.should.be('!!##');
                                     });
                                 });

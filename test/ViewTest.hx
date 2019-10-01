@@ -252,16 +252,16 @@ class ViewTest extends buddy.BuddySuite {
                         s.f = function(id, a, v) log += '$v';
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(5));
-                    it("should has correct log", log.should.be("+0+1+2+3+401234"));
+                    it("should have correct length", s.av.entities.length.should.be(5));
+                    it("should have correct log", log.should.be("+0+1+2+3+401234"));
 
                     describe("When add an Entity and iterating", {
                         beforeEach({
                             new Entity().add(new A(), new V(5));
                             Workflow.update(0);
                         });
-                        it("should has correct length", s.av.entities.length.should.be(6));
-                        it("should has correct log", log.should.be("+0+1+2+3+401234+5012345"));
+                        it("should have correct length", s.av.entities.length.should.be(6));
+                        it("should have correct log", log.should.be("+0+1+2+3+401234+5012345"));
                     });
                 });
 
@@ -270,8 +270,8 @@ class ViewTest extends buddy.BuddySuite {
                         s.f = function(id, a, v) id.remove(V);
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while iterating", {
@@ -279,8 +279,8 @@ class ViewTest extends buddy.BuddySuite {
                         s.f = function(id, a, v) id.removeAll();
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while iterating", {
@@ -288,8 +288,8 @@ class ViewTest extends buddy.BuddySuite {
                         s.f = function(id, a, v) id.destroy();
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while iterating", {
@@ -297,8 +297,8 @@ class ViewTest extends buddy.BuddySuite {
                         s.f = function(id, a, v) id.deactivate();
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When create Entity while iterating", {
@@ -310,8 +310,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(10));
-                    it("should has correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
+                    it("should have correct length", s.av.entities.length.should.be(10));
+                    it("should have correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
                 });
 
                 describe("When destroy and create Entity while iterating", {
@@ -324,8 +324,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(5));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
+                    it("should have correct length", s.av.entities.length.should.be(5));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
                 });
 
                 describe("When remove Component while inner iterating", {
@@ -335,8 +335,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while inner iterating", {
@@ -346,8 +346,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while inner iterating", {
@@ -357,8 +357,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while inner iterating", {
@@ -368,8 +368,8 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should has correct length", s.av.entities.length.should.be(0));
-                    it("should has correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
+                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
             });
 
@@ -388,19 +388,19 @@ class ViewTest extends buddy.BuddySuite {
                 describe("Initially", {
                     it("should not be active", s.av.isActive().should.be(false));
                     it("should not has entities", s.av.entities.length.should.be(0));
-                    it("should has on ad signals", s.av.onAdded.size().should.be(1));
-                    it("should has on rm signals", s.av.onRemoved.size().should.be(1));
-                    it("should has correct log", log.should.be(""));
+                    it("should have on ad signals", s.av.onAdded.size().should.be(1));
+                    it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                    it("should have correct log", log.should.be(""));
 
                     describe("When activate", {
                         beforeEach({
                             s.av.activate();
                         });
                         it("should be active", s.av.isActive().should.be(true));
-                        it("should has entities", s.av.entities.length.should.be(3));
-                        it("should has on ad signals", s.av.onAdded.size().should.be(1));
-                        it("should has on rm signals", s.av.onRemoved.size().should.be(1));
-                        it("should has correct log", log.should.be("+1+2+3"));
+                        it("should have entities", s.av.entities.length.should.be(3));
+                        it("should have on ad signals", s.av.onAdded.size().should.be(1));
+                        it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                        it("should have correct log", log.should.be("+1+2+3"));
 
                         describe("When deactivate", {
                             beforeEach({
@@ -408,9 +408,9 @@ class ViewTest extends buddy.BuddySuite {
                             });
                             it("should not be active", s.av.isActive().should.be(false));
                             it("should not has entities", s.av.entities.length.should.be(0));
-                            it("should has on ad signals", s.av.onAdded.size().should.be(1));
-                            it("should has on rm signals", s.av.onRemoved.size().should.be(1));
-                            it("should has correct log", log.should.be("+1+2+3-1-2-3"));
+                            it("should have on ad signals", s.av.onAdded.size().should.be(1));
+                            it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                            it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
 
                         describe("When reset", {
@@ -421,7 +421,7 @@ class ViewTest extends buddy.BuddySuite {
                             it("should not has entities", s.av.entities.length.should.be(0));
                             it("should not has on ad signals", s.av.onAdded.size().should.be(0));
                             it("should not has on rm signals", s.av.onRemoved.size().should.be(0));
-                            it("should has correct log", log.should.be("+1+2+3-1-2-3"));
+                            it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
                     });
                 });
@@ -445,29 +445,29 @@ class ViewTest extends buddy.BuddySuite {
                         }
                     });
 
-                    it("should has correct order", s.av.entities.map(printer).join("").should.be("246246246"));
+                    it("should have correct order", s.av.entities.map(printer).join("").should.be("246246246"));
 
                     describe("When sort desc", {
                         beforeEach({
                             s.av.entities.sort(gt);
                         });
-                        it("should has correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+                        it("should have correct order", s.av.entities.map(printer).join("").should.be("666444222"));
 
                         describe("When add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should has correct order", s.av.entities.map(printer).join("").should.be("6664442223"));
+                            it("should have correct order", s.av.entities.map(printer).join("").should.be("6664442223"));
 
                             describe("When sort asc", {
                                 beforeEach({
                                     s.av.entities.sort(lr);
                                 });
-                                it("should has correct order", s.av.entities.map(printer).join("").should.be("2223444666"));
+                                it("should have correct order", s.av.entities.map(printer).join("").should.be("2223444666"));
 
                                 describe("When destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should has correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+                                    it("should have correct order", s.av.entities.map(printer).join("").should.be("222444666"));
                                 });
                             });
                         });
@@ -477,23 +477,23 @@ class ViewTest extends buddy.BuddySuite {
                         beforeEach({
                             s.av.entities.sort(lr);
                         });
-                        it("should has correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+                        it("should have correct order", s.av.entities.map(printer).join("").should.be("222444666"));
 
                         describe("When add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should has correct order", s.av.entities.map(printer).join("").should.be("2224446663"));
+                            it("should have correct order", s.av.entities.map(printer).join("").should.be("2224446663"));
 
                             describe("When sort desc", {
                                 beforeEach({
                                     s.av.entities.sort(gt);
                                 });
-                                it("should has correct order", s.av.entities.map(printer).join("").should.be("6664443222"));
+                                it("should have correct order", s.av.entities.map(printer).join("").should.be("6664443222"));
 
                                 describe("When destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should has correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+                                    it("should have correct order", s.av.entities.map(printer).join("").should.be("666444222"));
                                 });
                             });
                         });

@@ -31,14 +31,14 @@ class ViewTypeTest extends buddy.BuddySuite {
                 describe("When add System to the flow", {
                     beforeEach(Workflow.addSystem(sys));
 
-                    it("should has correct count of views", {
+                    it("should have correct count of views", {
                         Workflow.views.length.should.be(1);
                     });
 
                     describe("When add standalone System to the flow", {
                         beforeEach(Workflow.addSystem(new StandaloneVAVBSystem()));
 
-                        it("should has correct count of views", {
+                        it("should have correct count of views", {
                             Workflow.views.length.should.be(1);
                         });
                     });
@@ -46,7 +46,7 @@ class ViewTypeTest extends buddy.BuddySuite {
                     describe("When remove System from the flow", {
                         beforeEach(Workflow.removeSystem(sys));
 
-                        it("should has correct count of views", {
+                        it("should have correct count of views", {
                             Workflow.views.length.should.be(0);
                         });
                     });
