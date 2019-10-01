@@ -1,7 +1,7 @@
 package echoes.core;
 
 
-#if echoes_array_cc
+#if echoes_array_container
 
 abstract Storage<T>(Array<T>) {
 

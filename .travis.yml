@@ -31,12 +31,12 @@ script:
   - haxelib run travix python -D buddy-ignore-passing-specs
   - haxelib run travix java -D buddy-ignore-passing-specs
 
-  - haxelib run travix interp -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
-#  - haxelib run travix node -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
-  - haxelib run travix cpp -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
-  - haxelib run travix neko -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
-  - haxelib run travix python -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
-  - haxelib run travix java -D echoes_array_cc -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix interp -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+#  - haxelib run travix node -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix cpp -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix neko -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix python -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix java -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
 
   # - haxelib run travix js
   # - haxelib run travix flash

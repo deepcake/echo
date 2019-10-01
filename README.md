@@ -112,7 +112,7 @@ class Render extends echoes.System {
 There is also exists a few additional compiler flags:
  * `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
  * `-D echoes_report` - traces a short report of built components and views
- * `-D echoes_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
+ * `-D echoes_array_container` - using Array<T> instead IntMap<T> for global component containers
 
 ### Install
 ```haxelib git echoes https://github.com/deepcake/echo.git```

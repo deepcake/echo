@@ -1,7 +1,5 @@
 package echoes.utils;
 
-import haxe.ds.ListSort;
-
 /**
  * ...
  * @author https://github.com/deepcake

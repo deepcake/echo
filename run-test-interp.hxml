@@ -5,5 +5,5 @@
 --interp
 -D echoes_profiling
 -D echoes_report
--D echoes_array_cc
+-D echoes_array_container
 -D buddy-ignore-passing-specs
