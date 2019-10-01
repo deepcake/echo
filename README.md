@@ -8,11 +8,11 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Wip
 
-#### Overview
+### Overview
  * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
  * `Entity` in that case is just an abstract over the `Int`, but with the ability to work with it as with a set of components like in other regular ECS frameworks. 
- * `View<T>` is a collection of entities containing all of the required components of the requested types. 
- * `System` is a place to process data collected by views. 
+ * `View<T>` is a collection of entities containing all of the required components of the requested types. Views are usually placed on Systems. 
+ * `System` is a macro powered place for main logic. 
 
 #### Example
 ```haxe
@@ -48,72 +48,71 @@ class Example {
 }
 
 class Movement extends echoes.System {
-  // @update-function will be called for every entity that contains all the defined components;
+  // @update-functions will be called for every entity that contains all the defined components;
   // All args are interpreted as components, except Float (reserved for delta time) and Int/Entity;
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
-  // Also @update-function can be defined without components,
-  // so it will be called only once per system's update;
-  @update function traceGrats(dt:Float) {
-    trace('All the bodies was updated!');
+  // If @update-functions are defined without components, 
+  // they are called only once per system's update;
+  @update function traceHello(dt:Float) {
+    trace('Hello!');
+  }
+  // The execution order of @update-functions is the same as the definition order, 
+  // so you can perform some preparations before or after iterating over entities;
+  @update function traceWorld() {
+    trace('World!');
+  }
+}
+
+class DestroySlowest extends echoes.System {
+  // All of the required views will be defined and initialized under the hood, 
+  // but it is also possible to define a View manually (initialization is still not needed) 
+  // for additional possibilities like counting and sorting entities;
+  var bodies:View<Position, Velocity>;
+  @u function destroySlowest() {
+    bodies.entities.sort((e1, e2) -> speed(e2.get(Velocity)) - speed(e1.get(Velocity)));
+    trace('Last of ${ bodies.entities.length } is destroyed!');
+    bodies.entities.tail.value.destroy();
+  }
+  function speed(vel:Velocity) {
+    return Math.sqrt(vel.x * vel.x + vel.y * vel.y);
   }
 }
 
 class Render extends echoes.System {
   var scene:Array<Sprite> = [];
-  // @a, @u and @r are the shortcuts for @added, @update and @removed metas;
-  // @added/@removed-function are the callback called when entity is added or removed from the view;
+  // There are @a, @u and @r shortcuts for @added, @update and @removed metas;
+  // @added/@removed-functions are the callbacks called when entity is added/removed from the view;
   @a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
     scene.push(spr);
-    trace('New entity added to the scene!');
   }
-  // Even if callback was triggered by destroying the entity,
-  // @removed-function will be called before this happens,
+  // Even if callback was triggered by destroying the entity, 
+  // @removed-function will be called before this happens, 
   // so access to the component will be still exists;
   @r function onEntityWithSpriteAndPositionRemoved(spr:Sprite, pos:Position, entity:Entity) {
-    scene.remove(spr); // spr still not a null
+    scene.remove(spr); // spr is still not a null
     trace('Oh My God! They removed $entity!');
-  }
-
-  // The execution order of @update-functions is the same as the definition order,
-  // so it is possible to do some preparations before or after iterating over entities;
-  @u function beforeSpritePositionsUpdated() {
-    trace('Start updating sprite positions!');
   }
   @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  @u function afterSpritePositionsUpdated() {
-    scene.sort((spr1, spr2) -> spr2.y - spr1.y); // sort by y-axis
-  }
-}
-
-class AverageSpeedCalculator extends echoes.System {
-  // All of required views will be defined and initialized under the hood,
-  // but it is also possible to define a View manually (initialization is still not needed)
-  // for additional possibilities like counting entities;
-  var bodies:View<Position, Velocity>;
-
-  @u function calcAverageSpeed() {
-    var speedSum = 0;
-    bodies.iter((entity, pos, vel) -> speedSum += Math.sqrt(vel.x * vel.x + vel.y * vel.y));
-    trace('Average speed is ${ speedSum / bodies.entities.length }');
+  @u inline function afterSpritePositionsUpdated() {
+    // rendering...
   }
 }
 ```
 
 #### Live
-[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow))
+[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echo framework 
 
-
-#### Also
+### Also
 There is also exists a few additional compiler flags:
  * `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
  * `-D echoes_report` - traces a short report of built components and views
  * `-D echoes_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
 
-#### Install
+### Install
 ```haxelib git echoes https://github.com/deepcake/echo.git```
