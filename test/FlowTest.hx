@@ -195,7 +195,7 @@ class FlowTest extends buddy.BuddySuite {
                                     Workflow.removeSystem(sl);
                                 });
                                 it("should have correct count of systems", Workflow.systems.length.should.be(0));
-                                it("should not has system list", Workflow.hasSystem(sl).should.be(false));
+                                it("should not have system list", Workflow.hasSystem(sl).should.be(false));
                                 it("should have correct count of views", Workflow.views.length.should.be(0));
                             });
 
@@ -241,7 +241,7 @@ class FlowTest extends buddy.BuddySuite {
                                         Workflow.removeSystem(sl2);
                                     });
                                     it("should have correct count of systems", Workflow.systems.length.should.be(0));
-                                    it("should not has system list", Workflow.hasSystem(sl2).should.be(false));
+                                    it("should not have system list", Workflow.hasSystem(sl2).should.be(false));
                                     it("should have correct count of views", Workflow.views.length.should.be(0));
                                 });
 

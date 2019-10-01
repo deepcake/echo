@@ -387,7 +387,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("Initially", {
                     it("should not be active", s.av.isActive().should.be(false));
-                    it("should not has entities", s.av.entities.length.should.be(0));
+                    it("should not have entities", s.av.entities.length.should.be(0));
                     it("should have on ad signals", s.av.onAdded.size().should.be(1));
                     it("should have on rm signals", s.av.onRemoved.size().should.be(1));
                     it("should have correct log", log.should.be(""));
@@ -407,7 +407,7 @@ class ViewTest extends buddy.BuddySuite {
                                 s.av.deactivate();
                             });
                             it("should not be active", s.av.isActive().should.be(false));
-                            it("should not has entities", s.av.entities.length.should.be(0));
+                            it("should not have entities", s.av.entities.length.should.be(0));
                             it("should have on ad signals", s.av.onAdded.size().should.be(1));
                             it("should have on rm signals", s.av.onRemoved.size().should.be(1));
                             it("should have correct log", log.should.be("+1+2+3-1-2-3"));
@@ -418,9 +418,9 @@ class ViewTest extends buddy.BuddySuite {
                                 @:privateAccess s.av.reset();
                             });
                             it("should not be active", s.av.isActive().should.be(false));
-                            it("should not has entities", s.av.entities.length.should.be(0));
-                            it("should not has on ad signals", s.av.onAdded.size().should.be(0));
-                            it("should not has on rm signals", s.av.onRemoved.size().should.be(0));
+                            it("should not have entities", s.av.entities.length.should.be(0));
+                            it("should not have on ad signals", s.av.onAdded.size().should.be(0));
+                            it("should not have on rm signals", s.av.onRemoved.size().should.be(0));
                             it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
                     });
