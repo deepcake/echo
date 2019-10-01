@@ -97,18 +97,16 @@ class MacroTools {
     }
 
 
-    public static function tp(t:ComplexType):TypePath {
-        return switch(t) {
-            case TPath(p): p;
-            case x: throw 'Unexpected $x';
-        }
-    }
-
     public static function identName(e:Expr) {
         return switch(e.expr) {
             case EConst(CIdent(name)): name;
             case EField(path, name): identName(path) + '.' + name;
-            case x: throw 'Unexpected $x';
+            case x: 
+                #if (haxe_ver < 4) 
+                throw 'Unexpected $x';
+                #else
+                Context.error('Unexpected $x', Context.currentPos());
+                #end 
         }
     }
 
@@ -121,7 +119,7 @@ class MacroTools {
         return switch (p) {
             case TPType(ct): typeName(ct);
             case x: 
-                #if haxe3 
+                #if (haxe_ver < 4) 
                 throw 'Unexpected $x';
                 #else
                 Context.error('Unexpected $x', Context.currentPos());
@@ -139,7 +137,7 @@ class MacroTools {
                 ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName).join('') : '');
 
             case x: 
-                #if haxe3 
+                #if (haxe_ver < 4) 
                 throw 'Unexpected $x';
                 #else
                 Context.error('Unexpected $x', Context.currentPos());

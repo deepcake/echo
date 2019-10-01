@@ -24,7 +24,7 @@ abstract Storage<T>(Array<T>) {
     }
 
     public inline function reset() {
-        #if haxe3 
+        #if (haxe_ver < 4) 
         this.splice(0, this.length);
         #else 
         this.resize(0);

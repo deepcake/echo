@@ -1,8 +1,8 @@
 package echos;
 
 #if macro
-import echos.core.macro.ComponentBuilder;
 import haxe.macro.Expr;
+using echos.core.macro.ComponentBuilder;
 using echos.core.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
@@ -94,20 +94,32 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echos.Entity> {
-        if (components.length == 0) Context.error('Required one or more components', Context.currentPos());
+        if (components.length == 0) {
+            Context.error('Required one or more Components', Context.currentPos());
+        }
 
-        var componentExprs = components
-            .map(function(c){
-                var ct = ComponentBuilder.getComponentContainer(c.typeof().follow().toComplexType());
-                return macro @:privateAccess $i{ ct.followName() }.inst().add(id, $c);
+        var addComponentsToContainersExprs = components
+            .map(function(c) {
+                var containerName = (c.typeof().follow().toComplexType()).getComponentContainer().followName();
+                return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
             });
 
-        var exprs = []
-            .concat(componentExprs)
-            .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) @:privateAccess v.addIfMatch(id) ])
-            .concat([ macro return id ]);
+        var body = []
+            .concat(
+                addComponentsToContainersExprs
+            )
+            .concat([ 
+                macro if (__entity__.isActive()) {
+                    for (v in echos.Workflow.views) {
+                        @:privateAccess v.addIfMatch(__entity__);
+                    }
+                }
+            ])
+            .concat([ 
+                macro return __entity__ 
+            ]);
 
-        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -117,35 +129,61 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Removes a components from this entity by its type  
+     * Removes a component from this entity with specified type  
      * @param types comma separated `Class<Any>` types of components that should be removed
      * @return `Entity`
      */
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echos.Entity> {
-        if (types.length == 0) Context.error('Required one or more component types', Context.currentPos());
+        if (types.length == 0) {
+            Context.error('Required one or more Component Types', Context.currentPos());
+        }
 
-        var componentExprs = types
-            .map(function(t){
-                var ct = ComponentBuilder.getComponentContainer(t.identName().getType().follow().toComplexType());
-                return macro @:privateAccess $i{ ct.followName() }.inst().remove(id);
+        var cts = types
+            .map(function(type) {
+                return type.identName().getType().follow().toComplexType();
             });
 
-        var requireExprs = types
-            .map(function(t){
-                return ComponentBuilder.getComponentId(t.identName().getType().follow().toComplexType());
+        var removeComponentsFromContainersExprs = cts
+            .map(function(ct) {
+                return ct.getComponentContainer().followName();
             })
-            .map(function(i){
-                return macro @:privateAccess v.isRequire($v{i});
+            .map(function(containerName) {
+                return macro @:privateAccess $i{ containerName }.inst().remove(__entity__);
             });
 
-        var requireCond = requireExprs.slice(1).fold(function(e:Expr, r:Expr) return macro $e || $r, requireExprs[0]);
+        var viewIsRequireComponentExprs = cts
+            .map(function(ct) {
+                var cid = ct.getComponentId();
+                return macro @:privateAccess v.isRequire($v{cid});
+            });
 
-        var exprs = []
-            .concat([ macro if (id.isActive()) for (v in echos.Workflow.views) if ($requireCond) @:privateAccess v.removeIfMatch(id) ])
-            .concat(componentExprs)
-            .concat([ macro return id ]);
+        var viewIsRequireComponentConditionExpr = viewIsRequireComponentExprs
+            .slice(1)
+            .fold(
+                function(e:Expr, r:Expr) {
+                    return macro $r || $e;
+                }, 
+                viewIsRequireComponentExprs[0]
+            );
 
-        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var body = []
+            .concat([ 
+                macro if (__entity__.isActive()) {
+                    for (v in echos.Workflow.views) {
+                        if ($viewIsRequireComponentConditionExpr) {
+                            @:privateAccess v.removeIfMatch(__entity__);
+                        }
+                    }
+                }
+            ])
+            .concat(
+                removeComponentsFromContainersExprs
+            )
+            .concat([ 
+                macro return __entity__ 
+            ]);
+
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -161,9 +199,10 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return $i{ ct.followName() }.inst().get(id) ];
-        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var containerName = (type.identName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
+
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -178,9 +217,10 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var ct = ComponentBuilder.getComponentContainer(type.identName().getType().follow().toComplexType());
-        var exprs = [ macro return $i{ ct.followName() }.inst().exists(id) ];
-        var ret = macro #if !haxe3 inline #end ( function(id:echos.Entity) $b{exprs} )($self);
+        var containerName = (type.identName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
+
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
 
         #if echos_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
