@@ -1,10 +1,10 @@
-package echos.core;
+package echoes.core;
 
-@:allow(echos)
+@:allow(echoes)
 @:forward(head, tail, length, iterator, sort)
-abstract RestrictedLinkedList<T>(echos.utils.LinkedList<T>) to echos.utils.LinkedList<T> {
+abstract RestrictedLinkedList<T>(echoes.utils.LinkedList<T>) to echoes.utils.LinkedList<T> {
 
-    inline function new() this = new echos.utils.LinkedList<T>();
+    inline function new() this = new echoes.utils.LinkedList<T>();
 
     inline function add(item:T) this.add(item);
     inline function pop() return this.pop();

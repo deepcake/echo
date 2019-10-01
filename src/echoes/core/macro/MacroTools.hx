@@ -1,4 +1,4 @@
-package echos.core.macro;
+package echoes.core.macro;
 
 #if macro
 import haxe.macro.ComplexTypeTools;
@@ -73,7 +73,7 @@ class MacroTools {
 
 
     public static inline function traceFields(clsname:String, fields:Array<Field>) {
-        #if echos_verbose
+        #if echoes_verbose
         var pr = new Printer();
         var ret = '$clsname\n';
         for (f in fields) ret += pr.printField(f) + '\n';
@@ -82,7 +82,7 @@ class MacroTools {
     }
 
     public static inline function traceTypeDefenition(def:TypeDefinition) {
-        #if echos_verbose
+        #if echoes_verbose
         trace(new Printer().printTypeDefinition(def));
         #end
     }

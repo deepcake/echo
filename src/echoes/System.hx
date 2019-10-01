@@ -1,4 +1,4 @@
-package echos;
+package echoes;
 
 /**
  * System  
@@ -26,13 +26,13 @@ package echos;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:autoBuild(echos.core.macro.SystemBuilder.build())
+@:autoBuild(echoes.core.macro.SystemBuilder.build())
 #end
-class System implements echos.core.ISystem {
+class System implements echoes.core.ISystem {
 
 
-    #if echos_profiling
-    @:allow(echos) var __updateTime__ = 0.0;
+    #if echoes_profiling
+    @:allow(echoes) var __updateTime__ = 0.0;
     #end
 
 
@@ -49,7 +49,7 @@ class System implements echos.core.ISystem {
     }
 
     public function info(indent:String = ''):String {
-        #if echos_profiling
+        #if echoes_profiling
         return '$indent($this) : ${ this.__updateTime__ } ms';
         #else
         return '$indent($this)';

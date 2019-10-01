@@ -1,10 +1,10 @@
-package echos;
+package echoes;
 
-import echos.Entity.Status;
-import echos.core.AbstractView;
-import echos.core.ICleanableComponentContainer;
-import echos.core.ISystem;
-import echos.core.RestrictedLinkedList;
+import echoes.Entity.Status;
+import echoes.core.AbstractView;
+import echoes.core.ICleanableComponentContainer;
+import echoes.core.ISystem;
+import echoes.core.RestrictedLinkedList;
 
 /**
  *  Workflow  
@@ -14,7 +14,7 @@ import echos.core.RestrictedLinkedList;
 class Workflow {
 
 
-    @:allow(echos.Entity) static inline var INVALID_ID = 0;
+    @:allow(echoes.Entity) static inline var INVALID_ID = 0;
 
 
     static var nextId = INVALID_ID + 1;
@@ -42,7 +42,7 @@ class Workflow {
     public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 
 
-    #if echos_profiling
+    #if echoes_profiling
     static var updateTime = 0.0;
     #end
 
@@ -50,7 +50,7 @@ class Workflow {
     /**
      * Returns the workflow statistics:  
      * _( systems count ) { views count } [ entities count | entity cache size ]_  
-     * With `echos_profiling` flag additionaly returns:  
+     * With `echoes_profiling` flag additionaly returns:  
      * _( system name ) : time for update ms_  
      * _{ view name } [ collected entities count ]_  
      * @return String
@@ -58,7 +58,7 @@ class Workflow {
     public static function info():String {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 
-        #if echos_profiling
+        #if echoes_profiling
         ret += ' : ${ updateTime } ms'; // total
         for (s in systems) {
             ret += '\n${ s.info("    ") }';
@@ -77,7 +77,7 @@ class Workflow {
      * @param dt deltatime
      */
     public static function update(dt:Float) {
-        #if echos_profiling
+        #if echoes_profiling
         var timestamp = Date.now().getTime();
         #end
 
@@ -87,7 +87,7 @@ class Workflow {
 
         }
 
-        #if echos_profiling
+        #if echoes_profiling
         updateTime = Std.int(Date.now().getTime() - timestamp);
         #end
     }
@@ -155,7 +155,7 @@ class Workflow {
 
     // Entity
 
-    @:allow(echos.Entity) static function id(immediate:Bool):Int {
+    @:allow(echoes.Entity) static function id(immediate:Bool):Int {
         var id = idPool.length > 0 ? idPool.pop() : nextId++;
         if (immediate) {
             idStatuses[id] = Active;
@@ -166,7 +166,7 @@ class Workflow {
         return id;
     }
 
-    @:allow(echos.Entity) static function cache(id:Int) {
+    @:allow(echoes.Entity) static function cache(id:Int) {
         // TODO debug check Unknown status
         if (status(id) < Cached) { // Active or Inactive
             removeAllComponentsOf(id);
@@ -176,7 +176,7 @@ class Workflow {
         }
     }
 
-    @:allow(echos.Entity) static function add(id:Int) {
+    @:allow(echoes.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
             idStatuses[id] = Active;
             entities.add(id);
@@ -184,7 +184,7 @@ class Workflow {
         }
     }
 
-    @:allow(echos.Entity) static function remove(id:Int) {
+    @:allow(echoes.Entity) static function remove(id:Int) {
         if (status(id) == Active) {
             for (v in views) v.removeIfMatch(id);
             entities.remove(id);
@@ -192,11 +192,11 @@ class Workflow {
         }
     }
 
-    @:allow(echos.Entity) static inline function status(id:Int):Status {
+    @:allow(echoes.Entity) static inline function status(id:Int):Status {
         return idStatuses.exists(id) ? idStatuses[id] : Invalid;
     }
 
-    @:allow(echos.Entity) static inline function removeAllComponentsOf(id:Int) {
+    @:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
         if (status(id) == Active) {
             for (v in views) {
                 v.removeIfMatch(id);

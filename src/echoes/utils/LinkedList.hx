@@ -1,4 +1,4 @@
-package echos.utils;
+package echoes.utils;
 
 import haxe.ds.ListSort;
 
@@ -138,7 +138,7 @@ class LinkedList<T> {
 
 }
 
-@:allow(echos.utils.LinkedList)
+@:allow(echoes.utils.LinkedList)
 @:generic
 class LinkedNode<T> {
 
@@ -152,7 +152,7 @@ class LinkedNode<T> {
 
 }
 
-@:allow(echos.utils.LinkedList)
+@:allow(echoes.utils.LinkedList)
 @:generic
 class LinkedListIterator<T> {
 

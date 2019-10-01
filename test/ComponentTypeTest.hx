@@ -1,4 +1,4 @@
-import echos.*;
+import echoes.*;
 
 using buddy.Should;
 

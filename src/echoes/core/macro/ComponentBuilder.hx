@@ -1,9 +1,9 @@
-package echos.core.macro;
+package echoes.core.macro;
 
 #if macro
-import echos.core.macro.MacroTools.*;
+import echoes.core.macro.MacroTools.*;
 import haxe.macro.Expr.ComplexType;
-using echos.core.macro.MacroTools;
+using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 using Lambda;
@@ -40,7 +40,7 @@ class ComponentBuilder {
                 var componentContainerTypePath = tpath([], componentContainerTypeName, []);
                 var componentContainerComplexType = TPath(componentContainerTypePath);
 
-                var def = macro class $componentContainerTypeName implements echos.core.ICleanableComponentContainer {
+                var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
 
                     static var instance = new $componentContainerTypePath();
 
@@ -50,10 +50,10 @@ class ComponentBuilder {
 
                     // instance
 
-                    var storage = new echos.core.Storage<$componentComplexType>();
+                    var storage = new echoes.core.Storage<$componentComplexType>();
 
                     function new() {
-                        @:privateAccess echos.Workflow.definedContainers.push(this);
+                        @:privateAccess echoes.Workflow.definedContainers.push(this);
                     }
 
                     public inline function get(id:Int):$componentComplexType {

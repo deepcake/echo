@@ -1,4 +1,4 @@
-# echos
+# Echo
 [![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
 Super lightweight Entity Component System framework for Haxe. 
@@ -16,8 +16,8 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Example
 ```haxe
-import echos.Workflow;
-import echos.Entity;
+import echoes.Workflow;
+import echoes.Entity;
 
 class Example {
   static function main() {
@@ -47,7 +47,7 @@ class Example {
   }
 }
 
-class Movement extends echos.System {
+class Movement extends echoes.System {
   // @update-function will be called for every entity that contains all the defined components;
   // All args are interpreted as components, except Float (reserved for delta time) and Int/Entity;
   @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
@@ -61,7 +61,7 @@ class Movement extends echos.System {
   }
 }
 
-class Render extends echos.System {
+class Render extends echoes.System {
   var scene:Array<Sprite> = [];
   // @a, @u and @r are the shortcuts for @added, @update and @removed metas;
   // @added/@removed-function are the callback called when entity is added or removed from the view;
@@ -91,7 +91,7 @@ class Render extends echos.System {
   }
 }
 
-class AverageSpeedCalculator extends echos.System {
+class AverageSpeedCalculator extends echoes.System {
   // All of required views will be defined and initialized under the hood,
   // but it is also possible to define a View manually (initialization is still not needed)
   // for additional possibilities like counting entities;
@@ -111,9 +111,9 @@ class AverageSpeedCalculator extends echos.System {
 
 #### Also
 There is also exists a few additional compiler flags:
- * `-D echos_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
- * `-D echos_report` - traces a short report of built components and views
- * `-D echos_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
+ * `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
+ * `-D echoes_report` - traces a short report of built components and views
+ * `-D echoes_array_cc` - using Array<T> instead IntMap<T> for global component containers (wip)
 
 #### Install
-```haxelib git echos https://github.com/deepcake/echo.git```
+```haxelib git echoes https://github.com/deepcake/echo.git```

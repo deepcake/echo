@@ -1,4 +1,4 @@
-package echos.core;
+package echoes.core;
 
 /**
  * ...
@@ -63,7 +63,7 @@ class AbstractView {
     }
 
 
-    @:allow(echos.Workflow) function addIfMatch(id:Int) {
+    @:allow(echoes.Workflow) function addIfMatch(id:Int) {
         if (isMatch(id)) {
             if (!entities.exists(id)) {
                 entities.add(id);
@@ -72,7 +72,7 @@ class AbstractView {
         }
     }
 
-    @:allow(echos.Workflow) function removeIfMatch(id:Int) {
+    @:allow(echoes.Workflow) function removeIfMatch(id:Int) {
         // if remove is success - true returned
         if (entities.remove(id)) {
             remove(id);
@@ -80,7 +80,7 @@ class AbstractView {
     }
 
 
-    @:allow(echos.Workflow) function reset() {
+    @:allow(echoes.Workflow) function reset() {
         activations = 0;
         Workflow.views.remove(this);
         while (entities.length > 0) {

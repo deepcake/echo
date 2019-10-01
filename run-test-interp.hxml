@@ -3,7 +3,7 @@
 -lib buddy
 -main Run.hx
 --interp
--D echos_profiling
--D echos_report
--D echos_array_cc
+-D echoes_profiling
+-D echoes_report
+-D echoes_array_cc
 -D buddy-ignore-passing-specs

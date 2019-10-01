@@ -1,4 +1,4 @@
-package echos;
+package echoes;
 
 /**
  * View  
@@ -9,6 +9,6 @@ package echos;
  * @author https://github.com/deepcake
  */
 #if !macro
-@:genericBuild(echos.core.macro.ViewBuilder.build())
+@:genericBuild(echoes.core.macro.ViewBuilder.build())
 #end
-class View<Rest> extends echos.core.AbstractView { }
+class View<Rest> extends echoes.core.AbstractView { }

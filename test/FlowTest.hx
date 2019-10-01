@@ -1,4 +1,4 @@
-import echos.*;
+import echoes.*;
 
 using buddy.Should;
 
@@ -94,7 +94,7 @@ class FlowTest extends buddy.BuddySuite {
 
                     describe("When use info", {
                         var str = "\\# \\( 2 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
-                        #if echos_profiling
+                        #if echoes_profiling
                         str += " : \\d ms";
                         str += "\n    \\(FlowTest.SystemX\\) : \\d ms";
                         str += "\n    \\(FlowTest.SystemY\\) : \\d ms";
@@ -201,7 +201,7 @@ class FlowTest extends buddy.BuddySuite {
 
                             describe("When use info", {
                                 var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
-                                #if echos_profiling
+                                #if echoes_profiling
                                 str += " : \\d ms";
                                 str += "\n    \\(";
                                 str += "\n        \\(FlowTest.SystemX\\) : \\d ms";
@@ -247,7 +247,7 @@ class FlowTest extends buddy.BuddySuite {
 
                                 describe("When use info", {
                                     var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
-                                    #if echos_profiling
+                                    #if echoes_profiling
                                     str += " : \\d ms";
                                     str += "\n    \\(";
                                     str += "\n        \\(";
@@ -308,12 +308,12 @@ class Y {
     public function new() { };
 }
 
-class SystemX extends echos.System {
+class SystemX extends echoes.System {
     var x:View<X>;
     var xy:View<X, Y>;
 }
 
-class SystemY extends echos.System {
+class SystemY extends echoes.System {
     @u inline function update(y:Y) { }
     @u inline function updatexy(x:X, y:Y, dt:Float) { }
 }

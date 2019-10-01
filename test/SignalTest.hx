@@ -1,4 +1,4 @@
-import echos.utils.Signal;
+import echoes.utils.Signal;
 
 using buddy.Should;
 

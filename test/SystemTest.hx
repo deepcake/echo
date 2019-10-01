@@ -1,8 +1,8 @@
 using buddy.Should;
 
-import echos.View;
-import echos.Workflow;
-import echos.Entity;
+import echoes.View;
+import echoes.Workflow;
+import echoes.Entity;
 
 class SystemTest extends buddy.BuddySuite {
     public function new() {
@@ -247,7 +247,7 @@ abstract CompC(String) {
     public function new() this = 'C';
 }
 
-class UpdateMetaGeneration extends echos.System {
+class UpdateMetaGeneration extends echoes.System {
     @u function empty0() BuildResult.value += '_';
     @u function _f(f:Float) BuildResult.value += '$f';
     @u function empty1() BuildResult.value += '_';
@@ -267,7 +267,7 @@ class UpdateMetaGeneration extends echos.System {
     }
 }
 
-class AddedRemovedMetaGeneration extends echos.System {
+class AddedRemovedMetaGeneration extends echoes.System {
     @a function ad_a1(a:CompA) BuildResult.value += '+${a}';
     @a function ad_a2(a:CompA) BuildResult.value += '>${a}';
     @r function rm_a2(a:CompA) BuildResult.value += '<${a}';
@@ -276,12 +276,12 @@ class AddedRemovedMetaGeneration extends echos.System {
     @r function rm_ae(a:CompA, e:Entity) BuildResult.value += '-${a}e';
 }
 
-class AddedRemovedAdditionalMetaGeneration extends echos.System {
+class AddedRemovedAdditionalMetaGeneration extends echoes.System {
     @a function ad_a(a:CompA) BuildResult.value += '!';
     @r function rm_a(a:CompA) BuildResult.value += '#';
 }
 
-class StandaloneA extends echos.System {
+class StandaloneA extends echoes.System {
     public static var a:View<CompA>;
 }
 

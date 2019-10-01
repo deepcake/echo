@@ -1,9 +1,9 @@
-package echos.core.macro;
+package echoes.core.macro;
 
 #if macro
-import echos.core.macro.MacroTools.*;
-import echos.core.macro.ViewBuilder.*;
-import echos.core.macro.ComponentBuilder.*;
+import echoes.core.macro.MacroTools.*;
+import echoes.core.macro.ViewBuilder.*;
+import echoes.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -11,7 +11,7 @@ import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using echos.core.macro.MacroTools;
+using echoes.core.macro.MacroTools;
 using StringTools;
 using Lambda;
 
@@ -72,14 +72,14 @@ class SystemBuilder {
             return switch (a.type.followComplexType()) {
                 case macro:StdTypes.Float : macro __dt__;
                 case macro:StdTypes.Int : macro __entity__;
-                case macro:echos.Entity : macro __entity__;
+                case macro:echoes.Entity : macro __entity__;
                 default: macro $i{ a.name };
             }
         }
 
         function metaFuncArgIsEntity(a:FunctionArg) {
             return switch (a.type.followComplexType()) {
-                case macro:StdTypes.Int, macro:echos.Entity : true;
+                case macro:StdTypes.Int, macro:echoes.Entity : true;
                 default: false;
             }
         }
@@ -98,7 +98,7 @@ class SystemBuilder {
             return switch (a.type.followComplexType()) {
                 case macro:StdTypes.Float : null;
                 case macro:StdTypes.Int : null;
-                case macro:echos.Entity : null;
+                case macro:echoes.Entity : null;
                 default: { cls: a.type.followComplexType() };
             }
         }
@@ -178,7 +178,7 @@ class SystemBuilder {
 
                         var viewClsName = getViewName(components);
                         var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-                        var viewArgs = [ arg('__entity__', macro:echos.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
+                        var viewArgs = [ arg('__entity__', macro:echoes.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 
                         { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 
@@ -220,7 +220,7 @@ class SystemBuilder {
         });
 
         var updateExprs = []
-            #if echos_profiling
+            #if echoes_profiling
             .concat([
                 macro var __timestamp__ = Date.now().getTime()
             ])
@@ -236,14 +236,14 @@ class SystemBuilder {
                             macro $i{ f.view.name }.iter($fwrapper);
                         }
                         case ENTITY_ITER: {
-                            macro for (__entity__ in echos.Workflow.entities) {
+                            macro for (__entity__ in echoes.Workflow.entities) {
                                 $i{ f.name }($a{ f.args });
                             }
                         }
                     }
                 })
             )
-            #if echos_profiling
+            #if echoes_profiling
             .concat([
                 macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
             ])

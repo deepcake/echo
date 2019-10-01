@@ -1,9 +1,9 @@
-package echos;
+package echoes;
 
 #if macro
 import haxe.macro.Expr;
-using echos.core.macro.ComponentBuilder;
-using echos.core.macro.MacroTools;
+using echoes.core.macro.ComponentBuilder;
+using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
 #end
@@ -93,7 +93,7 @@ abstract Entity(Int) from Int to Int {
      * @param components comma separated list of components of `Any` type
      * @return `Entity`
      */
-    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echos.Entity> {
+    macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
         if (components.length == 0) {
             Context.error('Required one or more Components', Context.currentPos());
         }
@@ -110,7 +110,7 @@ abstract Entity(Int) from Int to Int {
             )
             .concat([ 
                 macro if (__entity__.isActive()) {
-                    for (v in echos.Workflow.views) {
+                    for (v in echoes.Workflow.views) {
                         @:privateAccess v.addIfMatch(__entity__);
                     }
                 }
@@ -119,9 +119,9 @@ abstract Entity(Int) from Int to Int {
                 macro return __entity__ 
             ]);
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echos_verbose
+        #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -133,7 +133,7 @@ abstract Entity(Int) from Int to Int {
      * @param types comma separated `Class<Any>` types of components that should be removed
      * @return `Entity`
      */
-    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echos.Entity> {
+    macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
         if (types.length == 0) {
             Context.error('Required one or more Component Types', Context.currentPos());
         }
@@ -169,7 +169,7 @@ abstract Entity(Int) from Int to Int {
         var body = []
             .concat([ 
                 macro if (__entity__.isActive()) {
-                    for (v in echos.Workflow.views) {
+                    for (v in echoes.Workflow.views) {
                         if ($viewIsRequireComponentConditionExpr) {
                             @:privateAccess v.removeIfMatch(__entity__);
                         }
@@ -183,9 +183,9 @@ abstract Entity(Int) from Int to Int {
                 macro return __entity__ 
             ]);
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echos_verbose
+        #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -202,9 +202,9 @@ abstract Entity(Int) from Int to Int {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echos_verbose
+        #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 
@@ -220,9 +220,9 @@ abstract Entity(Int) from Int to Int {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echos.Entity) $b{body} )($self);
+        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echos_verbose
+        #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
         #end
 

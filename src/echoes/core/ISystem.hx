@@ -1,4 +1,4 @@
-package echos.core;
+package echoes.core;
 
 interface ISystem {
 

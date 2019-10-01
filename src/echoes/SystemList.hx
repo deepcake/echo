@@ -1,7 +1,7 @@
-package echos;
+package echoes;
 
-import echos.core.ISystem;
-import echos.utils.LinkedList;
+import echoes.core.ISystem;
+import echoes.utils.LinkedList;
 
 class SystemList implements ISystem {
 

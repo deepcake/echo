@@ -1,9 +1,9 @@
-package echos.core.macro;
+package echoes.core.macro;
 
 #if macro
-import echos.core.macro.MacroTools.*;
-import echos.core.macro.ViewBuilder.*;
-import echos.core.macro.ComponentBuilder.*;
+import echoes.core.macro.MacroTools.*;
+import echoes.core.macro.ViewBuilder.*;
+import echoes.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 
 using Lambda;
@@ -21,7 +21,7 @@ class Report {
 
 
     public static function gen() {
-        #if echos_report
+        #if echoes_report
         if (!reportRegistered) {
             Context.onGenerate(function(types) {
                 function sortedlist(array:Array<String>) {
