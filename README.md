@@ -3,7 +3,7 @@
 
 Super lightweight Entity Component System framework for Haxe. 
 Initially created to learn the power of macros. 
-Focused to be simple and fast. 
+Focused on quick and easy use. 
 Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
 
 #### Wip
@@ -16,14 +16,19 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 
 #### Example
 ```haxe
+import echoes.SystemList;
 import echoes.Workflow;
 import echoes.Entity;
 
 class Example {
   static function main() {
-    Workflow.addSystem(new Movement());
-    Workflow.addSystem(new Render());
-    // and so on
+    // for better control, you can use the system lists
+    var physics = new SystemList()
+      .add(new Movement())
+      .add(new CollisionResolver());
+
+    Workflow.addSystem(physics);
+    Workflow.addSystem(new Render()); // or just add systems directly
 
     var rabbit = createRabbit(0, 0, 1, 1);
 
@@ -32,7 +37,8 @@ class Example {
     rabbit.remove(Position); // oh no!
     rabbit.add(new Position(1, 1)); // okay
 
-    // also somewhere should be Workflow.update(deltatime) call on every tick
+    // also somewhere should be update call on every tick
+    Workflow.update(0);
   }
   static function createTree(x:Float, y:Float) {
     return new Entity()
@@ -67,24 +73,25 @@ class Movement extends echoes.System {
 }
 
 class DestroySlowest extends echoes.System {
-  // All of the required views will be defined and initialized under the hood, 
-  // but it is also possible to define a View manually (initialization is still not needed) 
-  // for additional possibilities like counting and sorting entities;
+  // All of necessary for meta-functions views will be defined and initialized under the hood, 
+  // but it is also possible to define the View manually (initialization is still not required) 
+  // for additional features such as counting and sorting entities;
   var bodies:View<Position, Velocity>;
+
   @u function destroySlowest() {
     bodies.entities.sort((e1, e2) -> speed(e2.get(Velocity)) - speed(e1.get(Velocity)));
     trace('Last of ${ bodies.entities.length } is destroyed!');
     bodies.entities.tail.value.destroy();
   }
   function speed(vel:Velocity) {
-    return Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+    return Std.int(Math.sqrt(vel.x * vel.x + vel.y * vel.y));
   }
 }
 
 class Render extends echoes.System {
   var scene:Array<Sprite> = [];
   // There are @a, @u and @r shortcuts for @added, @update and @removed metas;
-  // @added/@removed-functions are the callbacks called when entity is added/removed from the view;
+  // @added/@removed-functions are callbacks that are called when an entity is added/removed from the view;
   @a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
     scene.push(spr);
   }

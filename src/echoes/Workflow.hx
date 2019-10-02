@@ -8,7 +8,7 @@ import echoes.core.RestrictedLinkedList;
 
 /**
  *  Workflow  
- *  
+ * 
  * @author https://github.com/deepcake
  */
 class Workflow {

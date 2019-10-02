@@ -3,6 +3,19 @@ package echoes;
 import echoes.core.ISystem;
 import echoes.utils.LinkedList;
 
+/**
+ * SystemList  
+ * 
+ * List of Systems. Can be used for better update control:  
+ * ```
+ *   var physics = new SystemList();
+ *   physics.add(new MovementSystem());
+ *   physics.add(new CollisionResolveSystem());
+ *   Workflow.add(physics);
+ * ```
+ * 
+ * @author https://github.com/deepcake
+ */
 class SystemList implements ISystem {
 
 
@@ -44,22 +57,24 @@ class SystemList implements ISystem {
     }
 
 
-    public function add(s:ISystem) {
+    public function add(s:ISystem):SystemList {
         if (!exists(s)) {
             systems.add(s);
             if (activated) {
                 s.__activate__();
             }
         }
+        return this;
     }
 
-    public function remove(s:ISystem) {
+    public function remove(s:ISystem):SystemList {
         if (exists(s)) {
             systems.remove(s);
             if (activated) {
                 s.__deactivate__();
             }
         }
+        return this;
     }
 
     public function exists(s:ISystem):Bool {

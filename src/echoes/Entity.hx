@@ -10,7 +10,7 @@ using Lambda;
 
 /**
  * Entity is an abstract over the `Int` key.  
- * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused again  
+ * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused!  
  *  
  * @author https://github.com/deepcake
  */
