@@ -18,7 +18,7 @@ class AbstractView {
         if (activations == 1) {
             Workflow.views.add(this);
             for (e in Workflow.entities) {
-                addIfMatch(e);
+                addIfMatched(e);
             }
         }
     }
@@ -43,13 +43,8 @@ class AbstractView {
     }
 
 
-    function isMatch(id:Int):Bool { // macro
-        // each required component exists in component map with this id
-        return false;
-    }
-
-    function isRequire(c:Int):Bool { // macro
-        // check that this component type is required
+    function isMatched(id:Int):Bool { // macro
+        // each required component exists in component container with this id
         return false;
     }
 
@@ -63,8 +58,8 @@ class AbstractView {
     }
 
 
-    @:allow(echoes.Workflow) function addIfMatch(id:Int) {
-        if (isMatch(id)) {
+    @:allow(echoes.Workflow) function addIfMatched(id:Int) {
+        if (isMatched(id)) {
             if (!entities.exists(id)) {
                 entities.add(id);
                 add(id);
@@ -72,8 +67,8 @@ class AbstractView {
         }
     }
 
-    @:allow(echoes.Workflow) function removeIfMatch(id:Int) {
-        // if remove is success - true returned
+    @:allow(echoes.Workflow) function removeIfExists(id:Int) {
+        // if removing is succeed - true returned
         if (entities.remove(id)) {
             remove(id);
         }

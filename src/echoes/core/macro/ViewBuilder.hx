@@ -3,6 +3,7 @@ package echoes.core.macro;
 #if macro
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
+import echoes.core.macro.ViewsOfComponentBuilder.*;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassField;
 
@@ -77,12 +78,12 @@ class ViewBuilder {
         var viewType = viewTypeCache.get(viewClsName);
 
         if (viewType == null) { 
-            // first time call in current macro phase
+            // first time call in current build
 
             var index = ++viewIndex;
 
             try viewType = Context.getType(viewClsName) catch (err:String) {
-                // type was not cached in previous macro phases
+                // type was not cached in previous build
 
                 var viewTypePath = tpath([], viewClsName, []);
                 var viewComplexType = TPath(viewTypePath);
@@ -93,6 +94,12 @@ class ViewBuilder {
 
                 // signal args for dispatch() call
                 var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id)));
+
+                // component related views
+                var addViewToViewsOfComponent = components.map(function(c) {
+                    var viewsOfComponentName = getViewsOfComponent(c.cls).followName();
+                    return macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
+                });
 
                 // type def
                 var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
@@ -110,6 +117,7 @@ class ViewBuilder {
 
                     function new() {
                         @:privateAccess echoes.Workflow.definedViews.push(this);
+                        $b{ addViewToViewsOfComponent }
                     }
 
                     override function add(id:Int) {
@@ -145,25 +153,12 @@ class ViewBuilder {
                     def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', funcComplexType)], macro:Void, macro $body, Context.currentPos()));
                 }
 
-                // isMatch
+                // isMatched
                 {
-                    var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id) != null);
+                    var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().exists(id));
                     var cond = checks.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checks[0]);
                     var body = macro return $cond;
-                    def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
-                }
-
-                // isRequire
-                {
-                    var body = macro return __mask[c] != null;
-                    def.fields.push(ffun([AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, body, Context.currentPos()));
-                }
-
-                // mask
-                {
-                    var flags = components.map(function(c) return macro $v{ getComponentId(c.cls) } => true);
-                    var body = macro [ $a{ flags } ];
-                    def.fields.push(fvar([AStatic], '__mask', null, body, Context.currentPos()));
+                    def.fields.push(ffun([AOverride], 'isMatched', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
                 }
 
                 // toString
@@ -180,7 +175,7 @@ class ViewBuilder {
                 viewType = viewComplexType.toType();
             }
 
-            // caching current macro phase
+            // caching current build
             viewTypeCache.set(viewClsName, viewType);
             viewCache.set(viewClsName, { cls: viewType.toComplexType(), components: components });
 

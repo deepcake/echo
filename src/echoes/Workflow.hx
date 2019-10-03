@@ -180,13 +180,13 @@ class Workflow {
         if (status(id) == Inactive) {
             idStatuses[id] = Active;
             entities.add(id);
-            for (v in views) v.addIfMatch(id);
+            for (v in views) v.addIfMatched(id);
         }
     }
 
     @:allow(echoes.Entity) static function remove(id:Int) {
         if (status(id) == Active) {
-            for (v in views) v.removeIfMatch(id);
+            for (v in views) v.removeIfExists(id);
             entities.remove(id);
             idStatuses[id] = Inactive;
         }
@@ -199,7 +199,7 @@ class Workflow {
     @:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
         if (status(id) == Active) {
             for (v in views) {
-                v.removeIfMatch(id);
+                v.removeIfExists(id);
             }
         }
         for (c in definedContainers) {

@@ -3,6 +3,7 @@ package echoes;
 #if macro
 import haxe.macro.Expr;
 using echoes.core.macro.ComponentBuilder;
+using echoes.core.macro.ViewsOfComponentBuilder;
 using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
@@ -111,7 +112,7 @@ abstract Entity(Int) from Int to Int {
             .concat([ 
                 macro if (__entity__.isActive()) {
                     for (v in echoes.Workflow.views) {
-                        @:privateAccess v.addIfMatch(__entity__);
+                        @:privateAccess v.addIfMatched(__entity__);
                     }
                 }
             ])
@@ -147,34 +148,21 @@ abstract Entity(Int) from Int to Int {
             .map(function(ct) {
                 return ct.getComponentContainer().followName();
             })
-            .map(function(containerName) {
-                return macro @:privateAccess $i{ containerName }.inst().remove(__entity__);
+            .map(function(componentContainerClassName) {
+                return macro @:privateAccess $i{ componentContainerClassName }.inst().remove(__entity__);
             });
 
-        var viewIsRequireComponentExprs = cts
+        var removeEntityFromRelatedViewsExprs = cts
             .map(function(ct) {
-                var cid = ct.getComponentId();
-                return macro @:privateAccess v.isRequire($v{cid});
+                return ct.getViewsOfComponent().followName();
+            })
+            .map(function(viewsOfComponentClassName) {
+                return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfMatched(__entity__);
             });
-
-        var viewIsRequireComponentConditionExpr = viewIsRequireComponentExprs
-            .slice(1)
-            .fold(
-                function(e:Expr, r:Expr) {
-                    return macro $r || $e;
-                }, 
-                viewIsRequireComponentExprs[0]
-            );
 
         var body = []
             .concat([ 
-                macro if (__entity__.isActive()) {
-                    for (v in echoes.Workflow.views) {
-                        if ($viewIsRequireComponentConditionExpr) {
-                            @:privateAccess v.removeIfMatch(__entity__);
-                        }
-                    }
-                }
+                macro if (__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
             ])
             .concat(
                 removeComponentsFromContainersExprs

@@ -20,22 +20,18 @@ class ComponentBuilder {
     public static var componentNames = new Array<String>();
 
 
-    static function getComponentContainerName(ct:ComplexType) {
-        return 'ContainerOf' + ct.typeName();
-    }
-
     public static function createComponentContainerType(componentComplexType:ComplexType) {
         var componentTypeName = componentComplexType.followName();
-        var componentContainerTypeName = getComponentContainerName(componentComplexType);
+        var componentContainerTypeName = 'ContainerOf' + componentComplexType.typeName();
         var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 
         if (componentContainerType == null) {
-            // first time call in current macro phase
+            // first time call in current build
 
             var index = ++componentIndex;
 
             try componentContainerType = Context.getType(componentContainerTypeName) catch (err:String) {
-                // type was not cached in previous macro phases
+                // type was not cached in previous build
 
                 var componentContainerTypePath = tpath([], componentContainerTypeName, []);
                 var componentContainerComplexType = TPath(componentContainerTypePath);
@@ -85,7 +81,7 @@ class ComponentBuilder {
                 componentContainerType = componentContainerComplexType.toType();
             }
 
-            // caching current macro phase
+            // caching current build
             componentContainerTypeCache.set(componentContainerTypeName, componentContainerType);
             componentIds[componentTypeName] = index;
             componentNames.push(componentTypeName);
