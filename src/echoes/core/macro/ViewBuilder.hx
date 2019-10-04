@@ -120,14 +120,12 @@ class ViewBuilder {
                         $b{ addViewToViewsOfComponent }
                     }
 
-                    override function add(id:Int) {
-                        super.add(id);
+                    override function dispatchAddedCallback(id:Int) {
                         onAdded.dispatch($a{ signalArgs });
                     }
 
-                    override function remove(id:Int) {
+                    override function dispatchRemovedCallback(id:Int) {
                         onRemoved.dispatch($a{ signalArgs });
-                        super.remove(id);
                     }
 
                     override function reset() {
