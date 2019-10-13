@@ -85,9 +85,9 @@ class NamePrinter extends echoes.System {
   var named:View<Name>;
 
   @update function sortAndPrint() {
-    bodies.entities.sort((e1, e2) -> e1.get(Name) < e2.get(Name) ? -1 : 1);
+    named.entities.sort((e1, e2) -> e1.get(Name) < e2.get(Name) ? -1 : 1);
     // using Lambda
-    bodies.entities.iter(e -> trace(e.get(Name)));
+    named.entities.iter(e -> trace(e.get(Name)));
   }
 }
 
