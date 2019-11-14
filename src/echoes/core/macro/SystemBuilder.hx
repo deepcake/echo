@@ -271,16 +271,19 @@ class SystemBuilder {
                     return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}Listener__' });
                 })
             )
-            .concat(
-                [ macro onactivate() ]
-            )
             .concat( // call added-listeners
                 afuncs.map(function(f){
                     return macro $i{ f.view.name }.iter($i{ '__${f.name}Listener__' });
                 })
+            )
+            .concat(
+                [ macro onactivate() ]
             );
 
         var deactivateExprs = []
+            .concat(
+                [ macro ondeactivate() ]
+            )
             .concat( // deactivate views
                 definedViews.map(function(v){
                     return macro $i{ v.name }.deactivate();
@@ -295,9 +298,6 @@ class SystemBuilder {
                 rfuncs.map(function(f){
                     return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
                 })
-            )
-            .concat(
-                [ macro ondeactivate() ]
             )
             .concat( // null signal wrappers 
                 listeners.map(function(f) {
