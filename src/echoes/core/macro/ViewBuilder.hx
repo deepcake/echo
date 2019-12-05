@@ -48,12 +48,12 @@ class ViewBuilder {
 
             case TAnonymous(_.get() => p):
                 p.fields
-                    .map(function(f) return { cls: f.type.follow().toComplexType() });
+                    .map(function(f) return { cls: f.type.followMono().toComplexType() });
 
             case TFun(args, ret):
                 args
-                    .map(function(a) return a.t.follow().toComplexType())
-                    .concat([ ret.follow().toComplexType() ])
+                    .map(function(a) return a.t.followMono().toComplexType())
+                    .concat([ ret.followMono().toComplexType() ])
                     .filter(function(ct) {
                         return switch (ct) {
                             case (macro:StdTypes.Void): false;
@@ -64,7 +64,7 @@ class ViewBuilder {
 
             case TInst(_, types):
                 types
-                    .map(function(t) return t.follow().toComplexType())
+                    .map(function(t) return t.followMono().toComplexType())
                     .map(function(ct) return { cls: ct });
 
             case x: 

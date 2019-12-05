@@ -101,7 +101,7 @@ abstract Entity(Int) from Int to Int {
 
         var addComponentsToContainersExprs = components
             .map(function(c) {
-                var containerName = (c.typeof().follow().toComplexType()).getComponentContainer().followName();
+                var containerName = (MacroTools.typeof(c).followMono().toComplexType()).getComponentContainer().followName();
                 return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
             });
 
@@ -141,7 +141,7 @@ abstract Entity(Int) from Int to Int {
 
         var cts = types
             .map(function(type) {
-                return type.parseClassName().getType().follow().toComplexType();
+                return type.parseClassName().getType().followMono().toComplexType();
             });
 
         var removeComponentsFromContainersExprs = cts
@@ -187,7 +187,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = (type.parseClassName().getType().followMono().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
@@ -205,7 +205,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = (type.parseClassName().getType().followMono().toComplexType()).getComponentContainer().followName();
         var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
