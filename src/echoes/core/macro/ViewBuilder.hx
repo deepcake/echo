@@ -1,12 +1,13 @@
-package echos.core.macro;
+package echoes.core.macro;
 
 #if macro
-import echos.core.macro.MacroTools.*;
-import echos.core.macro.ComponentBuilder.*;
+import echoes.core.macro.MacroTools.*;
+import echoes.core.macro.ComponentBuilder.*;
+import echoes.core.macro.ViewsOfComponentBuilder.*;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassField;
 
-using echos.core.macro.MacroTools;
+using echoes.core.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
@@ -77,25 +78,31 @@ class ViewBuilder {
         var viewType = viewTypeCache.get(viewClsName);
 
         if (viewType == null) { 
-            // first time call in current macro phase
+            // first time call in current build
 
             var index = ++viewIndex;
 
             try viewType = Context.getType(viewClsName) catch (err:String) {
-                // type was not cached in previous macro phases
+                // type was not cached in previous build
 
                 var viewTypePath = tpath([], viewClsName, []);
                 var viewComplexType = TPath(viewTypePath);
 
                 // signals
-                var signalTypeParamComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
-                var signalTypePath = tpath(['echos', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
+                var signalTypeParamComplexType = TFunction([ macro:echoes.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
+                var signalTypePath = tpath(['echoes', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
 
                 // signal args for dispatch() call
                 var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id)));
 
+                // component related views
+                var addViewToViewsOfComponent = components.map(function(c) {
+                    var viewsOfComponentName = getViewsOfComponent(c.cls).followName();
+                    return macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
+                });
+
                 // type def
-                var def:TypeDefinition = macro class $viewClsName extends echos.core.AbstractView {
+                var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
 
                     static var instance = new $viewTypePath();
 
@@ -109,21 +116,20 @@ class ViewBuilder {
                     public var onRemoved(default, null) = new $signalTypePath();
 
                     function new() {
-                        @:privateAccess echos.Workflow.definedViews.push(this);
+                        @:privateAccess echoes.Workflow.definedViews.push(this);
+                        $b{ addViewToViewsOfComponent }
                     }
 
-                    override function add(id:Int) {
-                        super.add(id);
+                    override function dispatchAddedCallback(id:Int) {
                         onAdded.dispatch($a{ signalArgs });
                     }
 
-                    override function remove(id:Int) {
+                    override function dispatchRemovedCallback(id:Int) {
                         onRemoved.dispatch($a{ signalArgs });
-                        super.remove(id);
                     }
 
-                    override function dispose() {
-                        super.dispose();
+                    override function reset() {
+                        super.reset();
                         onAdded.removeAll();
                         onRemoved.removeAll();
                     }
@@ -131,11 +137,11 @@ class ViewBuilder {
                 }
 
                 //var iteratorTypePath = getViewIterator(components).tp();
-                //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echos, this.entities.iterator()), Context.currentPos()));
+                //def.fields.push(ffun([], [APublic, AInline], 'iterator', null, null, macro return new $iteratorTypePath(this.echoes, this.entities.iterator()), Context.currentPos()));
 
                 // iter
                 {
-                    var funcComplexType = TFunction([ macro:echos.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
+                    var funcComplexType = TFunction([ macro:echoes.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
                     var funcCallArgs = [ macro __entity__ ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(__entity__)));
                     var body = macro {
                         for (__entity__ in entities) {
@@ -145,25 +151,12 @@ class ViewBuilder {
                     def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', funcComplexType)], macro:Void, macro $body, Context.currentPos()));
                 }
 
-                // isMatch
+                // isMatched
                 {
-                    var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id) != null);
+                    var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().exists(id));
                     var cond = checks.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checks[0]);
                     var body = macro return $cond;
-                    def.fields.push(ffun([AOverride], 'isMatch', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
-                }
-
-                // isRequire
-                {
-                    var body = macro return __mask[c] != null;
-                    def.fields.push(ffun([AOverride], 'isRequire', [arg('c', macro:Int)], macro:Bool, body, Context.currentPos()));
-                }
-
-                // mask
-                {
-                    var flags = components.map(function(c) return macro $v{ getComponentId(c.cls) } => true);
-                    var body = macro [ $a{ flags } ];
-                    def.fields.push(fvar([AStatic], '__mask', null, body, Context.currentPos()));
+                    def.fields.push(ffun([AOverride], 'isMatched', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
                 }
 
                 // toString
@@ -180,7 +173,7 @@ class ViewBuilder {
                 viewType = viewComplexType.toType();
             }
 
-            // caching current macro phase
+            // caching current build
             viewTypeCache.set(viewClsName, viewType);
             viewCache.set(viewClsName, { cls: viewType.toComplexType(), components: components });
 

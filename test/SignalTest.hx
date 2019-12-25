@@ -1,4 +1,4 @@
-import echos.utils.Signal;
+import echoes.utils.Signal;
 
 using buddy.Should;
 
@@ -19,14 +19,14 @@ class SignalTest extends buddy.BuddySuite {
                     s.add(f1);
                 });
                 it("should be added", s.has(f1).should.be(true));
-                it("should has correct size", s.size().should.be(1));
+                it("should have correct size", s.size().should.be(1));
 
                 describe("When remove listener", {
                     beforeEach({
                         s.remove(f1);
                     });
                     it("should be removed", s.has(f1).should.be(false));
-                    it("should has correct size", s.size().should.be(0));
+                    it("should have correct size", s.size().should.be(0));
 
                     describe("When dispatch", {
                         beforeEach({
@@ -41,7 +41,7 @@ class SignalTest extends buddy.BuddySuite {
                         s.removeAll();
                     });
                     it("should be removed", s.has(f1).should.be(false));
-                    it("should has correct size", s.size().should.be(0));
+                    it("should have correct size", s.size().should.be(0));
 
                     describe("When dispatch", {
                         beforeEach({
@@ -64,7 +64,7 @@ class SignalTest extends buddy.BuddySuite {
                         s.add(f2);
                     });
                     it("should be added", s.has(f2).should.be(true));
-                    it("should has correct size", s.size().should.be(2));
+                    it("should have correct size", s.size().should.be(2));
 
                     describe("When remove a second listener", {
                         beforeEach({
@@ -72,7 +72,7 @@ class SignalTest extends buddy.BuddySuite {
                         });
                         it("should not be removed", s.has(f1).should.be(true));
                         it("should be removed", s.has(f2).should.be(false));
-                        it("should has correct size", s.size().should.be(1));
+                        it("should have correct size", s.size().should.be(1));
 
                         describe("When dispatch", {
                             beforeEach({
@@ -88,7 +88,7 @@ class SignalTest extends buddy.BuddySuite {
                         });
                         it("should be removed", s.has(f1).should.be(false));
                         it("should be removed", s.has(f2).should.be(false));
-                        it("should has correct size", s.size().should.be(0));
+                        it("should have correct size", s.size().should.be(0));
 
                         describe("When dispatch", {
                             beforeEach({

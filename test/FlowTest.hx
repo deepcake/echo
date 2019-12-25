@@ -1,4 +1,4 @@
-import echos.*;
+import echoes.*;
 
 using buddy.Should;
 
@@ -9,7 +9,7 @@ class FlowTest extends buddy.BuddySuite {
             var y = new SystemY();
 
             beforeEach({
-                Workflow.dispose();
+                Workflow.reset();
             });
 
             describe("When add System X", {
@@ -18,7 +18,16 @@ class FlowTest extends buddy.BuddySuite {
                 });
                 it("should be added", Workflow.systems.length.should.be(1));
                 it("should be added", Workflow.hasSystem(x).should.be(true));
-                it("should has correct count of views", Workflow.views.length.should.be(2));
+                it("should have correct count of views", Workflow.views.length.should.be(2));
+
+                describe("When add System X again", {
+                    beforeEach({
+                        Workflow.addSystem(x);
+                    });
+                    it("should be added", Workflow.systems.length.should.be(1));
+                    it("should be added", Workflow.hasSystem(x).should.be(true));
+                    it("should have correct count of views", Workflow.views.length.should.be(2));
+                });
 
                 describe("When remove System X", {
                     beforeEach({
@@ -26,7 +35,25 @@ class FlowTest extends buddy.BuddySuite {
                     });
                     it("should be removed", Workflow.systems.length.should.be(0));
                     it("should be removed", Workflow.hasSystem(x).should.be(false));
-                    it("should has correct count of views", Workflow.views.length.should.be(0));
+                    it("should have correct count of views", Workflow.views.length.should.be(0));
+
+                    describe("When remove System X again", {
+                        beforeEach({
+                            Workflow.removeSystem(x);
+                        });
+                        it("should be removed", Workflow.systems.length.should.be(0));
+                        it("should be removed", Workflow.hasSystem(x).should.be(false));
+                        it("should have correct count of views", Workflow.views.length.should.be(0));
+                    });
+
+                    describe("When add System X back", {
+                        beforeEach({
+                            Workflow.addSystem(x);
+                        });
+                        it("should be added", Workflow.systems.length.should.be(1));
+                        it("should be added", Workflow.hasSystem(x).should.be(true));
+                        it("should have correct count of views", Workflow.views.length.should.be(2));
+                    });
                 });
 
                 describe("When add System Y", {
@@ -35,7 +62,7 @@ class FlowTest extends buddy.BuddySuite {
                     });
                     it("should be added", Workflow.systems.length.should.be(2));
                     it("should be added", Workflow.hasSystem(y).should.be(true));
-                    it("should has correct count of views", Workflow.views.length.should.be(3));
+                    it("should have correct count of views", Workflow.views.length.should.be(3));
 
                     describe("When remove System Y", {
                         beforeEach({
@@ -43,7 +70,7 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
-                        it("should has correct count of views", Workflow.views.length.should.be(2));
+                        it("should have correct count of views", Workflow.views.length.should.be(2));
                     });
 
                     describe("When remove System X", {
@@ -52,33 +79,220 @@ class FlowTest extends buddy.BuddySuite {
                         });
                         it("should be removed", Workflow.systems.length.should.be(1));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));
-                        it("should has correct count of views", Workflow.views.length.should.be(2));
+                        it("should have correct count of views", Workflow.views.length.should.be(2));
                     });
 
-                    describe("When dispose", {
+                    describe("When reset", {
                         beforeEach({
-                            Workflow.dispose();
+                            Workflow.reset();
                         });
                         it("should be removed", Workflow.systems.length.should.be(0));
                         it("should be removed", Workflow.hasSystem(x).should.be(false));
                         it("should be removed", Workflow.hasSystem(y).should.be(false));
-                        it("should has correct count of views", Workflow.views.length.should.be(0));
+                        it("should have correct count of views", Workflow.views.length.should.be(0));
                     });
 
                     describe("When use info", {
-                        var expectedResult = "";
-                        expectedResult += "# ( 2 ) { 3 } [ 0 | 0 ] : 0 ms";
-                        #if echos_profiling
-                        expectedResult += "\n        (FlowTest.SystemX) : 0 ms";
-                        expectedResult += "\n        (FlowTest.SystemY) : 0 ms";
-                        expectedResult += "\n    {FlowTest.X} [0]";
-                        expectedResult += "\n    {FlowTest.X+FlowTest.Y} [0]";
-                        expectedResult += "\n    {FlowTest.Y} [0]";
+                        var str = "\\# \\( 2 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
+                        #if echoes_profiling
+                        str += " : \\d ms";
+                        str += "\n    \\(FlowTest.SystemX\\) : \\d ms";
+                        str += "\n    \\(FlowTest.SystemY\\) : \\d ms";
+                        str += "\n    \\{FlowTest.X\\} \\[0\\]";
+                        str += "\n    \\{FlowTest.X\\+FlowTest.Y\\} \\[0\\]";
+                        str += "\n    \\{FlowTest.Y\\} \\[0\\]";
                         #end
                         beforeEach({
                             Workflow.update(0);
                         });
-                        it("should has correct result", Workflow.info().should.be(expectedResult));
+                        it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+                    });
+                });
+            });
+
+            describe("Using System List", {
+                var sl:SystemList;
+
+                beforeEach({
+                    sl = new SystemList();
+                });
+
+                describe("Initially", {
+                    it("should have correct count of systems", Workflow.systems.length.should.be(0));
+                    it("should have system list", Workflow.hasSystem(sl).should.be(false));
+                    it("should have correct count of views", Workflow.views.length.should.be(0));
+
+                    describe("When add Systems to the System List", {
+                        beforeEach({
+                            sl.add(x);
+                            sl.add(y);
+                        });
+                        it("should exists", {
+                            sl.exists(x).should.be(true);
+                            sl.exists(y).should.be(true);
+                        });
+
+                        describe("When remove Systems from the System List", {
+                            beforeEach({
+                                sl.remove(x);
+                                sl.remove(y);
+                            });
+                            it("should exists", {
+                                sl.exists(x).should.be(false);
+                                sl.exists(y).should.be(false);
+                            });
+                        });
+
+                        describe("When add System List", {
+                            beforeEach({
+                                Workflow.addSystem(sl);
+                            });
+                            it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                            it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                            it("should have correct count of views", Workflow.views.length.should.be(3));
+
+                            describe("When remove System X from the System List", {
+                                beforeEach({
+                                    sl.remove(x);
+                                });
+                                it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                                it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                                it("should have correct count of views", Workflow.views.length.should.be(2));
+                                it("should exists", {
+                                    sl.exists(x).should.be(false);
+                                    sl.exists(y).should.be(true);
+                                });
+
+                                describe("When add System X back", {
+                                    beforeEach({
+                                        sl.add(x);
+                                    });
+                                    it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                                    it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                                    it("should have correct count of views", Workflow.views.length.should.be(3));
+                                    it("should exists", {
+                                        sl.exists(x).should.be(true);
+                                        sl.exists(y).should.be(true);
+                                    });
+                                });
+
+                                describe("When remove System Y from the System List", {
+                                    beforeEach({
+                                        sl.remove(y);
+                                    });
+                                    it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                                    it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                                    it("should have correct count of views", Workflow.views.length.should.be(0));
+                                    it("should exists", {
+                                        sl.exists(x).should.be(false);
+                                        sl.exists(y).should.be(false);
+                                    });
+                                });
+                            });
+
+                            describe("When remove System List", {
+                                beforeEach({
+                                    Workflow.removeSystem(sl);
+                                });
+                                it("should have correct count of systems", Workflow.systems.length.should.be(0));
+                                it("should not have system list", Workflow.hasSystem(sl).should.be(false));
+                                it("should have correct count of views", Workflow.views.length.should.be(0));
+                            });
+
+                            describe("When use info", {
+                                var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
+                                #if echoes_profiling
+                                str += " : \\d ms";
+                                str += "\n    \\(";
+                                str += "\n        \\(FlowTest.SystemX\\) : \\d ms";
+                                str += "\n        \\(FlowTest.SystemY\\) : \\d ms";
+                                str += "\n    \\)";
+                                str += "\n    \\{FlowTest.X\\} \\[0\\]";
+                                str += "\n    \\{FlowTest.X\\+FlowTest.Y\\} \\[0\\]";
+                                str += "\n    \\{FlowTest.Y\\} \\[0\\]";
+                                #end
+                                beforeEach({
+                                    Workflow.update(0);
+                                });
+                                it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+                            });
+                        });
+
+                        describe("When add System List to System List", {
+                            var sl2:SystemList;
+
+                            beforeEach({
+                                sl2 = new SystemList();
+                                sl2.add(sl);
+                            });
+
+                            it("should exists", sl2.exists(sl).should.be(true));
+
+                            describe("When add System List", {
+                                beforeEach({
+                                    Workflow.addSystem(sl2);
+                                });
+                                it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                                it("should have system list", Workflow.hasSystem(sl2).should.be(true));
+                                it("should have correct count of views", Workflow.views.length.should.be(3));
+
+                                describe("When remove System List", {
+                                    beforeEach({
+                                        Workflow.removeSystem(sl2);
+                                    });
+                                    it("should have correct count of systems", Workflow.systems.length.should.be(0));
+                                    it("should not have system list", Workflow.hasSystem(sl2).should.be(false));
+                                    it("should have correct count of views", Workflow.views.length.should.be(0));
+                                });
+
+                                describe("When use info", {
+                                    var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
+                                    #if echoes_profiling
+                                    str += " : \\d ms";
+                                    str += "\n    \\(";
+                                    str += "\n        \\(";
+                                    str += "\n            \\(FlowTest.SystemX\\) : \\d ms";
+                                    str += "\n            \\(FlowTest.SystemY\\) : \\d ms";
+                                    str += "\n        \\)";
+                                    str += "\n    \\)";
+                                    str += "\n    \\{FlowTest.X\\} \\[0\\]";
+                                    str += "\n    \\{FlowTest.X\\+FlowTest.Y\\} \\[0\\]";
+                                    str += "\n    \\{FlowTest.Y\\} \\[0\\]";
+                                    #end
+                                    beforeEach({
+                                        Workflow.update(0);
+                                    });
+                                    it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+                                });
+                            });
+                        });
+                    });
+
+                    describe("When add System List", {
+                        beforeEach({
+                            Workflow.addSystem(sl);
+                        });
+                        it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                        it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                        it("should have correct count of views", Workflow.views.length.should.be(0));
+
+                        describe("When add System X to the System List", {
+                            beforeEach({
+                                sl.add(x);
+                            });
+                            it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                            it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                            it("should have correct count of views", Workflow.views.length.should.be(2));
+
+                            describe("When add System Y to the System List", {
+                                beforeEach({
+                                    sl.add(y);
+                                });
+                                it("should have correct count of systems", Workflow.systems.length.should.be(1));
+                                it("should have system list", Workflow.hasSystem(sl).should.be(true));
+                                it("should have correct count of views", Workflow.views.length.should.be(3));
+                            });
+                        });
                     });
                 });
             });
@@ -94,12 +308,12 @@ class Y {
     public function new() { };
 }
 
-class SystemX extends echos.System {
+class SystemX extends echoes.System {
     var x:View<X>;
     var xy:View<X, Y>;
 }
 
-class SystemY extends echos.System {
+class SystemY extends echoes.System {
     @u inline function update(y:Y) { }
     @u inline function updatexy(x:X, y:Y, dt:Float) { }
 }

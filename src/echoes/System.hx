@@ -1,48 +1,61 @@
-package echos;
+package echoes;
 
 /**
  * System  
  * 
+ * You must extend this class to make your own system.  
+ * 
  * Functions with `@update` (or `@up`, or `@u`) meta are called for each entity that contains all the defined components.  
- * So, a function like 
+ * So, a function like: 
  * ```
- * @u function f(a:A, b:B, entity:Entity)
+ *   @u function f(a:A, b:B, entity:Entity) { }
  * ```
  * does a two things: 
  * - Defines and initializes a `View<A, B>` (if the `View<A, B>` has not been previously defined)  
  * - Creates a loop in the system update method  
  * ```
- * for (entity in viewOfAB.entities) {  
+ *   for (entity in viewOfAB.entities) {  
  *     f(entity.get(A), entity.get(B), entity);  
- * }  
+ *   }  
  * ```
  * 
  * Functions with `@added`, `@ad`, `@a` meta become callbacks that will be called on each entity to be assembled by the view.  
  * Functions with `@removed`, `@rm`, `@r` does the same but when entity is removed.  
  * 
- * `View` can always be defined manually (no initialization required) in the system.  
- * If you want to access `View` from the outside, you can make it static.  
- *  
+ * You can define the `View` manually (no initialization required)  
+ * 
  * @author https://github.com/deepcake
  */
 #if !macro
-@:autoBuild(echos.core.macro.SystemBuilder.build())
+@:autoBuild(echoes.core.macro.SystemBuilder.build())
 #end
-class System {
+class System implements echoes.core.ISystem {
 
 
-    @:allow(echos.Workflow) function __activate__() {
+    #if echoes_profiling
+    @:allow(echoes) var __updateTime__ = 0.0;
+    #end
+
+
+    @:noCompletion public function __activate__() {
         onactivate();
     }
 
-    @:allow(echos.Workflow) function __deactivate__() {
-        ondeactivate();
-    }
-
-    @:allow(echos.Workflow) function __update__(dt:Float) {
+    @:noCompletion public function __update__(dt:Float) {
         // macro
     }
 
+    @:noCompletion public function __deactivate__() {
+        ondeactivate();
+    }
+
+    public function info(indent:String = ''):String {
+        #if echoes_profiling
+        return '$indent($this) : ${ this.__updateTime__ } ms';
+        #else
+        return '$indent($this)';
+        #end
+    }
 
     /**
      * Calls when system is added to the workflow

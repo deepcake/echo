@@ -1,4 +1,4 @@
-package echos.core;
+package echoes.core;
 
 /**
  * ...
@@ -18,7 +18,7 @@ class AbstractView {
         if (activations == 1) {
             Workflow.views.add(this);
             for (e in Workflow.entities) {
-                addIfMatch(e);
+                addIfMatched(e);
             }
         }
     }
@@ -28,7 +28,7 @@ class AbstractView {
         if (activations == 0) {
             Workflow.views.remove(this);
             while (entities.length > 0) {
-                remove(entities.pop());
+                dispatchRemovedCallback(entities.pop());
             }
         }
     }
@@ -43,48 +43,44 @@ class AbstractView {
     }
 
 
-    function isMatch(id:Int):Bool { // macro
-        // each required component exists in component map with this id
-        return false;
-    }
-
-    function isRequire(c:Int):Bool { // macro
-        // check that this component type is required
+    function isMatched(id:Int):Bool {
+        // each required component exists in component container with this id
+        // macro generated
         return false;
     }
 
 
-    function add(id:Int) {
-        // macro on add call
+    function dispatchAddedCallback(id:Int) {
+        // macro generated
     }
 
-    function remove(id:Int) {
-        // macro on remove call
+    function dispatchRemovedCallback(id:Int) {
+        // macro generated
     }
 
 
-    @:allow(echos.Workflow) function addIfMatch(id:Int) {
-        if (isMatch(id)) {
+    @:allow(echoes.Workflow) function addIfMatched(id:Int) {
+        if (isMatched(id)) {
             if (!entities.exists(id)) {
                 entities.add(id);
-                add(id);
+                dispatchAddedCallback(id);
             }
         }
     }
 
-    @:allow(echos.Workflow) function removeIfMatch(id:Int) {
-        // if remove is success - true returned
+    @:allow(echoes.Workflow) function removeIfExists(id:Int) {
+        // if removing is succeed - true returned
         if (entities.remove(id)) {
-            remove(id);
+            dispatchRemovedCallback(id);
         }
     }
 
 
-    @:allow(echos.Workflow) function dispose() {
+    @:allow(echoes.Workflow) function reset() {
         activations = 0;
         Workflow.views.remove(this);
         while (entities.length > 0) {
-            remove(entities.pop());
+            dispatchRemovedCallback(entities.pop());
         }
     }
 

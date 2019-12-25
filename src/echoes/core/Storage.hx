@@ -1,7 +1,7 @@
-package echos.core;
+package echoes.core;
 
 
-#if echos_array_cc
+#if echoes_array_container
 
 abstract Storage<T>(Array<T>) {
 
@@ -23,8 +23,8 @@ abstract Storage<T>(Array<T>) {
         return this[id] != null;
     }
 
-    public inline function dispose() {
-        #if haxe3 
+    public inline function reset() {
+        #if (haxe_ver < 4) 
         this.splice(0, this.length);
         #else 
         this.resize(0);
@@ -44,9 +44,9 @@ abstract Storage<T>(haxe.ds.IntMap<T>) {
         this.set(id, c);
     }
 
-    public function dispose() {
+    public function reset() {
         // for (k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
-        var i = @:privateAccess echos.Workflow.nextId;
+        var i = @:privateAccess echoes.Workflow.nextId;
         while (--i > -1) this.remove(i); 
     }
 

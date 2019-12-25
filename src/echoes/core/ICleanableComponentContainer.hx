@@ -1,6 +1,6 @@
-package echos.core;
+package echoes.core;
 
 interface ICleanableComponentContainer {
     function remove(id:Int):Void;
-    function dispose():Void;
+    function reset():Void;
 }

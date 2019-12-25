@@ -1,4 +1,4 @@
-import echos.*;
+import echoes.*;
 
 using buddy.Should;
 
@@ -9,7 +9,7 @@ class ComponentTypeTest extends buddy.BuddySuite {
             var s:ComponentTypeSystem;
 
             beforeEach({
-                Workflow.dispose();
+                Workflow.reset();
                 e = new Entity();
                 s = new ComponentTypeSystem();
                 Workflow.addSystem(s);
@@ -135,12 +135,12 @@ typedef TypedefAnotherTypeParamComponent = TypeParamComponent<ExtendObjectCompon
 
 
 class ComponentTypeSystem extends System {
-    public var objects:View<ObjectComponent->Void>;
-    public var abstractObjects:View<AbstractObjectComponent->Void>;
-    public var abstractPrimitives:View<AbstractPrimitive->Void>;
-    public var enums:View<EnumComponent->Void>;
-    public var enumAbstracts:View<EnumAbstractComponent->Void>;
-    public var iobjects:View<IObjectComponent->Void>;
-    public var extendObjects:View<ExtendObjectComponent->Void>;
-    public var typeParams:View<TypeParamComponent<ObjectComponent>->Void>;
+    public var objects:View<ObjectComponent>;
+    public var abstractObjects:View<AbstractObjectComponent>;
+    public var abstractPrimitives:View<AbstractPrimitive>;
+    public var enums:View<EnumComponent>;
+    public var enumAbstracts:View<EnumAbstractComponent>;
+    public var iobjects:View<IObjectComponent>;
+    public var extendObjects:View<ExtendObjectComponent>;
+    public var typeParams:View<TypeParamComponent<ObjectComponent>>;
 }
