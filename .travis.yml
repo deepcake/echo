@@ -16,6 +16,7 @@ haxe:
 matrix:
   allow_failures:
     - haxe: development
+    - haxe: "3.4.7"
 
 install:
   - haxelib install travix
@@ -32,7 +33,7 @@ script:
   - haxelib run travix java -D buddy-ignore-passing-specs
 
   - haxelib run travix interp -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
-#  - haxelib run travix node -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
+  - haxelib run travix node -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
   - haxelib run travix cpp -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
   - haxelib run travix neko -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
   - haxelib run travix python -D echoes_array_container -D echoes_profiling -D buddy-ignore-passing-specs
