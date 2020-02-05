@@ -128,9 +128,14 @@ class AbstractEntity {
 						
 						//Turn each variable into a static property.
 						field.access.push(AStatic);
-						field.kind = FProp("get", "set", t, e);
+						field.kind = FProp("get", "set", t, null);
 						
-						makeAccessors(field, newFields);
+						for(variable in blueprint.variables) {
+							if(variable.name == field.name) {
+								makeAccessors(variable, newFields);
+								break;
+							}
+						}
 					case FProp(get, set, t, e):
 						if(field.access.indexOf(AStatic) < 0) {
 							throw "Assertion failed: the Haxe compiler no longer makes properties static";
@@ -148,9 +153,14 @@ class AbstractEntity {
 							set = "set";
 						}
 						
-						field.kind = FProp(get, set, t, e);
+						field.kind = FProp(get, set, t, null);
 						
-						makeAccessors(field, get == "get", set == "set", newFields);
+						for(variable in blueprint.variables) {
+							if(variable.name == field.name) {
+								makeAccessors(variable, get == "get", set == "set", newFields);
+								break;
+							}
+						}
 					case FFun(func):
 						if(func.expr == null) {
 							Context.warning("Missing function body", field.pos);
@@ -289,62 +299,34 @@ class AbstractEntity {
 		}
 	}
 	
-	private static function makeAccessors(field:Field, ?getter:Bool = true, ?setter:Bool = true, array:Array<Field>):Void {
-		var complexType:ComplexType;
-		switch(field.kind) {
-			case FVar(t, e) | FProp(_, _, t, e):
-				if(t != null) {
-					//Get a fully-qualified type.
-					complexType = TypeTools.toComplexType(ComplexTypeTools.toType(t));
-				} else {
-					if(e == null) {
-						Context.error("Missing type", field.pos);
-						return;
-					}
-					
-					try {
-						t = TypeTools.toComplexType(Context.typeof(e).followMono());
-					} catch(e:Dynamic) {}
-					
-					if(t != null) {
-						complexType = t;
-					} else {
-						Context.error("Explicit type required for this property", field.pos);
-						return;
-					}
-				}
-			default:
-				return;
-		}
-		
+	private static function makeAccessors(fieldData:BlueprintVariable, ?getter:Bool = true, ?setter:Bool = true, array:Array<Field>):Void {
 		if(getter) {
-			var get:Expr = (macro this).get(complexType);
+			var get:Expr = (macro this).get(fieldData.type);
 			array.push({
 				access: [AInline],
 				kind: FFun({
 					args: [],
-					expr: @:pos(field.pos) macro return $get,
-					ret: complexType
+					expr: @:pos(fieldData.pos) macro return $get,
+					ret: fieldData.type
 				}),
-				name: "get_" + field.name,
-				pos: field.pos
+				name: "get_" + fieldData.name,
+				pos: fieldData.pos
 			});
 		}
 		
 		if(setter) {
-			//var add:Expr = (macro this).add([macro value], [complexType]);
 			array.push({
 				access: [AInline],
 				kind: FFun({
-					args: [{name: "value", type: complexType}],
-					expr: @:pos(field.pos) macro {
+					args: [{name: "value", type: fieldData.type}],
+					expr: @:pos(fieldData.pos) macro {
 						this.add(value);
 						return value;
 					},
-					ret: complexType
+					ret: fieldData.type
 				}),
-				name: "set_" + field.name,
-				pos: field.pos
+				name: "set_" + fieldData.name,
+				pos: fieldData.pos
 			});
 		}
 	}
@@ -474,57 +456,62 @@ class BlueprintData {
 		var printer:Printer = new Printer();
 		
 		for(field in fields) {
-			if(field.access == null || field.access.indexOf(AStatic) < 0) {
-				switch(field.kind) {
-					case FVar(type, expr), FProp(_, _, type, expr):
-						var coerce:Bool;
+			//Skip static variables, but not properties.
+			switch(field.kind) {
+				case FVar(_, _):
+					if(field.access != null && field.access.indexOf(AStatic) >= 0) {
+						continue;
+					}
+				default:
+			}
+			
+			switch(field.kind) {
+				case FVar(type, expr), FProp(_, _, type, expr):
+					var coerce:Bool;
+					
+					if(type == null) {
+						type = TypeTools.toComplexType(Context.typeof(expr).followMono());
 						
-						if(type == null) {
-							type = TypeTools.toComplexType(Context.typeof(expr));
-							
-							switch(expr.expr) {
-								case ENew(_, _):
-									coerce = true;
-								case null:
-									Context.error("Please specify a type", field.pos);
-								default:
-									coerce = false;
-							}
-						} else {
-							//Convert back and forth to get a fully-qualified type.
-							type = TypeTools.toComplexType(ComplexTypeTools.toType(type));
-							coerce = true;
+						switch(expr.expr) {
+							case ENew(_, _):
+								coerce = true;
+							case null:
+								Context.error("Please specify a type", field.pos);
+							default:
+								coerce = false;
 						}
-						
-						var printedType:String = printer.printComplexType(type);
-						
-						if(printedType == "Int" || printedType == "StdTypes.Int") {
-							Context.error("Int is reserved for entity ids - consider using a typedef or abstract", field.pos);
-						} else if(printedType == "Float" || printedType == "StdTypes.Float") {
-							Context.error("Float is reserved for lengths of time - consider using a typedef or abstract", field.pos);
+					} else {
+						//Convert back and forth to get a fully-qualified type.
+						type = TypeTools.toComplexType(ComplexTypeTools.toType(type));
+						coerce = true;
+					}
+					
+					var printedType:String = printer.printComplexType(type);
+					
+					if(printedType == "Int" || printedType == "StdTypes.Int") {
+						Context.error("Int is reserved for entity ids - consider using a typedef or abstract", field.pos);
+					} else if(printedType == "Float" || printedType == "StdTypes.Float") {
+						Context.error("Float is reserved for lengths of time - consider using a typedef or abstract", field.pos);
+					}
+					
+					for(variable in variables) {
+						if(printedType == variable.printedType) {
+							Context.error("Too many " + printedType + " components", field.pos);
 						}
-						
-						if(expr != null) {
-							for(variable in variables) {
-								if(printedType == variable.printedType) {
-									Context.error("Too many " + printedType + " components", field.pos);
-								}
-							}
-							
-							var overwrite:Bool = field.access.indexOf(AOverride) >= 0;
-							
-							variables.push({
-								type:type,
-								printedType:printedType,
-								name:field.name,
-								expr:expr,
-								overwrite:overwrite,
-								coerce:coerce,
-								pos:field.pos
-							});
-						}
-					default:
-				}
+					}
+					
+					var overwrite:Bool = field.access.indexOf(AOverride) >= 0;
+					
+					variables.push({
+						type:type,
+						printedType:printedType,
+						name:field.name,
+						expr:expr,
+						overwrite:overwrite,
+						coerce:coerce,
+						pos:field.pos
+					});
+				default:
 			}
 		}
 	}
