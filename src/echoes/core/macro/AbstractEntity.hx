@@ -126,8 +126,7 @@ class AbstractEntity {
 							continue;
 						}
 						
-						//Turn each variable into a static property.
-						field.access.push(AStatic);
+						//Turn instance variables into properties.
 						field.kind = FProp("get", "set", t, null);
 						
 						for(variable in blueprint.variables) {
