@@ -63,7 +63,7 @@ class EntityTools {
             macro @:privateAccess $i{ type.getComponentContainer().followName() }.inst().remove(__entity__)];
 
         var removeEntityFromRelatedViewsExprs = [for(type in types)
-            macro @:privateAccess $i{ type.getComponentContainer().followName() }.inst().removeIfMatched(__entity__)];
+            macro @:privateAccess $i{ type.getViewsOfComponent().followName() }.inst().removeIfMatched(__entity__)];
 
         var ret = macro {
             var __entity__:echoes.Entity = $self;
