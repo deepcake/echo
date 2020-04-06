@@ -271,9 +271,12 @@ class AbstractEntity {
 		return macro $p{packWithName};
 	}
 	
-	private static function complexTypeExpr(complexType:ComplexType):Expr {
+	private static function complexTypeExpr(complexType:ComplexType, pos:Position):Expr {
 		switch(complexType) {
-			case TPath({pack: pack, name: name}):
+			case TPath({pack: pack, name: name, params: params}):
+				if(params != null && params.length > 0) {
+					Context.error("Parameters currently aren't supported. Use a typedef to get around this.", pos);
+				}
 				if(pack != null && pack.length > 0) {
 					return dotAccessExpr(pack, name);
 				} else {
@@ -314,12 +317,17 @@ class AbstractEntity {
 		}
 		
 		if(setter) {
+			var typeExpr:Expr = complexTypeExpr(fieldData.type, fieldData.pos);
 			array.push({
 				access: [AInline],
 				kind: FFun({
 					args: [{name: "value", type: fieldData.type}],
 					expr: @:pos(fieldData.pos) macro {
-						this.add(value);
+						if(value == null) {
+							this.remove($typeExpr);
+						} else {
+							this.add(value);
+						}
 						return value;
 					},
 					ret: fieldData.type
@@ -357,13 +365,9 @@ class BlueprintData {
 	private static function baseTypeToString(type:BaseType):String {
 		var result:String;
 		
-		if(type.pack.length > 0) {
-			result = type.pack.join(".") + "." + type.module;
-		} else {
-			result = type.module;
-		}
+		result = type.module;
 		
-		if(type.module != type.name) {
+		if(!StringTools.endsWith(type.module, "." + type.name)) {
 			result += "." + type.name;
 		}
 		
@@ -481,7 +485,7 @@ class BlueprintData {
 						}
 					} else {
 						//Convert back and forth to get a fully-qualified type.
-						type = TypeTools.toComplexType(ComplexTypeTools.toType(type));
+						type = TypeTools.toComplexType(ComplexTypeTools.toType(type).followMono());
 						coerce = true;
 					}
 					
