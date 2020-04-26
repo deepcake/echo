@@ -20,7 +20,8 @@ class Workflow {
     static var nextId = INVALID_ID + 1;
 
     static var idPool = new Array<Int>();
-    static var idStatuses = new Map<Int, Status>();
+
+    static var statuses:Array<Status> = [ Invalid ];
 
     // all of every defined component container
     static var definedContainers = new Array<ICleanableComponentContainer>();
@@ -109,12 +110,10 @@ class Workflow {
         for (c in definedContainers) {
             c.reset();
         }
-        while (idPool.length > 0) {
-            idPool.pop();
-        }
-        while (--nextId > -1) {
-            idStatuses.remove(nextId);
-        }
+
+        idPool.splice(0, idPool.length);
+        statuses.splice(0, statuses.length);
+
         nextId = INVALID_ID + 1;
     }
 
@@ -156,12 +155,17 @@ class Workflow {
     // Entity
 
     @:allow(echoes.Entity) static function id(immediate:Bool):Int {
-        var id = idPool.length > 0 ? idPool.pop() : nextId++;
+        var id = idPool.pop();
+
+        if (id == null) {
+            id = nextId++;
+        }
+
         if (immediate) {
-            idStatuses[id] = Active;
+            statuses[id] = Active;
             entities.add(id);
         } else {
-            idStatuses[id] = Inactive;
+            statuses[id] = Inactive;
         }
         return id;
     }
@@ -172,13 +176,13 @@ class Workflow {
             removeAllComponentsOf(id);
             entities.remove(id);
             idPool.push(id);
-            idStatuses[id] = Cached;
+            statuses[id] = Cached;
         }
     }
 
     @:allow(echoes.Entity) static function add(id:Int) {
         if (status(id) == Inactive) {
-            idStatuses[id] = Active;
+            statuses[id] = Active;
             entities.add(id);
             for (v in views) v.addIfMatched(id);
         }
@@ -188,12 +192,12 @@ class Workflow {
         if (status(id) == Active) {
             for (v in views) v.removeIfExists(id);
             entities.remove(id);
-            idStatuses[id] = Inactive;
+            statuses[id] = Inactive;
         }
     }
 
     @:allow(echoes.Entity) static inline function status(id:Int):Status {
-        return idStatuses.exists(id) ? idStatuses[id] : Invalid;
+        return statuses[id];
     }
 
     @:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
