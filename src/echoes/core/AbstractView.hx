@@ -10,6 +10,8 @@ class AbstractView {
     /** List of matched entities */
     public var entities(default, null) = new RestrictedLinkedList<Entity>();
 
+    var collected = new Array<Bool>();
+
     var activations = 0;
 
 
@@ -28,7 +30,7 @@ class AbstractView {
         if (activations == 0) {
             Workflow.views.remove(this);
             while (entities.length > 0) {
-                dispatchRemovedCallback(entities.pop());
+                removeIfExists(entities.pop());
             }
         }
     }
@@ -61,7 +63,8 @@ class AbstractView {
 
     @:allow(echoes.Workflow) function addIfMatched(id:Int) {
         if (isMatched(id)) {
-            if (!entities.exists(id)) {
+            if (collected[id] != true) {
+                collected[id] = true;
                 entities.add(id);
                 dispatchAddedCallback(id);
             }
@@ -69,8 +72,9 @@ class AbstractView {
     }
 
     @:allow(echoes.Workflow) function removeIfExists(id:Int) {
-        // if removing is succeed - true returned
-        if (entities.remove(id)) {
+        if (collected[id] == true) {
+            collected[id] = false;
+            entities.remove(id);
             dispatchRemovedCallback(id);
         }
     }
@@ -80,8 +84,9 @@ class AbstractView {
         activations = 0;
         Workflow.views.remove(this);
         while (entities.length > 0) {
-            dispatchRemovedCallback(entities.pop());
+            removeIfExists(entities.pop());
         }
+        collected.splice(0, collected.length);
     }
 
 
