@@ -35,7 +35,7 @@ class AbstractView {
         }
     }
 
-    public function isActive():Bool {
+    public inline function isActive():Bool {
         return activations > 0;
     }
 

@@ -14,14 +14,14 @@ import echoes.core.RestrictedLinkedList;
 class Workflow {
 
 
-    @:allow(echoes.Entity) static inline var INVALID_ID = 0;
+    @:allow(echoes.Entity) static inline var INVALID_ID = -1;
 
 
     static var nextId = INVALID_ID + 1;
 
     static var idPool = new Array<Int>();
 
-    static var statuses:Array<Status> = [ Invalid ];
+    static var statuses = new Array<Status>();
 
     // all of every defined component container
     static var definedContainers = new Array<ICleanableComponentContainer>();
