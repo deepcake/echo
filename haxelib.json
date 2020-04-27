@@ -6,6 +6,6 @@
   "description": "Super lightweight Entity Component System framework for Haxe",
   "version": "0.1.0",
   "classPath": "src/",
-  "releasenote": "Alpha 10",
+  "releasenote": "Alpha 1",
   "contributors": [ "deepcake" ]
 }

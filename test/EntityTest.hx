@@ -351,53 +351,6 @@ class EntityTest extends buddy.BuddySuite {
                 });
             });
 
-            describe("When Entity is Invalid", {
-                beforeEach({
-                    e = Entity.INVALID;
-                });
-                it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
-                it("should not be activated", e.isActive().should.be(false));
-                it("should not be valid", e.isValid().should.be(false));
-                it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
-                it("should not get a ComponentA", e.get(ComponentA).should.be(null));
-
-                describe("When activate Entity", {
-                    beforeEach({
-                        e.activate();
-                    });
-                    it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should not be valid", e.isValid().should.be(false));
-                });
-
-                describe("When deactivate Entity", {
-                    beforeEach({
-                        e.deactivate();
-                    });
-                    it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should not be valid", e.isValid().should.be(false));
-                });
-
-                describe("When destroy Entity", {
-                    beforeEach({
-                        e.destroy();
-                    });
-                    it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should not be valid", e.isValid().should.be(false));
-                });
-
-                describe("When remove all of components", {
-                    beforeEach({
-                        e.removeAll();
-                    });
-                    it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
-                    it("should not be activated", e.isActive().should.be(false));
-                    it("should not be valid", e.isValid().should.be(false));
-                });
-            });
-
             describe("When Entity is Cached", {
                 beforeEach({
                     e = new Entity();
