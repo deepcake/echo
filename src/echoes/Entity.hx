@@ -188,9 +188,8 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
-        var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
+        var ret = macro $i{ containerName }.inst().get($self);
 
         #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
@@ -206,9 +205,8 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
-        var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
+        var ret = macro $i{ containerName }.inst().exists($self);
 
         #if echoes_verbose
         trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
