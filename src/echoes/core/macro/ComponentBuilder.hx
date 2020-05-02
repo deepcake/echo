@@ -72,6 +72,10 @@ class ComponentBuilder {
                         storage.reset();
                     }
 
+                    public inline function print(id:Int):String {
+                        return $v{componentTypeName} + '=' + storage.get(id);
+                    }
+
                 }
 
                 traceTypeDefenition(def);

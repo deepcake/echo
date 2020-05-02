@@ -63,7 +63,7 @@ abstract Entity(Int) from Int to Int {
 
     /**
      * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes  
-     * @return EntityStatus
+     * @return Status
      */
     public inline function status():Status {
         return Workflow.status(this);
@@ -85,6 +85,14 @@ abstract Entity(Int) from Int to Int {
      */
     public function destroy() {
         Workflow.cache(this);
+    }
+
+    /**
+     * Returns list of all associated to this entity components.  
+     * @return String
+     */
+    public function print():String {
+        return Workflow.printAllComponentsOf(this);
     }
 
 

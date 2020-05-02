@@ -211,5 +211,15 @@ class Workflow {
         }
     }
 
+    @:allow(echoes.Entity) static inline function printAllComponentsOf(id:Int):String {
+        var ret = '#$id:';
+        for (c in definedContainers) {
+            if (c.exists(id)) {
+                ret += '${ c.print(id) },';
+            }
+        }
+        return ret.substr(0, ret.length - 1);
+    }
+
 
 }

@@ -336,6 +336,7 @@ class EntityTest extends buddy.BuddySuite {
                 it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                 it("should not have a ComponentB", e.exists(ComponentB).should.be(false));
                 it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                it("should correctly printed", e.print().should.be('#$e'));
 
                 describe("Then activate Entity", {
                     beforeEach({
@@ -348,6 +349,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                     it("should not have a ComponentB", e.exists(ComponentB).should.be(false));
                     it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                    it("should correctly printed", e.print().should.be('#$e'));
                 });
 
                 describe("Then add a ComponentA", {
@@ -361,6 +363,7 @@ class EntityTest extends buddy.BuddySuite {
                     it("should get a ComponentA", e.get(ComponentA).should.be(a));
                     it("should not have a ComponentB", e.exists(ComponentB).should.be(false));
                     it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                    it("should correctly printed", e.print().should.be('#$e:EntityTest.ComponentA=1'));
 
                     describe("Then add a ComponentB", {
                         beforeEach({
@@ -373,6 +376,7 @@ class EntityTest extends buddy.BuddySuite {
                         it("should get a ComponentA", e.get(ComponentA).should.be(a));
                         it("should have a ComponentB", e.exists(ComponentB).should.be(true));
                         it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                        it("should correctly printed", e.print().should.be('#$e:EntityTest.ComponentA=1,EntityTest.ComponentB=1'));
 
                         describe("Then remove a ComponentA", {
                             beforeEach({
@@ -385,6 +389,7 @@ class EntityTest extends buddy.BuddySuite {
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should have a ComponentB", e.exists(ComponentB).should.be(true));
                             it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            it("should correctly printed", e.print().should.be('#$e:EntityTest.ComponentB=1'));
                         });
 
                         describe("Then remove all of components", {
@@ -398,6 +403,7 @@ class EntityTest extends buddy.BuddySuite {
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not have a ComponentB", e.exists(ComponentB).should.be(false));
                             it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                            it("should correctly printed", e.print().should.be('#$e'));
                         });
 
                         describe("Then activate Entity", {
@@ -411,6 +417,7 @@ class EntityTest extends buddy.BuddySuite {
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should have a ComponentB", e.exists(ComponentB).should.be(true));
                             it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            it("should correctly printed", e.print().should.be('#$e:EntityTest.ComponentA=1,EntityTest.ComponentB=1'));
                         });
 
                         describe("Then deactivate Entity", {
@@ -424,6 +431,7 @@ class EntityTest extends buddy.BuddySuite {
                             it("should get a ComponentA", e.get(ComponentA).should.be(a));
                             it("should have a ComponentB", e.exists(ComponentB).should.be(true));
                             it("should get a ComponentB", e.get(ComponentB).should.be(b));
+                            it("should correctly printed", e.print().should.be('#$e:EntityTest.ComponentA=1,EntityTest.ComponentB=1'));
                         });
 
                         describe("Then destroy Entity", {
@@ -437,6 +445,7 @@ class EntityTest extends buddy.BuddySuite {
                             it("should not get a ComponentA", e.get(ComponentA).should.be(null));
                             it("should not have a ComponentB", e.exists(ComponentB).should.be(false));
                             it("should not get a ComponentB", e.get(ComponentB).should.be(null));
+                            it("should correctly printed", e.print().should.be('#$e'));
                         });
                     });
                 });
@@ -488,6 +497,20 @@ class EntityTest extends buddy.BuddySuite {
                     it("should not be activated", e.isActive().should.be(false));
                     it("should not be valid", e.isValid().should.be(false));
                 });
+            });
+
+            describe("When used last of the created 1000 entities", {
+                var entities:Array<Entity>;
+                var last:Entity;
+                beforeEach({
+                    entities = [ for (i in 0...1000) last = new Entity() ];
+                });
+                it("should be added to the flow", echoes.Workflow.entities.length.should.be(1000));
+                it("last entity should not have a ComponentA", last.exists(ComponentA).should.be(false));
+                it("last entity should not get a ComponentA", last.get(ComponentA).should.be(null));
+                it("last entity should be activated", last.isActive().should.be(true));
+                it("last entity should be valid", last.isValid().should.be(true));
+                it("last entity should correctly printed", last.print().should.be('#$last'));
             });
         });
     }
