@@ -171,8 +171,8 @@ class Workflow {
     }
 
     @:allow(echoes.Entity) static function cache(id:Int) {
-        // TODO debug check Unknown status
-        if (status(id) < Cached) { // Active or Inactive
+        // Active or Inactive
+        if (status(id) < Cached) {
             removeAllComponentsOf(id);
             entities.remove(id);
             idPool.push(id);

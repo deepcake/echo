@@ -216,14 +216,16 @@ class SystemBuilder {
 
         // define signal listener wrappers
         listeners.iter(function(f) {
-            fields.push(fvar([], [], '__${f.name}Listener__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
+            fields.push(fvar([], [], '__${f.name}_listener__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
         });
 
-        var updateExprs = []
+        var uexprs = []
             #if echoes_profiling
-            .concat([
-                macro var __timestamp__ = Date.now().getTime()
-            ])
+            .concat(
+                [
+                    macro var __timestamp__ = Date.now().getTime()
+                ]
+            )
             #end
             .concat(
                 ufuncs.map(function(f) {
@@ -244,76 +246,100 @@ class SystemBuilder {
                 })
             )
             #if echoes_profiling
-            .concat([
-                macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
-            ])
+            .concat(
+                [
+                    macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
+                ]
+            )
             #end;
 
-        var activateExprs = []
-            .concat( // init signal listener wrappers
-                listeners.map(function(f){
+        var aexpr = macro if (!activated) $b{
+            [].concat(
+                [
+                    macro activated = true
+                ]
+            )
+            .concat(
+                // init signal listener wrappers
+                listeners.map(function(f) {
                     var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-                    return macro $i{'__${f.name}Listener__'} = $fwrapper;
+                    return macro $i{'__${f.name}_listener__'} = $fwrapper;
                 })
             )
-            .concat( // activate views
-                definedViews.map(function(v){
+            .concat(
+                // activate views
+                definedViews.map(function(v) {
                     return macro $i{ v.name }.activate();
                 })
             )
-            .concat( // add added-listeners
-                afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}Listener__' });
-                })
-            )
-            .concat( // add removed-listeners
-                rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}Listener__' });
-                })
-            )
-            .concat( // call added-listeners
-                afuncs.map(function(f){
-                    return macro $i{ f.view.name }.iter($i{ '__${f.name}Listener__' });
+            .concat(
+                // add added-listeners
+                afuncs.map(function(f) {
+                    return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}_listener__' });
                 })
             )
             .concat(
-                [ macro onactivate() ]
-            );
+                // add removed-listeners
+                rfuncs.map(function(f) {
+                    return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}_listener__' });
+                })
+            )
+            .concat(
+                // call added-listeners
+                afuncs.map(function(f) {
+                    return macro $i{ f.view.name }.iter($i{ '__${f.name}_listener__' });
+                })
+            )
+            .concat(
+                [
+                    macro onactivate()
+                ]
+            )
+        };
 
-        var deactivateExprs = []
-            .concat(
-                [ macro ondeactivate() ]
+
+        var dexpr = macro if (activated) $b{
+            [].concat(
+                [
+                    macro activated = false,
+                    macro ondeactivate()
+                ]
             )
-            .concat( // deactivate views
-                definedViews.map(function(v){
+            .concat(
+                // deactivate views
+                definedViews.map(function(v) {
                     return macro $i{ v.name }.deactivate();
                 })
             )
-            .concat( // remove added-listeners
-                afuncs.map(function(f){
-                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}Listener__' });
+            .concat(
+                // remove added-listeners
+                afuncs.map(function(f) {
+                    return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}_listener__' });
                 })
             )
-            .concat( // remove removed-listeners
-                rfuncs.map(function(f){
-                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}Listener__' });
+            .concat(
+                // remove removed-listeners
+                rfuncs.map(function(f) {
+                    return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}_listener__' });
                 })
             )
-            .concat( // null signal wrappers 
+            .concat(
+                // null signal wrappers 
                 listeners.map(function(f) {
-                    return macro $i{'__${f.name}Listener__'} = null;
+                    return macro $i{'__${f.name}_listener__'} = null;
                 })
-            );
+            )
+        };
 
 
-        if (updateExprs.length > 0) {
+        if (uexprs.length > 0) {
 
-            fields.push(ffun([APublic, AOverride], '__update__', [arg('__dt__', macro:Float)], null, macro $b{ updateExprs }, Context.currentPos()));
+            fields.push(ffun([APublic, AOverride], '__update__', [arg('__dt__', macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
 
         }
 
-        fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro $b{ activateExprs }, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro $b{ deactivateExprs }, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro $aexpr, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro $dexpr, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));

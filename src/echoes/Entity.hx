@@ -83,7 +83,7 @@ abstract Entity(Int) from Int to Int {
      * The `Int` id will be cached and then will be used again in new created entities.  
      * __Note__ that using this entity after call this method is incorrect!
      */
-    public function destroy() {
+    public inline function destroy() {
         Workflow.cache(this);
     }
 
@@ -91,7 +91,7 @@ abstract Entity(Int) from Int to Int {
      * Returns list of all associated to this entity components.  
      * @return String
      */
-    public function print():String {
+    public inline function print():String {
         return Workflow.printAllComponentsOf(this);
     }
 
