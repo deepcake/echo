@@ -516,10 +516,13 @@ class EntityTest extends buddy.BuddySuite {
     }
 }
 
-abstract ComponentA(Int) from Int to Int {
-    public function new(val) this = val;
+class ComponentA {
+    var val:Int;
+    public function new(val) this.val = val;
+    @:keep public function toString() return Std.string(val);
 }
 
-abstract ComponentB(Int) from Int to Int {
-    public function new(val) this = val;
+@:forward
+abstract ComponentB(ComponentA) {
+    public function new(val) this = new ComponentA(val);
 }
