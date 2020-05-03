@@ -522,6 +522,7 @@ class ComponentA {
     public function toString() return Std.string(val);
 }
 
+@:forward
 abstract ComponentB(ComponentA) {
     public function new(val) this = new ComponentA(val);
 }

@@ -73,7 +73,7 @@ class ComponentBuilder {
                     }
 
                     public inline function print(id:Int):String {
-                        return $v{componentTypeName} + '=' + storage.get(id);
+                        return $v{componentTypeName} + '=' + Std.string(storage.get(id));
                     }
 
                 }
