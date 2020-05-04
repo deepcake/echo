@@ -1,5 +1,6 @@
 package echoes.core.macro;
 
+import haxe.Log;
 #if macro
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ViewBuilder.*;
@@ -10,6 +11,7 @@ import haxe.macro.Printer;
 import haxe.macro.Type.ClassField;
 
 using haxe.macro.ComplexTypeTools;
+using haxe.macro.TypeTools;
 using haxe.macro.Context;
 using echoes.core.macro.MacroTools;
 using StringTools;
@@ -19,6 +21,9 @@ class SystemBuilder {
 
 
     static var SKIP_META = [ 'skip' ];
+
+    static var PRINT_META = [ 'print' ];
+
     static var AD_META = [ 'added', 'ad', 'a' ];
     static var RM_META = [ 'removed', 'rm', 'r' ];
     static var UPD_META = [ 'update', 'up', 'u' ];
@@ -41,11 +46,12 @@ class SystemBuilder {
 
     public static function build() {
         var fields = Context.getBuildFields();
-        var cls = Context.getLocalType().toComplexType();
+
+        var ct = Context.getLocalType().toComplexType();
 
         var index = ++systemIndex;
 
-        systemIds[cls.followName()] = index;
+        systemIds[ct.followName()] = index;
 
         // prevent wrong override
         for (field in fields) {
@@ -342,9 +348,28 @@ class SystemBuilder {
         fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro $dexpr, Context.currentPos()));
 
         // toString
-        fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ cls.followName() }, Context.currentPos()));
+        fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
 
-        traceFields(cls.followName(), fields);
+
+        var clsType = Context.getLocalClass().get();
+
+        if (PRINT_META.exists(function(m) return clsType.meta.has(m))) {
+            switch (ct) {
+                case TPath(p): {
+                    var td:TypeDefinition = {
+                        pack: p.pack,
+                        name: p.name,
+                        pos: clsType.pos,
+                        kind: TDClass(tpath("echoes", "System")),
+                        fields: fields
+                    }
+                    trace(new Printer().printTypeDefinition(td));
+                }
+                default: {
+                    Context.warning("Fail @print", clsType.pos);
+                }
+            }
+        }
 
         return fields;
     }
