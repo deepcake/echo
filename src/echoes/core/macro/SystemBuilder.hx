@@ -344,8 +344,8 @@ class SystemBuilder {
 
         }
 
-        fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro $aexpr, Context.currentPos()));
-        fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro $dexpr, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro { $aexpr; }, Context.currentPos()));
+        fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro { $dexpr; }, Context.currentPos()));
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
