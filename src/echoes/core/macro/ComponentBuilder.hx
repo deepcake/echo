@@ -78,8 +78,6 @@ class ComponentBuilder {
 
                 }
 
-                traceTypeDefenition(def);
-
                 Context.defineType(def);
 
                 componentContainerType = componentContainerComplexType.toType();

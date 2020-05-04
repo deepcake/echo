@@ -55,8 +55,6 @@ class ViewsOfComponentBuilder {
                     }
                 }
 
-                traceTypeDefenition(def);
-
                 Context.defineType(def);
 
                 viewsOfComponentType = viewsOfComponentComplexType.toType();

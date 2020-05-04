@@ -130,10 +130,6 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
-
         return ret;
     }
 
@@ -181,10 +177,6 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
-
         return ret;
     }
 
@@ -199,10 +191,6 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro $i{ containerName }.inst().get($self);
 
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
-
         return ret;
     }
 
@@ -215,10 +203,6 @@ abstract Entity(Int) from Int to Int {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
 
         var ret = macro $i{ containerName }.inst().exists($self);
-
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
 
         return ret;
     }

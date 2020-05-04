@@ -166,8 +166,6 @@ class ViewBuilder {
                     def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, body, Context.currentPos()));
                 }
 
-                traceTypeDefenition(def);
-
                 Context.defineType(def);
 
                 viewType = viewComplexType.toType();

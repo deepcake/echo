@@ -72,22 +72,6 @@ class MacroTools {
     }
 
 
-    public static inline function traceFields(clsname:String, fields:Array<Field>) {
-        #if echoes_verbose
-        var pr = new Printer();
-        var ret = '$clsname\n';
-        for (f in fields) ret += pr.printField(f) + '\n';
-        trace(ret);
-        #end
-    }
-
-    public static inline function traceTypeDefenition(def:TypeDefinition) {
-        #if echoes_verbose
-        trace(new Printer().printTypeDefinition(def));
-        #end
-    }
-
-
     public static function followComplexType(ct:ComplexType) {
         return ComplexTypeTools.toType(ct).follow().toComplexType();
     }
