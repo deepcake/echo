@@ -321,7 +321,9 @@ class AbstractEntity {
 			array.push({
 				access: [AInline],
 				kind: FFun({
-					args: [{name: "value", type: fieldData.type}],
+					//On static platforms, setting opt:true is the
+					//easiest way to allow null values.
+					args: [{name: "value", type: fieldData.type, opt: true}],
 					expr: @:pos(fieldData.pos) macro {
 						if(value == null) {
 							this.remove($typeExpr);
