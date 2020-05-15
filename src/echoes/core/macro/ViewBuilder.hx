@@ -1,5 +1,6 @@
 package echoes.core.macro;
 
+import haxe.crypto.Md5;
 #if macro
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
@@ -29,7 +30,11 @@ class ViewBuilder {
     }
 
     public static function getViewName(components:Array<{ cls:ComplexType }>) {
-        return 'ViewOf' + components.map(function(c) return c.cls).packName();
+        var name:String = components.map(function(c) return c.cls).packName();
+        if(name.length > 80) {
+            name = Md5.encode(name);
+        }
+        return 'ViewOf' + name;
     }
 
 
