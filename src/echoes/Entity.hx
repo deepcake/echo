@@ -63,7 +63,7 @@ abstract Entity(Int) from Int to Int {
 
     /**
      * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes  
-     * @return EntityStatus
+     * @return Status
      */
     public inline function status():Status {
         return Workflow.status(this);
@@ -83,8 +83,16 @@ abstract Entity(Int) from Int to Int {
      * The `Int` id will be cached and then will be used again in new created entities.  
      * __Note__ that using this entity after call this method is incorrect!
      */
-    public function destroy() {
+    public inline function destroy() {
         Workflow.cache(this);
+    }
+
+    /**
+     * Returns list of all associated to this entity components.  
+     * @return String
+     */
+    public inline function print():String {
+        return Workflow.printAllComponentsOf(this);
     }
 
 
@@ -121,10 +129,6 @@ abstract Entity(Int) from Int to Int {
             ]);
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
-
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
 
         return ret;
     }
@@ -173,10 +177,6 @@ abstract Entity(Int) from Int to Int {
 
         var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
 
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
-
         return ret;
     }
 
@@ -188,13 +188,8 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
-        var body = [ macro return $i{ containerName }.inst().get(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
-
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
+        var ret = macro $i{ containerName }.inst().get($self);
 
         return ret;
     }
@@ -206,13 +201,8 @@ abstract Entity(Int) from Int to Int {
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
-        var body = [ macro return $i{ containerName }.inst().exists(__entity__) ];
 
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
-
-        #if echoes_verbose
-        trace(Context.currentPos() + "\n" + new haxe.macro.Printer().printExpr(ret));
-        #end
+        var ret = macro $i{ containerName }.inst().exists($self);
 
         return ret;
     }

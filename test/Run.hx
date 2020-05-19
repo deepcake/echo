@@ -9,6 +9,6 @@ class Run implements buddy.Buddy<[
     new ViewTypeTest(), 
     new ViewTest(), 
     new SystemTest(), 
-    new FlowTest()
+    new SystemMetaTest()
 
 ]> {}

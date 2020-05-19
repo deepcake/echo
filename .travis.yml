@@ -10,7 +10,7 @@ os:
 # you can specify futher versions as found at http://haxe.org/website-content/downloads/versions.json
 haxe:
   - "3.4.7"
-  - "4.0.5"
+  - "4.1.0"
   - development
   
 matrix:
@@ -25,27 +25,30 @@ install:
   - haxelib run travix install
 
 script:
-  - haxelib run travix interp -D buddy-ignore-passing-specs
-  - haxelib run travix node -D buddy-ignore-passing-specs
-  - haxelib run travix cpp -D buddy-ignore-passing-specs
-  - haxelib run travix neko -D buddy-ignore-passing-specs
-  - haxelib run travix python -D buddy-ignore-passing-specs
-  - haxelib run travix java -D buddy-ignore-passing-specs
-  - haxelib run travix cs -D buddy-ignore-passing-specs
-  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl -D buddy-ignore-passing-specs; fi
-  - haxelib run travix lua -D buddy-ignore-passing-specs
+  - haxelib run travix interp
+  - haxelib run travix node
+  - haxelib run travix cpp
+  - haxelib run travix neko
+  - haxelib run travix python
+  - haxelib run travix java
+  - haxelib run travix cs
+  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl; fi
+  - haxelib run travix lua
+  - haxelib run travix php
+  - haxelib run travix php7
+  - haxelib run travix js
 
-  - haxelib run travix interp -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix node -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix cpp -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix neko -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix python -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix java -D echos_array_cc -D buddy-ignore-passing-specs
-  - haxelib run travix cs -D echos_array_cc -D buddy-ignore-passing-specs
-  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl -D echos_array_cc -D buddy-ignore-passing-specs; fi
-  - haxelib run travix lua -D echos_array_cc -D buddy-ignore-passing-specs
+  - haxelib run travix interp -D echoes_array_container -D echoes_profiling
+  - haxelib run travix node -D echoes_array_container -D echoes_profiling
+  - haxelib run travix cpp -D echoes_array_container -D echoes_profiling
+  - haxelib run travix neko -D echoes_array_container -D echoes_profiling
+  - haxelib run travix python -D echoes_array_container -D echoes_profiling
+  - haxelib run travix java -D echoes_array_container -D echoes_profiling
+  - haxelib run travix cs -D echoes_array_container -D echoes_profiling
+  - if [[ "$(haxe -version)" =~ ^4.* ]]; then haxelib run travix hl -D echoes_array_container -D echoes_profiling; fi
+  - haxelib run travix lua -D echoes_array_container -D echoes_profiling
+  - haxelib run travix php -D echoes_array_container -D echoes_profiling
+  - haxelib run travix php7 -D echoes_array_container -D echoes_profiling
+  - haxelib run travix js -D echoes_array_container -D echoes_profiling
 
-  # - haxelib run travix js
   # - haxelib run travix flash
-  # - haxelib run travix php
-  # - haxelib run travix php7

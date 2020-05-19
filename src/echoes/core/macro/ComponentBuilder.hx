@@ -72,9 +72,11 @@ class ComponentBuilder {
                         storage.reset();
                     }
 
-                }
+                    public inline function print(id:Int):String {
+                        return $v{componentTypeName} + '=' + Std.string(storage.get(id));
+                    }
 
-                traceTypeDefenition(def);
+                }
 
                 Context.defineType(def);
 

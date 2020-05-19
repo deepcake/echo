@@ -28,9 +28,20 @@ class SystemList implements ISystem {
 
 
     @:noCompletion @:final public function __activate__() {
-        activated = true;
-        for (s in systems) {
-            s.__activate__();
+        if (!activated) {
+            activated = true;
+            for (s in systems) {
+                s.__activate__();
+            }
+        }
+    }
+
+    @:noCompletion @:final public function __deactivate__() {
+        if (activated) {
+            activated = false;
+            for (s in systems) {
+                s.__deactivate__();
+            }
         }
     }
 
@@ -40,11 +51,8 @@ class SystemList implements ISystem {
         }
     }
 
-    @:noCompletion @:final public function __deactivate__() {
-        activated = false;
-        for (s in systems) {
-            s.__deactivate__();
-        }
+    public function isActive():Bool {
+        return activated;
     }
 
     public function info(indent:String = ''):String {

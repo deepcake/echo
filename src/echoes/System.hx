@@ -37,16 +37,23 @@ class System implements echoes.core.ISystem {
     #end
 
 
+    var activated = false;
+
+
     @:noCompletion public function __activate__() {
         onactivate();
+    }
+
+    @:noCompletion public function __deactivate__() {
+        ondeactivate();
     }
 
     @:noCompletion public function __update__(dt:Float) {
         // macro
     }
 
-    @:noCompletion public function __deactivate__() {
-        ondeactivate();
+    public function isActive():Bool {
+        return activated;
     }
 
     public function info(indent:String = ''):String {
