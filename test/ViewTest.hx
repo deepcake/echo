@@ -8,15 +8,21 @@ class ViewTest extends buddy.BuddySuite {
         describe("View", {
             var log = '';
 
+            var mvs:MatchingViewSystem;
+            var ivs:IteratingViewSystem;
+
             beforeEach(Workflow.reset());
-            beforeEach(log = '');
+            beforeEach({
+                log = '';
+                mvs = new MatchingViewSystem();
+                ivs = new IteratingViewSystem();
+            });
 
             describe("Matching", {
-                var s = new MatchingViewSystem();
                 var entities:Array<Entity>;
 
                 beforeEach({
-                    Workflow.addSystem(s);
+                    Workflow.addSystem(mvs);
                     entities = new Array<Entity>();
                 });
 
@@ -33,11 +39,11 @@ class ViewTest extends buddy.BuddySuite {
                         }
                     });
                     it("should matching correctly", {
-                        s.a.entities.length.should.be(300);
-                        s.b.entities.length.should.be(150);
-                        s.ab.entities.length.should.be(150);
-                        s.bc.entities.length.should.be(50);
-                        s.abcd.entities.length.should.be(25);
+                        mvs.a.entities.length.should.be(300);
+                        mvs.b.entities.length.should.be(150);
+                        mvs.ab.entities.length.should.be(150);
+                        mvs.bc.entities.length.should.be(50);
+                        mvs.abcd.entities.length.should.be(25);
                     });
 
                     describe("When add one of Components", {
@@ -48,11 +54,11 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            s.a.entities.length.should.be(300);
-                            s.b.entities.length.should.be(150);
-                            s.ab.entities.length.should.be(150);
-                            s.bc.entities.length.should.be(50);
-                            s.abcd.entities.length.should.be(25);
+                            mvs.a.entities.length.should.be(300);
+                            mvs.b.entities.length.should.be(150);
+                            mvs.ab.entities.length.should.be(150);
+                            mvs.bc.entities.length.should.be(50);
+                            mvs.abcd.entities.length.should.be(25);
                         });
                     });
 
@@ -64,11 +70,11 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            s.a.entities.length.should.be(0);
-                            s.b.entities.length.should.be(150);
-                            s.ab.entities.length.should.be(0);
-                            s.bc.entities.length.should.be(50);
-                            s.abcd.entities.length.should.be(0);
+                            mvs.a.entities.length.should.be(0);
+                            mvs.b.entities.length.should.be(150);
+                            mvs.ab.entities.length.should.be(0);
+                            mvs.bc.entities.length.should.be(50);
+                            mvs.abcd.entities.length.should.be(0);
                         });
 
                         describe("When add one of Components back", {
@@ -79,11 +85,11 @@ class ViewTest extends buddy.BuddySuite {
                                 Workflow.update(0);
                             });
                             it("should matching correctly", {
-                                s.a.entities.length.should.be(300);
-                                s.b.entities.length.should.be(150);
-                                s.ab.entities.length.should.be(150);
-                                s.bc.entities.length.should.be(50);
-                                s.abcd.entities.length.should.be(25);
+                                mvs.a.entities.length.should.be(300);
+                                mvs.b.entities.length.should.be(150);
+                                mvs.ab.entities.length.should.be(150);
+                                mvs.bc.entities.length.should.be(50);
+                                mvs.abcd.entities.length.should.be(25);
                             });
                         });
                     });
@@ -96,11 +102,11 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            s.a.entities.length.should.be(0);
-                            s.b.entities.length.should.be(0);
-                            s.ab.entities.length.should.be(0);
-                            s.bc.entities.length.should.be(0);
-                            s.abcd.entities.length.should.be(0);
+                            mvs.a.entities.length.should.be(0);
+                            mvs.b.entities.length.should.be(0);
+                            mvs.ab.entities.length.should.be(0);
+                            mvs.bc.entities.length.should.be(0);
+                            mvs.abcd.entities.length.should.be(0);
                         });
                     });
 
@@ -112,11 +118,11 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            s.a.entities.length.should.be(0);
-                            s.b.entities.length.should.be(0);
-                            s.ab.entities.length.should.be(0);
-                            s.bc.entities.length.should.be(0);
-                            s.abcd.entities.length.should.be(0);
+                            mvs.a.entities.length.should.be(0);
+                            mvs.b.entities.length.should.be(0);
+                            mvs.ab.entities.length.should.be(0);
+                            mvs.bc.entities.length.should.be(0);
+                            mvs.abcd.entities.length.should.be(0);
                         });
 
                         describe("When activate Entity", {
@@ -127,11 +133,11 @@ class ViewTest extends buddy.BuddySuite {
                                 Workflow.update(0);
                             });
                             it("should matching correctly", {
-                                s.a.entities.length.should.be(300);
-                                s.b.entities.length.should.be(150);
-                                s.ab.entities.length.should.be(150);
-                                s.bc.entities.length.should.be(50);
-                                s.abcd.entities.length.should.be(25);
+                                mvs.a.entities.length.should.be(300);
+                                mvs.b.entities.length.should.be(150);
+                                mvs.ab.entities.length.should.be(150);
+                                mvs.bc.entities.length.should.be(50);
+                                mvs.abcd.entities.length.should.be(25);
                             });
                         });
                     });
@@ -144,11 +150,11 @@ class ViewTest extends buddy.BuddySuite {
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            s.a.entities.length.should.be(0);
-                            s.b.entities.length.should.be(0);
-                            s.ab.entities.length.should.be(0);
-                            s.bc.entities.length.should.be(0);
-                            s.abcd.entities.length.should.be(0);
+                            mvs.a.entities.length.should.be(0);
+                            mvs.b.entities.length.should.be(0);
+                            mvs.ab.entities.length.should.be(0);
+                            mvs.bc.entities.length.should.be(0);
+                            mvs.abcd.entities.length.should.be(0);
                         });
                     });
                 });
@@ -157,14 +163,13 @@ class ViewTest extends buddy.BuddySuite {
 
             describe("Signals", {
                 var e:Entity;
-                var s = new MatchingViewSystem();
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
                 beforeEach({
-                    Workflow.addSystem(s);
-                    s.av.onAdded.add(onad);
-                    s.av.onRemoved.add(onrm);
+                    Workflow.addSystem(mvs);
+                    mvs.av.onAdded.add(onad);
+                    mvs.av.onRemoved.add(onrm);
                     e = new Entity();
                 });
 
@@ -238,21 +243,20 @@ class ViewTest extends buddy.BuddySuite {
             describe("Iterating", {
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
-                var s = new IteratingViewSystem();
 
                 beforeEach({
-                    Workflow.addSystem(s);
-                    s.av.onAdded.add(onad);
-                    s.av.onRemoved.add(onrm);
+                    Workflow.addSystem(ivs);
+                    ivs.av.onAdded.add(onad);
+                    ivs.av.onRemoved.add(onrm);
                     for (i in 0...5) new Entity().add(new A(), new V(i));
                 });
 
                 describe("When iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) log += '$v';
+                        ivs.f = function(id, a, v) log += '$v';
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(5));
+                    it("should have correct length", ivs.av.entities.length.should.be(5));
                     it("should have correct log", log.should.be("+0+1+2+3+401234"));
 
                     describe("When add an Entity and iterating", {
@@ -260,63 +264,63 @@ class ViewTest extends buddy.BuddySuite {
                             new Entity().add(new A(), new V(5));
                             Workflow.update(0);
                         });
-                        it("should have correct length", s.av.entities.length.should.be(6));
+                        it("should have correct length", ivs.av.entities.length.should.be(6));
                         it("should have correct log", log.should.be("+0+1+2+3+401234+5012345"));
                     });
                 });
 
                 describe("When remove Component while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) id.remove(V);
+                        ivs.f = function(id, a, v) id.remove(V);
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) id.removeAll();
+                        ivs.f = function(id, a, v) id.removeAll();
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) id.destroy();
+                        ivs.f = function(id, a, v) id.destroy();
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) id.deactivate();
+                        ivs.f = function(id, a, v) id.deactivate();
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When create Entity while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
+                        ivs.f = function(id, a, v) {
                             if ('$v' != '9') {
                                 new Entity().add(new A(), new V(9));
                             }
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(10));
+                    it("should have correct length", ivs.av.entities.length.should.be(10));
                     it("should have correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
                 });
 
                 describe("When destroy and create Entity while iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
+                        ivs.f = function(id, a, v) {
                             if ('$v' != '9') {
                                 id.destroy();
                                 new Entity().add(new A(), new V(9));
@@ -324,103 +328,102 @@ class ViewTest extends buddy.BuddySuite {
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(5));
+                    it("should have correct length", ivs.av.entities.length.should.be(5));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
                 });
 
                 describe("When remove Component while inner iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
-                            s.av.iter(function(e, a, v) e.remove(V));
+                        ivs.f = function(id, a, v) {
+                            ivs.av.iter(function(e, a, v) e.remove(V));
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When remove all of Components while inner iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
-                            s.av.iter(function(e, a, v) e.removeAll());
+                        ivs.f = function(id, a, v) {
+                            ivs.av.iter(function(e, a, v) e.removeAll());
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When destroy Entity while inner iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
-                            s.av.iter(function(e, a, v) e.destroy());
+                        ivs.f = function(id, a, v) {
+                            ivs.av.iter(function(e, a, v) e.destroy());
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
                 describe("When deactivate Entity while inner iterating", {
                     beforeEach({
-                        s.f = function(id, a, v) {
-                            s.av.iter(function(e, a, v) e.deactivate());
+                        ivs.f = function(id, a, v) {
+                            ivs.av.iter(function(e, a, v) e.deactivate());
                         }
                         Workflow.update(0);
                     });
-                    it("should have correct length", s.av.entities.length.should.be(0));
+                    it("should have correct length", ivs.av.entities.length.should.be(0));
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
             });
 
 
             describe("Activate/Deactivate", {
-                var s = new MatchingViewSystem();
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
                 beforeEach({
-                    s.av.onAdded.add(onad);
-                    s.av.onRemoved.add(onrm);
+                    mvs.av.onAdded.add(onad);
+                    mvs.av.onRemoved.add(onrm);
                     for (i in 1...4) new Entity().add(new A(), new V(i));
                 });
 
                 describe("Initially", {
-                    it("should not be active", s.av.isActive().should.be(false));
-                    it("should not have entities", s.av.entities.length.should.be(0));
-                    it("should have on ad signals", s.av.onAdded.size().should.be(1));
-                    it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                    it("should not be active", mvs.av.isActive().should.be(false));
+                    it("should not have entities", mvs.av.entities.length.should.be(0));
+                    it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
+                    it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
                     it("should have correct log", log.should.be(""));
 
                     describe("When activate", {
                         beforeEach({
-                            s.av.activate();
+                            mvs.av.activate();
                         });
-                        it("should be active", s.av.isActive().should.be(true));
-                        it("should have entities", s.av.entities.length.should.be(3));
-                        it("should have on ad signals", s.av.onAdded.size().should.be(1));
-                        it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                        it("should be active", mvs.av.isActive().should.be(true));
+                        it("should have entities", mvs.av.entities.length.should.be(3));
+                        it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
+                        it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
                         it("should have correct log", log.should.be("+1+2+3"));
 
                         describe("When deactivate", {
                             beforeEach({
-                                s.av.deactivate();
+                                mvs.av.deactivate();
                             });
-                            it("should not be active", s.av.isActive().should.be(false));
-                            it("should not have entities", s.av.entities.length.should.be(0));
-                            it("should have on ad signals", s.av.onAdded.size().should.be(1));
-                            it("should have on rm signals", s.av.onRemoved.size().should.be(1));
+                            it("should not be active", mvs.av.isActive().should.be(false));
+                            it("should not have entities", mvs.av.entities.length.should.be(0));
+                            it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
+                            it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
                             it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
 
                         describe("When reset", {
                             beforeEach({
-                                @:privateAccess s.av.reset();
+                                @:privateAccess mvs.av.reset();
                             });
-                            it("should not be active", s.av.isActive().should.be(false));
-                            it("should not have entities", s.av.entities.length.should.be(0));
-                            it("should not have on ad signals", s.av.onAdded.size().should.be(0));
-                            it("should not have on rm signals", s.av.onRemoved.size().should.be(0));
+                            it("should not be active", mvs.av.isActive().should.be(false));
+                            it("should not have entities", mvs.av.entities.length.should.be(0));
+                            it("should not have on ad signals", mvs.av.onAdded.size().should.be(0));
+                            it("should not have on rm signals", mvs.av.onRemoved.size().should.be(0));
                             it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
                     });
@@ -429,7 +432,6 @@ class ViewTest extends buddy.BuddySuite {
 
 
             describe("Sorting", {
-                var s = new IteratingViewSystem();
                 var printer = function(e:Entity) return '${ e.get(V) }';
 
                 var gt = function(e1:Entity, e2:Entity) return e2.get(V).val - e1.get(V).val;
@@ -437,7 +439,7 @@ class ViewTest extends buddy.BuddySuite {
 
                 describe("Initially", {
                     beforeEach({
-                        Workflow.addSystem(s);
+                        Workflow.addSystem(ivs);
                         for (i in 0...3) {
                             for (j in 1...4) {
                                 new Entity().add(new V(j * 2), new A());
@@ -445,29 +447,29 @@ class ViewTest extends buddy.BuddySuite {
                         }
                     });
 
-                    it("should have correct order", s.av.entities.map(printer).join("").should.be("246246246"));
+                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("246246246"));
 
                     describe("When sort desc", {
                         beforeEach({
-                            s.av.entities.sort(gt);
+                            ivs.av.entities.sort(gt);
                         });
-                        it("should have correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+                        it("should have correct order", ivs.av.entities.map(printer).join("").should.be("666444222"));
 
                         describe("When add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should have correct order", s.av.entities.map(printer).join("").should.be("6664442223"));
+                            it("should have correct order", ivs.av.entities.map(printer).join("").should.be("6664442223"));
 
                             describe("When sort asc", {
                                 beforeEach({
-                                    s.av.entities.sort(lr);
+                                    ivs.av.entities.sort(lr);
                                 });
-                                it("should have correct order", s.av.entities.map(printer).join("").should.be("2223444666"));
+                                it("should have correct order", ivs.av.entities.map(printer).join("").should.be("2223444666"));
 
                                 describe("When destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should have correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+                                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("222444666"));
                                 });
                             });
                         });
@@ -475,25 +477,25 @@ class ViewTest extends buddy.BuddySuite {
 
                     describe("When sort asc", {
                         beforeEach({
-                            s.av.entities.sort(lr);
+                            ivs.av.entities.sort(lr);
                         });
-                        it("should have correct order", s.av.entities.map(printer).join("").should.be("222444666"));
+                        it("should have correct order", ivs.av.entities.map(printer).join("").should.be("222444666"));
 
                         describe("When add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should have correct order", s.av.entities.map(printer).join("").should.be("2224446663"));
+                            it("should have correct order", ivs.av.entities.map(printer).join("").should.be("2224446663"));
 
                             describe("When sort desc", {
                                 beforeEach({
-                                    s.av.entities.sort(gt);
+                                    ivs.av.entities.sort(gt);
                                 });
-                                it("should have correct order", s.av.entities.map(printer).join("").should.be("6664443222"));
+                                it("should have correct order", ivs.av.entities.map(printer).join("").should.be("6664443222"));
 
                                 describe("When destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should have correct order", s.av.entities.map(printer).join("").should.be("666444222"));
+                                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("666444222"));
                                 });
                             });
                         });
