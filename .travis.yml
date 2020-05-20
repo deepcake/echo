@@ -39,6 +39,13 @@ script:
   - haxelib run travix python -D echoes_array_container -D echoes_profiling
   - haxelib run travix java -D echoes_array_container -D echoes_profiling
 
+  - haxelib run travix interp -D echoes_vector_container -D echoes_profiling
+  - haxelib run travix node -D echoes_vector_container -D echoes_profiling
+  - haxelib run travix cpp -D echoes_vector_container -D echoes_profiling
+  - haxelib run travix neko -D echoes_vector_container -D echoes_profiling
+  - haxelib run travix python -D echoes_vector_container -D echoes_profiling
+  - haxelib run travix java -D echoes_vector_container -D echoes_profiling
+
   # - haxelib run travix js
   # - haxelib run travix flash
   # - haxelib run travix cs
