@@ -5,7 +5,7 @@ using Lambda;
 
 class ViewTest extends buddy.BuddySuite {
     public function new() {
-        describe("View", {
+        describe("Test View", {
             var log = '';
 
             var mvs:MatchingViewSystem;
@@ -18,7 +18,7 @@ class ViewTest extends buddy.BuddySuite {
                 ivs = new IteratingViewSystem();
             });
 
-            describe("Matching", {
+            describe("Test Matching", {
                 var entities:Array<Entity>;
 
                 beforeEach({
@@ -26,7 +26,7 @@ class ViewTest extends buddy.BuddySuite {
                     entities = new Array<Entity>();
                 });
 
-                describe("When add Entities with random Components", {
+                describe("When add Entities with different Components", {
                     beforeEach({
                         for (i in 0...300) {
                             var e = new Entity();
@@ -46,10 +46,10 @@ class ViewTest extends buddy.BuddySuite {
                         mvs.abcd.entities.length.should.be(25);
                     });
 
-                    describe("When add one of Components", {
+                    describe("Then add a Component to all Entities", {
                         beforeEach({
                             for (e in entities) {
-                                e.add(new A());
+                                e.add(new C());
                             }
                             Workflow.update(0);
                         });
@@ -57,30 +57,30 @@ class ViewTest extends buddy.BuddySuite {
                             mvs.a.entities.length.should.be(300);
                             mvs.b.entities.length.should.be(150);
                             mvs.ab.entities.length.should.be(150);
-                            mvs.bc.entities.length.should.be(50);
-                            mvs.abcd.entities.length.should.be(25);
+                            mvs.bc.entities.length.should.be(150);
+                            mvs.abcd.entities.length.should.be(75);
                         });
                     });
 
-                    describe("When remove one of Components", {
+                    describe("Then remove a Component from all Entities", {
                         beforeEach({
                             for (e in entities) {
-                                e.remove(A);
+                                e.remove(C);
                             }
                             Workflow.update(0);
                         });
                         it("should matching correctly", {
-                            mvs.a.entities.length.should.be(0);
+                            mvs.a.entities.length.should.be(300);
                             mvs.b.entities.length.should.be(150);
-                            mvs.ab.entities.length.should.be(0);
-                            mvs.bc.entities.length.should.be(50);
+                            mvs.ab.entities.length.should.be(150);
+                            mvs.bc.entities.length.should.be(0);
                             mvs.abcd.entities.length.should.be(0);
                         });
 
-                        describe("When add one of Components back", {
+                        describe("Then add a Component to all Entities back", {
                             beforeEach({
                                 for (e in entities) {
-                                    e.add(new A());
+                                    e.add(new C());
                                 }
                                 Workflow.update(0);
                             });
@@ -88,13 +88,13 @@ class ViewTest extends buddy.BuddySuite {
                                 mvs.a.entities.length.should.be(300);
                                 mvs.b.entities.length.should.be(150);
                                 mvs.ab.entities.length.should.be(150);
-                                mvs.bc.entities.length.should.be(50);
-                                mvs.abcd.entities.length.should.be(25);
+                                mvs.bc.entities.length.should.be(150);
+                                mvs.abcd.entities.length.should.be(75);
                             });
                         });
                     });
 
-                    describe("When remove all of Components", {
+                    describe("Then remove all of Components", {
                         beforeEach({
                             for (e in entities) {
                                 e.removeAll();
@@ -110,7 +110,7 @@ class ViewTest extends buddy.BuddySuite {
                         });
                     });
 
-                    describe("When deactivate Entity", {
+                    describe("Then deactivate Entities", {
                         beforeEach({
                             for(e in entities) {
                                 e.deactivate();
@@ -125,7 +125,7 @@ class ViewTest extends buddy.BuddySuite {
                             mvs.abcd.entities.length.should.be(0);
                         });
 
-                        describe("When activate Entity", {
+                        describe("Then activate Entities", {
                             beforeEach({
                                 for(e in entities) {
                                     e.activate();
@@ -142,7 +142,7 @@ class ViewTest extends buddy.BuddySuite {
                         });
                     });
 
-                    describe("When destroy Entity", {
+                    describe("Then destroy Entities", {
                         beforeEach({
                             for(e in entities) {
                                 e.destroy();
@@ -161,7 +161,7 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Signals", {
+            describe("Test Signals", {
                 var e:Entity;
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
@@ -177,61 +177,61 @@ class ViewTest extends buddy.BuddySuite {
                     beforeEach(e.add(new A(), new V(1)));
                     it("should be dispatched", log.should.be("+1"));
 
-                    describe("When add matched Components again", {
+                    describe("Then add matched Components again", {
                         beforeEach(e.add(new V(2)));
                         it("should not be dispatched", log.should.be("+1"));
                     });
 
-                    describe("When remove matched Components", {
+                    describe("Then remove matched Components", {
                         beforeEach(e.remove(V));
                         it("should be dispatched", log.should.be("+1-1"));
 
-                        describe("When remove matched Components again", {
+                        describe("Then remove matched Components again", {
                             beforeEach(e.remove(V));
                             it("should not be dispatched", log.should.be("+1-1"));
                         });
 
-                        describe("When add matched Components back", {
+                        describe("Then add matched Components back", {
                             beforeEach(e.add(new V(2)));
                             it("should be dispatched", log.should.be("+1-1+2"));
                         });
                     });
 
-                    describe("When remove all of Components", {
+                    describe("Then remove all of Components", {
                         beforeEach(e.removeAll());
                         it("should be dispatched", log.should.be("+1-1"));
 
-                        describe("When remove all of Components again", {
+                        describe("Then remove all of Components again", {
                             beforeEach(e.removeAll());
                             it("should not be dispatched", log.should.be("+1-1"));
                         });
                     });
 
-                    describe("When deactivate Entity", {
+                    describe("Then deactivate Entity", {
                         beforeEach(e.deactivate());
                         it("should be dispatched", log.should.be("+1-1"));
 
-                        describe("When deactivate Entity again", {
+                        describe("Then deactivate Entity again", {
                             beforeEach(e.deactivate());
                             it("should not be dispatched", log.should.be("+1-1"));
                         });
 
-                        describe("When activate Entity", {
+                        describe("Then activate Entity", {
                             beforeEach(e.activate());
                             it("should be dispatched", log.should.be("+1-1+1"));
 
-                            describe("When activate Entity again", {
+                            describe("Then activate Entity again", {
                                 beforeEach(e.activate());
                                 it("should not be dispatched", log.should.be("+1-1+1"));
                             });
                         });
                     });
 
-                    describe("When destroy Entity", {
+                    describe("Then destroy Entity", {
                         beforeEach(e.destroy());
                         it("should be dispatched", log.should.be("+1-1"));
 
-                        describe("When create new Entity (reuse)", {
+                        describe("Then create new Entity (reuse)", {
                             beforeEach(new Entity().add(new A(), new V(2)));
                             it("should be dispatched", log.should.be("+1-1+2"));
                         });
@@ -240,7 +240,7 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Iterating", {
+            describe("Test Iterating", {
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
@@ -259,7 +259,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct length", ivs.av.entities.length.should.be(5));
                     it("should have correct log", log.should.be("+0+1+2+3+401234"));
 
-                    describe("When add an Entity and iterating", {
+                    describe("Then add an Entity and iterating", {
                         beforeEach({
                             new Entity().add(new A(), new V(5));
                             Workflow.update(0);
@@ -269,7 +269,7 @@ class ViewTest extends buddy.BuddySuite {
                     });
                 });
 
-                describe("When remove Component while iterating", {
+                describe("Then remove Component while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) id.remove(V);
                         Workflow.update(0);
@@ -278,7 +278,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When remove all of Components while iterating", {
+                describe("Then remove all of Components while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) id.removeAll();
                         Workflow.update(0);
@@ -287,7 +287,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When destroy Entity while iterating", {
+                describe("Then destroy Entity while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) id.destroy();
                         Workflow.update(0);
@@ -296,7 +296,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When deactivate Entity while iterating", {
+                describe("Then deactivate Entity while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) id.deactivate();
                         Workflow.update(0);
@@ -305,7 +305,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When create Entity while iterating", {
+                describe("Then create Entity while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             if ('$v' != '9') {
@@ -318,7 +318,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
                 });
 
-                describe("When destroy and create Entity while iterating", {
+                describe("Then destroy and create Entity while iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             if ('$v' != '9') {
@@ -332,7 +332,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
                 });
 
-                describe("When remove Component while inner iterating", {
+                describe("Then remove Component while inner iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             ivs.av.iter(function(e, a, v) e.remove(V));
@@ -343,7 +343,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When remove all of Components while inner iterating", {
+                describe("Then remove all of Components while inner iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             ivs.av.iter(function(e, a, v) e.removeAll());
@@ -354,7 +354,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When destroy Entity while inner iterating", {
+                describe("Then destroy Entity while inner iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             ivs.av.iter(function(e, a, v) e.destroy());
@@ -365,7 +365,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
                 });
 
-                describe("When deactivate Entity while inner iterating", {
+                describe("Then deactivate Entity while inner iterating", {
                     beforeEach({
                         ivs.f = function(id, a, v) {
                             ivs.av.iter(function(e, a, v) e.deactivate());
@@ -378,7 +378,7 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Activate/Deactivate", {
+            describe("Test Activate/Deactivate", {
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 
@@ -395,7 +395,7 @@ class ViewTest extends buddy.BuddySuite {
                     it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
                     it("should have correct log", log.should.be(""));
 
-                    describe("When activate", {
+                    describe("Then activate", {
                         beforeEach({
                             mvs.av.activate();
                         });
@@ -405,7 +405,7 @@ class ViewTest extends buddy.BuddySuite {
                         it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
                         it("should have correct log", log.should.be("+1+2+3"));
 
-                        describe("When deactivate", {
+                        describe("Then deactivate", {
                             beforeEach({
                                 mvs.av.deactivate();
                             });
@@ -416,7 +416,7 @@ class ViewTest extends buddy.BuddySuite {
                             it("should have correct log", log.should.be("+1+2+3-1-2-3"));
                         });
 
-                        describe("When reset", {
+                        describe("Then reset", {
                             beforeEach({
                                 @:privateAccess mvs.av.reset();
                             });
@@ -431,8 +431,9 @@ class ViewTest extends buddy.BuddySuite {
             });
 
 
-            describe("Sorting", {
-                var printer = function(e:Entity) return '${ e.get(V) }';
+            describe("Test Sorting", {
+                var vprinter = function(e:Entity) return '${ e.get(V) }';
+                var eprinter = function(e:Entity) return '$e';
 
                 var gt = function(e1:Entity, e2:Entity) return e2.get(V).val - e1.get(V).val;
                 var lr = function(e1:Entity, e2:Entity) return e1.get(V).val - e2.get(V).val;
@@ -440,62 +441,85 @@ class ViewTest extends buddy.BuddySuite {
                 describe("Initially", {
                     beforeEach({
                         Workflow.addSystem(ivs);
+                        var id = 0;
                         for (i in 0...3) {
                             for (j in 1...4) {
-                                new Entity().add(new V(j * 2), new A());
+                                new Entity().add(
+                                    new V(j * 2), 
+                                    new A()
+                                );
                             }
                         }
                     });
 
-                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("246246246"));
+                    it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("246246246"));
+                    it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("012345678"));
 
-                    describe("When sort desc", {
+                    describe("Then sort desc", {
                         beforeEach({
                             ivs.av.entities.sort(gt);
                         });
-                        it("should have correct order", ivs.av.entities.map(printer).join("").should.be("666444222"));
+                        it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
+                        it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("258147036"));
 
-                        describe("When add one more Entity", {
+                        describe("Then sort desc again", {
+                            beforeEach({
+                                ivs.av.entities.sort(gt);
+                            });
+                            it("should not change v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
+                            it("should not change e order", ivs.av.entities.map(eprinter).join("").should.be("258147036"));
+                        });
+
+                        describe("Then add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should have correct order", ivs.av.entities.map(printer).join("").should.be("6664442223"));
+                            it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("6664442223"));
 
-                            describe("When sort asc", {
+                            describe("Then sort asc", {
                                 beforeEach({
                                     ivs.av.entities.sort(lr);
                                 });
-                                it("should have correct order", ivs.av.entities.map(printer).join("").should.be("2223444666"));
+                                it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("2223444666"));
 
-                                describe("When destroy an Entity", {
+                                describe("Then destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("222444666"));
+                                    it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
                                 });
                             });
                         });
                     });
 
-                    describe("When sort asc", {
+                    describe("Then sort asc", {
                         beforeEach({
                             ivs.av.entities.sort(lr);
                         });
-                        it("should have correct order", ivs.av.entities.map(printer).join("").should.be("222444666"));
+                        it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
+                        it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("036147258"));
 
-                        describe("When add one more Entity", {
+                        describe("Then sort asc again", {
+                            beforeEach({
+                                ivs.av.entities.sort(lr);
+                            });
+                            it("should not change v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
+                            it("should not change e order", ivs.av.entities.map(eprinter).join("").should.be("036147258"));
+                        });
+
+                        describe("Then add one more Entity", {
                             var e:Entity;
 
                             beforeEach(e = new Entity().add(new V(3), new A()));
-                            it("should have correct order", ivs.av.entities.map(printer).join("").should.be("2224446663"));
+                            it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("2224446663"));
 
-                            describe("When sort desc", {
+                            describe("Then sort desc", {
                                 beforeEach({
                                     ivs.av.entities.sort(gt);
                                 });
-                                it("should have correct order", ivs.av.entities.map(printer).join("").should.be("6664443222"));
+                                it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("6664443222"));
 
-                                describe("When destroy an Entity", {
+                                describe("Then destroy an Entity", {
                                     beforeEach(e.destroy());
-                                    it("should have correct order", ivs.av.entities.map(printer).join("").should.be("666444222"));
+                                    it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
                                 });
                             });
                         });
