@@ -19,12 +19,21 @@ import echoes.utils.LinkedList;
 class SystemList implements ISystem {
 
 
+    #if echoes_profiling
+    var __updateTime__ = .0;
+    #end
+
+
+    var name:String;
+
     var systems = new LinkedList<ISystem>();
 
     var activated = false;
 
 
-    public function new() { }
+    public function new(name = 'list') {
+        this.name = name;
+    }
 
 
     @:noCompletion @:final public function __activate__() {
@@ -46,21 +55,38 @@ class SystemList implements ISystem {
     }
 
     @:noCompletion @:final public function __update__(dt:Float) {
+        #if echoes_profiling
+        var __timestamp__ = Date.now().getTime();
+        #end
+
         for (s in systems) {
             s.__update__(dt);
         }
+
+        #if echoes_profiling
+        __updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+        #end
     }
 
     public function isActive():Bool {
         return activated;
     }
 
-    public function info(indent:String = ''):String {
-        var ret = '$indent(';
-        for (s in systems) {
-            ret += '\n${ s.info("    " + indent) }';
+    public function info(indent = '    ', level = 0):String {
+        var span = StringTools.rpad('', indent, indent.length * level);
+
+        var ret = '$span$name';
+
+        #if echoes_profiling
+        ret += ' : $__updateTime__ ms';
+        #end
+
+        if (systems.length > 0) {
+            for (s in systems) {
+                ret += '\n${ s.info(indent, level + 1) }';
+            }
         }
-        ret += '\n$indent)';
+
         return ret;
     }
 

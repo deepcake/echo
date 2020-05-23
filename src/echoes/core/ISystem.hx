@@ -12,7 +12,7 @@ interface ISystem {
 
     function isActive():Bool;
 
-    function info(indent:String = ''):String;
+    function info(indent:String = '    ', level:Int = 0):String;
 
 
 }

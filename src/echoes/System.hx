@@ -33,7 +33,7 @@ class System implements echoes.core.ISystem {
 
 
     #if echoes_profiling
-    @:allow(echoes) var __updateTime__ = 0.0;
+    var __updateTime__ = .0;
     #end
 
 
@@ -56,11 +56,13 @@ class System implements echoes.core.ISystem {
         return activated;
     }
 
-    public function info(indent:String = ''):String {
+    public function info(indent = '    ', level = 0):String {
+        var span = StringTools.rpad('', indent, indent.length * level);
+
         #if echoes_profiling
-        return '$indent($this) : ${ this.__updateTime__ } ms';
+        return '$span$this : $__updateTime__ ms';
         #else
-        return '$indent($this)';
+        return '$span$this';
         #end
     }
 

@@ -113,8 +113,8 @@ class SystemTest extends buddy.BuddySuite {
                             var str = "\\# \\( 2 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
                             #if echoes_profiling
                             str += " : \\d ms";
-                            str += "\n    \\(SystemTest.SystemX\\) : \\d ms";
-                            str += "\n    \\(SystemTest.SystemY\\) : \\d ms";
+                            str += "\n    SystemTest.SystemX : \\d ms";
+                            str += "\n    SystemTest.SystemY : \\d ms";
                             str += "\n    \\{SystemTest.X\\} \\[0\\]";
                             str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
                             str += "\n    \\{SystemTest.Y\\} \\[0\\]";
@@ -245,10 +245,9 @@ class SystemTest extends buddy.BuddySuite {
                             var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
                             #if echoes_profiling
                             str += " : \\d ms";
-                            str += "\n    \\(";
-                            str += "\n        \\(SystemTest.SystemX\\) : \\d ms";
-                            str += "\n        \\(SystemTest.SystemY\\) : \\d ms";
-                            str += "\n    \\)";
+                            str += "\n    list : \\d ms";
+                            str += "\n        SystemTest.SystemX : \\d ms";
+                            str += "\n        SystemTest.SystemY : \\d ms";
                             str += "\n    \\{SystemTest.X\\} \\[0\\]";
                             str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
                             str += "\n    \\{SystemTest.Y\\} \\[0\\]";
@@ -264,7 +263,7 @@ class SystemTest extends buddy.BuddySuite {
                         var sl2:SystemList;
 
                         beforeEach({
-                            sl2 = new SystemList();
+                            sl2 = new SystemList("parent");
                             sl2.add(sl);
                         });
 
@@ -298,12 +297,10 @@ class SystemTest extends buddy.BuddySuite {
                                 var str = "\\# \\( 1 \\) \\{ 3 \\} \\[ 0 \\| 0 \\]";
                                 #if echoes_profiling
                                 str += " : \\d ms";
-                                str += "\n    \\(";
-                                str += "\n        \\(";
-                                str += "\n            \\(SystemTest.SystemX\\) : \\d ms";
-                                str += "\n            \\(SystemTest.SystemY\\) : \\d ms";
-                                str += "\n        \\)";
-                                str += "\n    \\)";
+                                str += "\n    parent : \\d ms";
+                                str += "\n        list : \\d ms";
+                                str += "\n            SystemTest.SystemX : \\d ms";
+                                str += "\n            SystemTest.SystemY : \\d ms";
                                 str += "\n    \\{SystemTest.X\\} \\[0\\]";
                                 str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
                                 str += "\n    \\{SystemTest.Y\\} \\[0\\]";

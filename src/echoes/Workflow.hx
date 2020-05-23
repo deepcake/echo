@@ -44,7 +44,7 @@ class Workflow {
 
 
     #if echoes_profiling
-    static var updateTime = 0.0;
+    static var updateTime = .0;
     #end
 
 
@@ -60,12 +60,12 @@ class Workflow {
         var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 
         #if echoes_profiling
-        ret += ' : ${ updateTime } ms'; // total
+        ret += ' : $updateTime ms'; // total
         for (s in systems) {
-            ret += '\n${ s.info("    ") }';
+            ret += '\n${ s.info('    ', 1) }';
         }
         for (v in views) {
-            ret += '\n    {$v} [${v.entities.length}]';
+            ret += '\n    {$v} [${ v.entities.length }]';
         }
         #end
 
