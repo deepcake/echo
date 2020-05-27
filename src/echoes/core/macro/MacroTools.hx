@@ -99,48 +99,69 @@ class MacroTools {
         return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
     }
 
-    static function typeParamName(p:TypeParam):String {
+    static function typeParamName(p:TypeParam, f:ComplexType->String):String {
         return switch (p) {
-            case TPType(ct): typeName(ct);
-            case x: 
+            case TPType(ct): {
+                f(ct);
+            }
+            case x: {
                 #if (haxe_ver < 4) 
                 throw 'Unexpected $x!';
                 #else
                 Context.error('Unexpected $x!', Context.currentPos());
                 #end 
+            }
         }
     }
 
-    public static function typeName(ct:ComplexType):String {
+    public static function typeValidShortName(ct:ComplexType):String {
         return switch (followComplexType(ct)) {
-            case TPath(t): 
+            case TPath(t): {
+
+                (t.sub != null ? t.sub : t.name) + 
+                ((t.params != null && t.params.length > 0) ? '<' + t.params.map(typeParamName.bind(_, typeValidShortName)).join(',') + '>' : '');
+
+            }
+            case x: {
+                #if (haxe_ver < 4) 
+                throw 'Unexpected $x!';
+                #else
+                Context.error('Unexpected $x!', Context.currentPos());
+                #end
+            }
+        }
+    }
+
+    public static function typeFullName(ct:ComplexType):String {
+        return switch (followComplexType(ct)) {
+            case TPath(t): {
 
                 (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '') + 
                 t.name + 
                 (t.sub != null ? t.sub : '') + 
-                ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName).join('') : '');
+                ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName.bind(_, typeFullName)).join('') : '');
 
-            case x: 
+            }
+            case x: {
                 #if (haxe_ver < 4) 
                 throw 'Unexpected $x!';
                 #else
                 Context.error('Unexpected $x!', Context.currentPos());
-                #end 
+                #end
+            }
         }
     }
 
     public static function compareStrings(a:String, b:String):Int {
         a = a.toLowerCase();
         b = b.toLowerCase();
-        if (a < b) return -1;
-        if (a > b) return 1;
-        return 0;
+        return (a < b) ? -1 : (a > b) ? 1 : 0;
     }
 
-    public static function packName(types:Array<ComplexType>) {
-        var typeNames = types.map(typeName);
+    public static function joinFullName(types:Array<ComplexType>, sep:String) {
+        var typeNames = types.map(typeFullName);
         typeNames.sort(compareStrings);
-        return typeNames.join('_');
+        return typeNames.join(sep);
     }
 
 }

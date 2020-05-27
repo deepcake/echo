@@ -96,7 +96,7 @@ class SystemBuilder {
             if (a != null) {
                 return arg(a.name, a.type);
             } else {
-                return arg(c.cls.typeName().toLowerCase(), c.cls);
+                return arg(c.cls.typeFullName().toLowerCase(), c.cls);
             }
         }
 

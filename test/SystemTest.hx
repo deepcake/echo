@@ -115,9 +115,9 @@ class SystemTest extends buddy.BuddySuite {
                             str += " : \\d ms";
                             str += "\n    SystemTest.SystemX : \\d ms";
                             str += "\n    SystemTest.SystemY : \\d ms";
-                            str += "\n    \\{SystemTest.X\\} \\[0\\]";
-                            str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
-                            str += "\n    \\{SystemTest.Y\\} \\[0\\]";
+                            str += "\n    \\{X\\} \\[0\\]";
+                            str += "\n    \\{X\\, Y\\} \\[0\\]";
+                            str += "\n    \\{Y\\} \\[0\\]";
                             #end
                             beforeEach({
                                 Workflow.update(0);
@@ -248,9 +248,9 @@ class SystemTest extends buddy.BuddySuite {
                             str += "\n    list : \\d ms";
                             str += "\n        SystemTest.SystemX : \\d ms";
                             str += "\n        SystemTest.SystemY : \\d ms";
-                            str += "\n    \\{SystemTest.X\\} \\[0\\]";
-                            str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
-                            str += "\n    \\{SystemTest.Y\\} \\[0\\]";
+                            str += "\n    \\{X\\} \\[0\\]";
+                            str += "\n    \\{X\\, Y\\} \\[0\\]";
+                            str += "\n    \\{Y\\} \\[0\\]";
                             #end
                             beforeEach({
                                 Workflow.update(0);
@@ -301,9 +301,9 @@ class SystemTest extends buddy.BuddySuite {
                                 str += "\n        list : \\d ms";
                                 str += "\n            SystemTest.SystemX : \\d ms";
                                 str += "\n            SystemTest.SystemY : \\d ms";
-                                str += "\n    \\{SystemTest.X\\} \\[0\\]";
-                                str += "\n    \\{SystemTest.X\\+SystemTest.Y\\} \\[0\\]";
-                                str += "\n    \\{SystemTest.Y\\} \\[0\\]";
+                                str += "\n    \\{X\\} \\[0\\]";
+                                str += "\n    \\{X\\, Y\\} \\[0\\]";
+                                str += "\n    \\{Y\\} \\[0\\]";
                                 #end
                                 beforeEach({
                                     Workflow.update(0);

@@ -45,7 +45,7 @@ class Storage<T> {
         this.h = new haxe.ds.Vector<T>(size);
     }
 
-    function growTo(id:Int) {
+    inline function growTo(id:Int) {
         var nsize = size;
 
         while (id >= nsize) {

@@ -29,7 +29,7 @@ class ViewBuilder {
     }
 
     public static function getViewName(components:Array<{ cls:ComplexType }>) {
-        return 'ViewOf' + components.map(function(c) return c.cls).packName();
+        return 'ViewOf_' + components.map(function(c) return c.cls).joinFullName('_');
     }
 
 
@@ -161,7 +161,7 @@ class ViewBuilder {
 
                 // toString
                 {
-                    var componentNames = components.map(function(c) return c.cls.followName()).join('+');
+                    var componentNames = components.map(function(c) return c.cls.typeValidShortName()).join(', ');
                     var body = macro return $v{ componentNames };
                     def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, body, Context.currentPos()));
                 }

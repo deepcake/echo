@@ -22,7 +22,7 @@ class ComponentBuilder {
 
     public static function createComponentContainerType(componentComplexType:ComplexType) {
         var componentTypeName = componentComplexType.followName();
-        var componentContainerTypeName = 'ContainerOf' + componentComplexType.typeName();
+        var componentContainerTypeName = 'ContainerOf' + componentComplexType.typeFullName();
         var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 
         if (componentContainerType == null) {
