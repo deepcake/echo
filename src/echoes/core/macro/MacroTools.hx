@@ -18,7 +18,6 @@ using Lambda;
  * ...
  * @author https://github.com/deepcake
  */
-@:final
 @:dce
 class MacroTools {
 
@@ -115,32 +114,33 @@ class MacroTools {
     }
 
     public static function typeValidShortName(ct:ComplexType):String {
-        return switch (followComplexType(ct)) {
-            case TPath(t): {
-
-                (t.sub != null ? t.sub : t.name) + 
-                ((t.params != null && t.params.length > 0) ? '<' + t.params.map(typeParamName.bind(_, typeValidShortName)).join(',') + '>' : '');
-
-            }
-            case x: {
-                #if (haxe_ver < 4) 
-                throw 'Unexpected $x!';
-                #else
-                Context.error('Unexpected $x!', Context.currentPos());
-                #end
-            }
-        }
+        return typeName(ct, true, false);
     }
 
-    public static function typeFullName(ct:ComplexType):String {
+    public static function typeName(ct:ComplexType, shortify = false, escape = true):String {
         return switch (followComplexType(ct)) {
+            case TFunction(args, ret): {
+
+                args.map(typeName.bind(_, shortify, escape)).join(escape ? '' : '->') + (escape ? '' : '->') + typeName(ret, shortify, escape);
+
+            }
             case TPath(t): {
+                var ret = '';
 
-                (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '') + 
-                t.name + 
-                (t.sub != null ? t.sub : '') + 
-                ((t.params != null && t.params.length > 0) ? t.params.map(typeParamName.bind(_, typeFullName)).join('') : '');
+                // package
+                ret += shortify ? '' : (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '');
+                // class name
+                ret += shortify ? (t.sub != null ? t.sub : t.name) : (t.name + (t.sub != null ? t.sub : ''));
 
+                // type params
+                if (t.params != null && t.params.length > 0) {
+
+                    var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
+                    ret += (escape ? '' : '<') + t.params.map(tpName).join(escape ? '' : ',') + (escape ? '' : '>');
+
+                }
+
+                ret;
             }
             case x: {
                 #if (haxe_ver < 4) 
@@ -159,7 +159,7 @@ class MacroTools {
     }
 
     public static function joinFullName(types:Array<ComplexType>, sep:String) {
-        var typeNames = types.map(typeFullName);
+        var typeNames = types.map(typeName.bind(_, false, true));
         typeNames.sort(compareStrings);
         return typeNames.join(sep);
     }

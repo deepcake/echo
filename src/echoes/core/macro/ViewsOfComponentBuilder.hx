@@ -16,7 +16,7 @@ class ViewsOfComponentBuilder {
 
     public static function createViewsOfComponentType(componentComplexType:ComplexType):haxe.macro.Type {
         var componentTypeName = componentComplexType.followName();
-        var viewsOfComponentTypeName = 'ViewsOfComponent' + componentComplexType.typeFullName();
+        var viewsOfComponentTypeName = 'ViewsOfComponent' + componentComplexType.typeName();
         var viewsOfComponentType = viewsOfComponentTypeCache.get(viewsOfComponentTypeName);
 
         if (viewsOfComponentType == null) {
