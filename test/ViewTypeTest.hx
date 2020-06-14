@@ -6,7 +6,8 @@ import echoes.Entity;
 
 class ViewTypeTest extends buddy.BuddySuite {
     public function new() {
-        describe("Using View with Different Type Params", {
+        buddy.BuddySuite.useDefaultTrace = true;
+        describe("Test View with Different Type Params", {
 
             beforeEach({
                 Workflow.reset();
@@ -18,12 +19,6 @@ class ViewTypeTest extends buddy.BuddySuite {
                 beforeEach(sys = new ViewTypeSystem());
 
                 it("should be equals", {
-                    sys.func.should.be(StandaloneVAVBSystem.ab);
-                    sys.funcReversed.should.be(StandaloneVAVBSystem.ab);
-                    sys.funcShort.should.be(StandaloneVAVBSystem.ab);
-                    sys.anon.should.be(StandaloneVAVBSystem.ab);
-                    sys.anonTypedef.should.be(StandaloneVAVBSystem.ab);
-                    sys.viewTypedef.should.be(StandaloneVAVBSystem.ab);
                     sys.rest.should.be(StandaloneVAVBSystem.ab);
                     sys.restReversed.should.be(StandaloneVAVBSystem.ab);
                 });
@@ -69,23 +64,8 @@ abstract VC(String) {
     public function new() this = 'C';
 }
 
-typedef VAVBTypedef = { a:VA, b:VB };
-
-typedef ViewVAVBTypedef = View<{ a:VA, b:VB }>;
 
 class ViewTypeSystem extends echoes.System {
-
-    public var func:View<VA->VB->Void>;
-
-    public var funcReversed:View<VB->VA->Void>;
-
-    public var funcShort:View<VA->VB>;
-
-    public var anon:View<{ a:VA, b:VB }>;
-
-    public var anonTypedef:View<VAVBTypedef>;
-
-    public var viewTypedef:ViewVAVBTypedef;
 
     public var rest:View<VA, VB>;
 

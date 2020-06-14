@@ -145,7 +145,7 @@ abstract Entity(Int) from Int to Int {
 
         var cts = types
             .map(function(type) {
-                return type.parseClassName().getType().follow().toComplexType();
+                return type.parseComplexType();
             });
 
         var removeComponentsFromContainersExprs = cts
@@ -187,7 +187,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = type.parseComplexType().getComponentContainer().followName();
 
         var ret = macro $i{ containerName }.inst().get($self);
 
@@ -200,7 +200,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var containerName = (type.parseClassName().getType().follow().toComplexType()).getComponentContainer().followName();
+        var containerName = type.parseComplexType().getComponentContainer().followName();
 
         var ret = macro $i{ containerName }.inst().exists($self);
 

@@ -1,7 +1,6 @@
 package echoes.core.macro;
 
 #if macro
-import haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
@@ -11,6 +10,7 @@ import haxe.macro.Expr.TypePath;
 import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
 
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
 
@@ -80,17 +80,26 @@ class MacroTools {
     }
 
 
-    public static function parseClassName(e:Expr) {
-        return switch(e.expr) {
-            case EConst(CIdent(name)): name;
-            case EField(path, name): parseClassName(path) + '.' + name;
-            case x: 
-                #if (haxe_ver < 4) 
-                throw 'Unexpected $x!';
-                #else
-                Context.error('Unexpected $x!', e.pos);
-                #end 
+    public static function parseComplexType(e:Expr):ComplexType {
+        var type = new Printer().printExpr(e);
+
+        try {
+
+            return type.getType().follow().toComplexType();
+
+        } catch (err:String) {
+            error('Fail to parse `$type` as allowed Type. You can try to use Typedef, this will probably help.', e.pos);
+            return null;
         }
+    }
+
+
+    static function error(msg:String, pos:Position) {
+        #if (haxe_ver < 4) 
+        throw msg;
+        #else
+        Context.error(msg, pos);
+        #end
     }
 
 
@@ -104,11 +113,8 @@ class MacroTools {
                 f(ct);
             }
             case x: {
-                #if (haxe_ver < 4) 
-                throw 'Unexpected $x!';
-                #else
-                Context.error('Unexpected $x!', Context.currentPos());
-                #end 
+                error('Unexpected $x!', Context.currentPos());
+                null;
             }
         }
     }
@@ -122,6 +128,11 @@ class MacroTools {
             case TFunction(args, ret): {
 
                 args.map(typeName.bind(_, shortify, escape)).join(escape ? '' : '->') + (escape ? '' : '->') + typeName(ret, shortify, escape);
+
+            }
+            case TParent(t): {
+
+                (escape ? '' : '(') + typeName(t, shortify, escape) + (escape ? '' : ')');
 
             }
             case TPath(t): {
@@ -143,11 +154,8 @@ class MacroTools {
                 ret;
             }
             case x: {
-                #if (haxe_ver < 4) 
-                throw 'Unexpected $x!';
-                #else
-                Context.error('Unexpected $x!', Context.currentPos());
-                #end
+                error('Unexpected $x!', Context.currentPos());
+                null;
             }
         }
     }

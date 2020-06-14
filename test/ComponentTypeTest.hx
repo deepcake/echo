@@ -29,10 +29,11 @@ class ComponentTypeTest extends buddy.BuddySuite {
                     s.extendObjects.entities.length.should.be(0);
                     s.typeParams.entities.length.should.be(0);
                     s.nestedTypeParams.entities.length.should.be(0);
+                    s.funcs.entities.length.should.be(0);
                 });
 
                 describe("Then get Workflow info", {
-                    var str = "\\# \\( 1 \\) \\{ 9 \\} \\[ 1 \\| 0 \\]";
+                    var str = "\\# \\( 1 \\) \\{ 12 \\} \\[ 1 \\| 0 \\]";
                     #if echoes_profiling
                     str += " : \\d ms";
                     str += "\n    ComponentTypeTest.ComponentTypeSystem : \\d ms";
@@ -45,6 +46,9 @@ class ComponentTypeTest extends buddy.BuddySuite {
                     str += "\n    \\{ExtendObjectComponent\\} \\[0\\]";
                     str += "\n    \\{TypeParamComponent\\<ObjectComponent\\>\\} \\[0\\]";
                     str += "\n    \\{TypeParamComponent\\<Array\\<ObjectComponent\\>\\>\\} \\[0\\]";
+                    str += "\n    \\{ObjectComponent\\-\\>ObjectComponent\\} \\[0\\]";
+                    str += "\n    \\{ObjectComponent\\-\\>ObjectComponent\\-\\>ObjectComponent\\-\\>Void} \\[0\\]";
+                    str += "\n    \\{Array<ObjectComponent\\-\\>ObjectComponent\\>\\-\\>Void\\} \\[0\\]";
                     #end
                     beforeEach({
                         Workflow.update(0);
@@ -125,6 +129,51 @@ class ComponentTypeTest extends buddy.BuddySuite {
                     it("should not be returned by another TypeParamComponent", e.get(TypedefAnotherTypeParamComponent).should.not.be(c9));
                     it("should be collected by View<NestedTypeParamComponent>", s.nestedTypeParams.entities.length.should.be(1));
                 });
+
+                describe("Then add a Function", {
+                    var f1 = function(c:ObjectComponent) return c;
+                    beforeEach(e.add(f1));
+                    it("should be returned by typedef", e.get(TypedefFunc).should.be(f1));
+                    it("should be collected by correct view", s.funcs.entities.length.should.be(1));
+                    it("should not be returned by other typedefs", {
+                        e.get(TypedefNestedFunc).should.not.be(f1);
+                        e.get(TypedefTypeParamFunc).should.not.be(f1);
+                    });
+                    it("should not be collected by other views", {
+                        s.nestedFuncs.entities.length.should.be(0);
+                        s.typeParamFuncs.entities.length.should.be(0);
+                    });
+                });
+
+                describe("Then add a Nested Function", {
+                    var f2 = function(c:ObjectComponent, f:ObjectComponent->ObjectComponent) { trace("!"); };
+                    beforeEach(e.add(f2));
+                    it("should be returned by typedef", e.get(TypedefNestedFunc).should.be(f2));
+                    it("should be collected by correct view", s.nestedFuncs.entities.length.should.be(1));
+                    it("should not be returned by other typedefs", {
+                        e.get(TypedefFunc).should.not.be(f2);
+                        e.get(TypedefTypeParamFunc).should.not.be(f2);
+                    });
+                    it("should not be collected by other views", {
+                        s.funcs.entities.length.should.be(0);
+                        s.typeParamFuncs.entities.length.should.be(0);
+                    });
+                });
+
+                describe("Then add a Type Param Function", {
+                    var f3 = function(a:Array<ObjectComponent->ObjectComponent>) { trace("!"); };
+                    beforeEach(e.add(f3));
+                    it("should be returned by typedef", e.get(TypedefTypeParamFunc).should.be(f3));
+                    it("should be collected by correct view", s.typeParamFuncs.entities.length.should.be(1));
+                    it("should not be returned by other typedefs", {
+                        e.get(TypedefNestedFunc).should.not.be(f3);
+                        e.get(TypedefFunc).should.not.be(f3);
+                    });
+                    it("should not be collected by other views", {
+                        s.funcs.entities.length.should.be(0);
+                        s.nestedFuncs.entities.length.should.be(0);
+                    });
+                });
             });
         });
     }
@@ -181,6 +230,10 @@ typedef TypedefAnotherTypeParamComponent = TypeParamComponent<ExtendObjectCompon
 
 typedef TypedefNestedTypeParamComponent = TypeParamComponent<Array<ObjectComponent>>;
 
+typedef TypedefFunc = ObjectComponent->ObjectComponent;
+typedef TypedefNestedFunc = ObjectComponent->(ObjectComponent->ObjectComponent)->Void;
+typedef TypedefTypeParamFunc = Array<ObjectComponent->ObjectComponent>->Void;
+
 
 class ComponentTypeSystem extends System {
     public var objects:View<ObjectComponent>;
@@ -192,4 +245,7 @@ class ComponentTypeSystem extends System {
     public var extendObjects:View<ExtendObjectComponent>;
     public var typeParams:View<TypeParamComponent<ObjectComponent>>;
     public var nestedTypeParams:View<TypeParamComponent<Array<ObjectComponent>>>;
+    public var funcs:View<ObjectComponent->ObjectComponent>;
+    public var nestedFuncs:View<ObjectComponent->(ObjectComponent->ObjectComponent)->Void>;
+    public var typeParamFuncs:View<Array<ObjectComponent->ObjectComponent>->Void>;
 }

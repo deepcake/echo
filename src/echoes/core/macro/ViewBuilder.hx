@@ -40,28 +40,6 @@ class ViewBuilder {
 
     static function parseComponents(type:haxe.macro.Type) {
         return switch(type) {
-            case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if (params.length == 1):
-                parseComponents(x);
-
-            case TType(_.get() => { type: x }, []):
-                parseComponents(x);
-
-            case TAnonymous(_.get() => p):
-                p.fields
-                    .map(function(f) return { cls: f.type.follow().toComplexType() });
-
-            case TFun(args, ret):
-                args
-                    .map(function(a) return a.t.follow().toComplexType())
-                    .concat([ ret.follow().toComplexType() ])
-                    .filter(function(ct) {
-                        return switch (ct) {
-                            case (macro:StdTypes.Void): false;
-                            default: true;
-                        }
-                    })
-                    .map(function(ct) return { cls: ct });
-
             case TInst(_, types):
                 types
                     .map(function(t) return t.follow().toComplexType())
