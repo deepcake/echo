@@ -127,12 +127,14 @@ class MacroTools {
         return switch (followComplexType(ct)) {
             case TFunction(args, ret): {
 
-                args.map(typeName.bind(_, shortify, escape)).join(escape ? '' : '->') + (escape ? '' : '->') + typeName(ret, shortify, escape);
+                (escape ? 'F' : '(') + 
+                args.map(typeName.bind(_, shortify, escape)).join(escape ? '_' : '->') + (escape ? '_R' : '->') + typeName(ret, shortify, escape) + 
+                (escape ? '' : ')');
 
             }
             case TParent(t): {
 
-                (escape ? '' : '(') + typeName(t, shortify, escape) + (escape ? '' : ')');
+                (escape ? 'P' : '(') + typeName(t, shortify, escape) + (escape ? '' : ')');
 
             }
             case TPath(t): {
@@ -147,7 +149,7 @@ class MacroTools {
                 if (t.params != null && t.params.length > 0) {
 
                     var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
-                    ret += (escape ? '' : '<') + t.params.map(tpName).join(escape ? '' : ',') + (escape ? '' : '>');
+                    ret += (escape ? 'Of' : '<') + t.params.map(tpName).join(escape ? '_' : ',') + (escape ? '' : '>');
 
                 }
 
