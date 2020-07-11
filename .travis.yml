@@ -10,9 +10,9 @@ os:
 # you can specify futher versions as found at http://haxe.org/website-content/downloads/versions.json
 haxe:
   - "3.4.7"
-  - "4.1.1"
+  - "4.1.2"
   - development
-  
+
 matrix:
   allow_failures:
     - haxe: development
