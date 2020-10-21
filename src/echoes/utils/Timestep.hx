@@ -16,10 +16,11 @@ package echoes.utils;
  * 
  * Subclasses use the decorator pattern to allow more
  * customization. You can use this to combine subclasses,
- * applying a cap from `CappedTimestep` with the fixed
- * ticks from `FixedTimestep`. To combine subclasses,
- * create an instance of each, passing the last-created
- * instance to the next constructor.
+ * applying a cap from `CappedTimestep`, the fixed ticks
+ * from `FixedTimestep`, and/or the speed adjustment from
+ * `ScaledTimestep`. To combine subclasses, create an
+ * instance of each, passing the last-created instance to
+ * the next constructor.
  */
 class Timestep {
 
@@ -137,6 +138,29 @@ class CappedTimestep extends Timestep {
 		if(this.time.left > tickCap) {
 			this.time.left = tickCap;
 		}
+	}
+
+
+}
+
+/**
+ * A scaled timestamp multiplies all elapsed time.
+ * Depending on the multiplier, this can speed time up,
+ * slow it down, pause it, or reverse it. (Caution:
+ * reversing time may create edge cases.)
+ */
+class ScaledTimestep extends Timestep {
+
+
+	public var scale:Float;
+
+	public function new(scale:Float = 1, ?nextTimestep:Timestep) {
+		super(nextTimestep);
+		this.scale = scale;
+	}
+
+	public override function advance(time:Float):Void {
+		super.advance(time * scale);
 	}
 
 
