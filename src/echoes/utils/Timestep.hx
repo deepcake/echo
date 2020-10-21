@@ -1,45 +1,106 @@
 package echoes.utils;
 
+/**
+ * A timestep determines how to split up chunks of time.
+ * Think of it like a wind-up clock. When you wind it up,
+ * it will tick one or more times as it unwinds.
+ * 
+ * "Winding" a timestep is done with the `advance()`
+ * function, where you enter in a certain amount of time.
+ * "Unwinding" a timestep is done with a `for()` loop:
+ * `for(tick in timestep) { ... }`. When the loop
+ * completes, the timestep is finished unwinding.
+ * 
+ * By default, timesteps only tick once. You enter an
+ * amount of time, and they return that entire value.
+ * 
+ * Subclasses use the decorator pattern to allow more
+ * customization. You can use this to combine subclasses,
+ * applying a cap from `CappedTimestep` with the fixed
+ * ticks from `FixedTimestep`. To combine subclasses,
+ * create an instance of each, passing the last-created
+ * instance to the next constructor.
+ */
 class Timestep {
 
 
-	var time:Float = 0;
+	var time:Time;
+	
+	var nextTimestep:Null<Timestep>;
 
-	public function new() {
+	public function new(?nextTimestep:Timestep) {
+		this.nextTimestep = nextTimestep;
+		time = nextTimestep != null ? nextTimestep.time : new Time();
 	}
 
 	public function advance(time:Float):Void {
-		this.time += time;
+		if(nextTimestep != null) {
+			nextTimestep.advance(time);
+		} else {
+			this.time.left += time;
+		}
 	}
 
-	public function hasNext():Bool return time > 0;
+	public function hasNext():Bool {
+		if(nextTimestep != null) {
+			return nextTimestep.hasNext();
+		} else {
+			return time.left > 0;
+		}
+	}
 
 	public function next():Float {
-		var time:Float = time;
-		this.time = 0;
-		return time;
+		if(nextTimestep != null) {
+			return nextTimestep.next();
+		} else {
+			var time:Float = this.time.left;
+			this.time.left = 0;
+			return time;
+		}
 	}
 
 
 }
 
+private class Time {
+	public var left:Float = 0;
+	
+	public inline function new() {
+	}
+}
+
+/**
+ * Each tick from a fixed timestep is exactly the same
+ * length. This is useful for physics simulations,
+ * which tend to require consistency.
+ * 
+ * Usually, a fixed timestep will have a little time
+ * left over at the end of the frame, not quite enough
+ * for another tick. This time is saved until the next
+ * frame, and may cause some frames to advance farther
+ * than others.
+ * 
+ * This class is incompatible with any other class that
+ * overrides `next()`. (No other class defined in
+ * Timestep.hx does so.)
+ */
 class FixedTimestep extends Timestep {
 
 
-	var tickLength:Float;
+	public var tickLength:Float;
 
-	public function new(tickLength:Float) {
-		super();
+	public function new(tickLength:Float, ?nextTimestep:Timestep) {
+		super(nextTimestep);
 		this.tickLength = tickLength;
 	}
 
 	public override function hasNext():Bool {
-		return time >= tickLength;
+		return super.hasNext() && time.left >= tickLength;
 	}
 
 	public override function next():Float {
 		if(tickLength > 0) {
-			time -= tickLength;
+			time.left -= tickLength;
 			return tickLength;
 		} else {
 			return super.next();
@@ -49,63 +110,33 @@ class FixedTimestep extends Timestep {
 
 }
 
+/**
+ * A capped timestep limits how much time can elapse in
+ * one frame. This helps in cases of extreme lag, or in
+ * cases where a device goes to sleep for hours.
+ * 
+ * Capped timesteps go well with fixed timesteps. Without
+ * a cap, a fixed timestep could tick dozens if not
+ * hundreds of times after a particularly laggy frame.
+ * Processing all those ticks would, of course, create
+ * even more lag. A cap would limit the number of ticks
+ * dispatched, and hopefully prevent any viscious spirals.
+ */
 class CappedTimestep extends Timestep {
 
 
-	var tickCap:Float;
+	public var tickCap:Float;
 
-	/**
-	 * This time will not be used until time advances again.
-	 * Usually this means the next frame.
-	 */
-	var extraTime:Float = 0;
-
-	public function new(tickCap:Float) {
-		super();
+	public function new(tickCap:Float, ?nextTimestep:Timestep) {
+		super(nextTimestep);
 		this.tickCap = tickCap;
 	}
 
 	public override function advance(time:Float):Void {
-		this.time += time + extraTime;
-		extraTime = 0;
-	}
-
-	public override function next():Float {
-		if(time > tickCap) {
-			extraTime += time - tickCap;
-			time = 0;
-			return tickCap;
-		} else {
-			return super.next();
+		super.advance(time);
+		if(this.time.left > tickCap) {
+			this.time.left = tickCap;
 		}
-	}
-
-
-}
-
-class CappedFixedTimestep extends FixedTimestep {
-
-
-	var extraTime:Float = 0;
-	var tickCap:Float;
-
-	public function new(tickLength:Float, tickCap:Float) {
-		super(tickLength);
-		this.tickCap = tickCap;
-	}
-
-	public override function advance(time:Float):Void {
-		this.time += time + extraTime;
-		extraTime = 0;
-	}
-
-	public override function next():Float {
-		if(time > tickCap) {
-			extraTime += time - tickCap;
-			time = tickCap;
-		}
-
-		return super.next();
 	}
 
 
