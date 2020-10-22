@@ -24,7 +24,7 @@ class SystemList implements ISystem {
 
     var activated = false;
 
-	var timestep:Timestep;
+    var timestep:Timestep;
 
 	public function new(?timestep:Timestep) {
         this.timestep = timestep != null ? timestep : new Timestep();

@@ -26,8 +26,15 @@ class Timestep {
 
 
 	var time:Time;
-	
+
 	var nextTimestep:Null<Timestep>;
+
+	/**
+	 * While paused, time cannot be added to a `Timestep`.
+	 * If time was already added, iteration will continue
+	 * as normal.
+	 */
+	public var paused:Bool = false;
 
 	public function new(?nextTimestep:Timestep) {
 		this.nextTimestep = nextTimestep;
@@ -35,10 +42,12 @@ class Timestep {
 	}
 
 	public function advance(time:Float):Void {
-		if(nextTimestep != null) {
-			nextTimestep.advance(time);
-		} else {
-			this.time.left += time;
+		if(!paused) {
+			if(nextTimestep != null) {
+				nextTimestep.advance(time);
+			} else {
+				this.time.left += time;
+			}
 		}
 	}
 
