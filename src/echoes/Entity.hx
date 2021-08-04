@@ -105,8 +105,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
-        return EntityTools.remove(self,
-            [for(type in types) type.parseClassName().getType().followMono().toComplexType()]);
+        return EntityTools.remove(self, [for(type in types) type.parseClassType()]);
     }
 
     /**
@@ -116,7 +115,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        return EntityTools.get(self, type.parseClassName().getType().followMono().toComplexType());
+        return EntityTools.get(self, type.parseClassType());
     }
 
     /**
@@ -125,7 +124,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        return EntityTools.exists(self, type.parseClassName().getType().followMono().toComplexType());
+        return EntityTools.exists(self, type.parseClassType());
     }
 
 

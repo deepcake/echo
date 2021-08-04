@@ -118,7 +118,16 @@ class MacroTools {
     }
 
 
-    public static function parseClassName(e:Expr) {
+    public static function parseClassType(e:Expr) {
+        return switch(e.expr) {
+            case EParenthesis({expr:ECheckType({expr:EConst(CIdent("_"))}, ct)}):
+                followComplexType(ct);
+            default:
+                followMono(parseClassName(e).getType()).toComplexType();
+        }
+    }
+    
+    private static function parseClassName(e:Expr) {
         return switch(e.expr) {
             case EConst(CIdent(name)): name;
             case EField(path, name): parseClassName(path) + '.' + name;
