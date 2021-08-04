@@ -226,8 +226,7 @@ class AbstractEntity {
 			
 			//Instead of trying to make a complex type based on the abstract
 			//declaration, record the type used by the child abstract. This
-			//ensures type parameters are included. Not that type parameters
-			//are recommended.
+			//ensures type parameters are included.
 			lastType = parentBlueprint.type.type;
 			
 			parentBlueprint = parentBlueprint.parentData;
@@ -275,12 +274,13 @@ class AbstractEntity {
 		switch(complexType) {
 			case TPath({pack: pack, name: name, params: params}):
 				if(params != null && params.length > 0) {
-					Context.error("Parameters currently aren't supported. Use a typedef to get around this.", pos);
-				}
-				if(pack != null && pack.length > 0) {
-					return dotAccessExpr(pack, name);
+					return macro (_:$complexType);
 				} else {
-					return macro $i{name};
+					if(pack != null && pack.length > 0) {
+						return dotAccessExpr(pack, name);
+					} else {
+						return macro $i{name};
+					}
 				}
 			default:
 				return null;
