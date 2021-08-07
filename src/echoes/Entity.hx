@@ -1,6 +1,7 @@
 package echoes;
 
 #if macro
+import echoes.core.macro.EntityTools;
 import haxe.macro.Expr;
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.ViewsOfComponentBuilder;
@@ -103,34 +104,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
-        if (components.length == 0) {
-            Context.error('Required one or more Components', Context.currentPos());
-        }
-
-        var addComponentsToContainersExprs = components
-            .map(function(c) {
-                var containerName = (c.typeof().follow().toComplexType()).getComponentContainer().followName();
-                return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
-            });
-
-        var body = []
-            .concat(
-                addComponentsToContainersExprs
-            )
-            .concat([ 
-                macro if (__entity__.isActive()) {
-                    for (v in echoes.Workflow.views) {
-                        @:privateAccess v.addIfMatched(__entity__);
-                    }
-                }
-            ])
-            .concat([ 
-                macro return __entity__ 
-            ]);
-
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
-
-        return ret;
+        return EntityTools.add(self, components);
     }
 
     /**
@@ -139,45 +113,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Entity`
      */
     macro public function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
-        if (types.length == 0) {
-            Context.error('Required one or more Component Types', Context.currentPos());
-        }
-
-        var cts = types
-            .map(function(type) {
-                return type.parseComplexType();
-            });
-
-        var removeComponentsFromContainersExprs = cts
-            .map(function(ct) {
-                return ct.getComponentContainer().followName();
-            })
-            .map(function(componentContainerClassName) {
-                return macro @:privateAccess $i{ componentContainerClassName }.inst().remove(__entity__);
-            });
-
-        var removeEntityFromRelatedViewsExprs = cts
-            .map(function(ct) {
-                return ct.getViewsOfComponent().followName();
-            })
-            .map(function(viewsOfComponentClassName) {
-                return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfMatched(__entity__);
-            });
-
-        var body = []
-            .concat([ 
-                macro if (__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
-            ])
-            .concat(
-                removeComponentsFromContainersExprs
-            )
-            .concat([ 
-                macro return __entity__ 
-            ]);
-
-        var ret = macro #if (haxe_ver >= 4) inline #end ( function(__entity__:echoes.Entity) $b{body} )($self);
-
-        return ret;
+        return EntityTools.remove(self, [for(type in types) type.parseComplexType()]);
     }
 
     /**
@@ -187,11 +123,7 @@ abstract Entity(Int) from Int to Int {
      * @return `T:Any` component instance
      */
     macro public function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-        var containerName = type.parseComplexType().getComponentContainer().followName();
-
-        var ret = macro $i{ containerName }.inst().get($self);
-
-        return ret;
+        return EntityTools.get(self, type.parseComplexType());
     }
 
     /**
@@ -200,11 +132,7 @@ abstract Entity(Int) from Int to Int {
      * @return `Bool`
      */
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-        var containerName = type.parseComplexType().getComponentContainer().followName();
-
-        var ret = macro $i{ containerName }.inst().exists($self);
-
-        return ret;
+        return EntityTools.exists(self, type.parseComplexType());
     }
 
 
