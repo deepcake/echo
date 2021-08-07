@@ -118,25 +118,21 @@ class MacroTools {
     }
 
 
-    public static function parseClassType(e:Expr) {
-        return switch(e.expr) {
-            case EParenthesis({expr:ECheckType({expr:EConst(CIdent("_"))}, ct)}):
-                followComplexType(ct);
+    public static function parseComplexType(e:Expr) {
+        switch(e.expr) {
+            case EParenthesis({expr:ECheckType(_, ct)}):
+                return followComplexType(ct);
             default:
-                followMono(parseClassName(e).getType()).toComplexType();
         }
-    }
-    
-    private static function parseClassName(e:Expr) {
-        return switch(e.expr) {
-            case EConst(CIdent(name)): name;
-            case EField(path, name): parseClassName(path) + '.' + name;
-            case x: 
-                #if (haxe_ver < 4) 
-                throw 'Unexpected $x!';
-                #else
-                Context.error('Unexpected $x!', e.pos);
-                #end 
+
+        var type = new Printer().printExpr(e);
+
+        try {
+
+            return followMono(type.getType()).toComplexType();
+
+        } catch (err:String) {
+            throw 'Failed to parse `$type`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
         }
     }
 
