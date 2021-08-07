@@ -2,6 +2,7 @@ package echoes;
 
 import echoes.core.ISystem;
 import echoes.utils.LinkedList;
+import echoes.utils.Timestep;
 
 /**
  * SystemList  
@@ -30,9 +31,11 @@ class SystemList implements ISystem {
 
     var activated = false;
 
+    var timestep:Timestep;
 
-    public function new(name = 'list') {
+    public function new(name = 'list', ?timestep:Timestep) {
         this.name = name;
+        this.timestep = timestep != null ? timestep : new Timestep();
     }
 
 
@@ -59,8 +62,11 @@ class SystemList implements ISystem {
         var __timestamp__ = Date.now().getTime();
         #end
 
-        for (s in systems) {
-            s.__update__(dt);
+		timestep.advance(dt);
+		for(step in timestep) {
+			for (s in systems) {
+                s.__update__(step);
+            }
         }
 
         #if echoes_profiling

@@ -28,7 +28,7 @@ class EntityTools {
 
         var addComponentsToContainersExprs = components
             .map(function(c) {
-                var containerName = (c.typeof().follow().toComplexType()).getComponentContainer().followName();
+                var containerName = (c.typeof().followMono().toComplexType()).getComponentContainer().followName();
                 return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
             });
 
@@ -56,7 +56,7 @@ class EntityTools {
             Context.error("Nothing to remove; required one or more component types", Context.currentPos());
         }
 
-        var removeComponentsFromContainersExprs = cts
+        var removeComponentsFromContainersExprs = types
             .map(function(ct) {
                 return ct.getComponentContainer().followName();
             })
@@ -64,7 +64,7 @@ class EntityTools {
                 return macro @:privateAccess $i{ componentContainerClassName }.inst().remove(__entity__);
             });
 
-        var removeEntityFromRelatedViewsExprs = cts
+        var removeEntityFromRelatedViewsExprs = types
             .map(function(ct) {
                 return ct.getViewsOfComponent().followName();
             })

@@ -4,6 +4,7 @@ package echoes.core.macro;
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
 import echoes.core.macro.ViewsOfComponentBuilder.*;
+import haxe.crypto.Md5;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassField;
 
@@ -29,7 +30,11 @@ class ViewBuilder {
     }
 
     public static function getViewName(components:Array<{ cls:ComplexType }>) {
-        return 'ViewOf_' + components.map(function(c) return c.cls).joinFullName('_');
+        var name:String = components.map(function(c) return c.cls).joinFullName('_');
+        if(name.length > 80) {
+            name = Md5.encode(name);
+        }
+        return 'ViewOf_' + name;
     }
 
 
@@ -40,9 +45,31 @@ class ViewBuilder {
 
     static function parseComponents(type:haxe.macro.Type) {
         return switch(type) {
+            case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if (params.length == 1):
+                parseComponents(x);
+
+            case TType(_.get() => { type: x }, []):
+                parseComponents(x);
+
+            case TAnonymous(_.get() => p):
+                p.fields
+                    .map(function(f) return { cls: f.type.followMono().toComplexType() });
+
+            case TFun(args, ret):
+                args
+                    .map(function(a) return a.t.followMono().toComplexType())
+                    .concat([ ret.followMono().toComplexType() ])
+                    .filter(function(ct) {
+                        return switch (ct) {
+                            case (macro:StdTypes.Void): false;
+                            default: true;
+                        }
+                    })
+                    .map(function(ct) return { cls: ct });
+
             case TInst(_, types):
                 types
-                    .map(function(t) return t.follow().toComplexType())
+                    .map(function(t) return t.followMono().toComplexType())
                     .map(function(ct) return { cls: ct });
 
             case x: 

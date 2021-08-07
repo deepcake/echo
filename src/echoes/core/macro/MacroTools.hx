@@ -9,6 +9,7 @@ import haxe.macro.Expr.FunctionArg;
 import haxe.macro.Expr.TypePath;
 import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
+import haxe.macro.Type;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
@@ -71,8 +72,28 @@ class MacroTools {
     }
 
 
+	public static function typeof(e:Expr) {
+		return switch(e.expr) {
+			case ENew(t, _):
+				TPath(t).toType();
+			default:
+				Context.typeof(e);
+		}
+	}
+
+    public static function followMono(t:Type) {
+        return switch(t) {
+            case TMono(_.get() => tt):
+                followMono(tt);
+            case TAbstract(_.get() => {name:"Null"}, [tt]):
+                followMono(tt);
+            default:
+                t;
+        }
+    }
+
     public static function followComplexType(ct:ComplexType) {
-        return ComplexTypeTools.toType(ct).follow().toComplexType();
+        return followMono(ct.toType()).toComplexType();
     }
 
     public static function followName(ct:ComplexType):String {
@@ -81,15 +102,20 @@ class MacroTools {
 
 
     public static function parseComplexType(e:Expr):ComplexType {
+        switch(e.expr) {
+            case EParenthesis({expr:ECheckType(_, ct)}):
+                return followComplexType(ct);
+            default:
+        }
+
         var type = new Printer().printExpr(e);
 
         try {
 
-            return type.getType().follow().toComplexType();
+            return followMono(type.getType()).toComplexType();
 
         } catch (err:String) {
-            error('Fail to parse `$type` as allowed Type. You can try to use Typedef, this will probably help.', e.pos);
-            return null;
+            throw 'Failed to parse `$type`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
         }
     }
 
