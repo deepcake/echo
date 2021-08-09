@@ -72,15 +72,6 @@ class MacroTools {
     }
 
 
-	public static function typeof(e:Expr) {
-		return switch(e.expr) {
-			case ENew(t, _):
-				TPath(t).toType();
-			default:
-				Context.typeof(e);
-		}
-	}
-
     public static function followMono(t:Type) {
         return switch(t) {
             case TMono(_.get() => tt):

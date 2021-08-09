@@ -5,6 +5,7 @@ import haxe.macro.Expr;
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.ViewsOfComponentBuilder;
 using echoes.core.macro.MacroTools;
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
 
@@ -28,7 +29,14 @@ class EntityTools {
 
         var addComponentsToContainersExprs = components
             .map(function(c) {
-                var containerName = (c.typeof().followMono().toComplexType()).getComponentContainer().followName();
+                var t = switch(c.expr) {
+                    case ENew(tp, _):
+                        TPath(tp).toType();
+                    default:
+                        c.typeof();
+                }
+
+                var containerName = t.followMono().toComplexType().getComponentContainer().followName();
                 return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
             });
 
