@@ -74,7 +74,7 @@ class Timestep {
 
 private class Time {
 	public var left:Float = 0;
-	
+
 	public inline function new() {
 	}
 }
