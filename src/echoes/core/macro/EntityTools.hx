@@ -26,8 +26,8 @@ class EntityTools {
         if (components.length == 0) {
             Context.error("Nothing to add; required one or more components", Context.currentPos());
         }
-
-        var addComponentsToContainersExprs = components
+        
+        var types = components
             .map(function(c) {
                 var t = switch(c.expr) {
                     case ENew(tp, _):
@@ -36,19 +36,28 @@ class EntityTools {
                         c.typeof();
                 }
 
-                var containerName = t.followMono().toComplexType().getComponentContainer().followName();
-                return macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
+                return t.followMono().toComplexType();
+            });
+
+        var addComponentsToContainersExprs = [for(i in 0...components.length) {
+                var c = components[i];
+                var containerName = types[i].getComponentContainer().followName();
+                macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
+            }];
+
+        var addEntityToRelatedViewsExprs = types
+            .map(function(ct) {
+                return ct.getViewsOfComponent().followName();
+            })
+            .map(function(viewsOfComponentClassName) {
+                return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().addIfMatched(__entity__);
             });
 
         return macro #if (haxe_ver >= 4) inline #end
             ( function (__entity__:echoes.Entity) {
                 $b{addComponentsToContainersExprs}
 
-                if (__entity__.isActive()) {
-                    for (v in echoes.Workflow.views) {
-                        @:privateAccess v.addIfMatched(__entity__);
-                    }
-                }
+                if (__entity__.isActive()) $b{ addEntityToRelatedViewsExprs }
 
                 return __entity__;
             } )($self);
@@ -77,7 +86,7 @@ class EntityTools {
                 return ct.getViewsOfComponent().followName();
             })
             .map(function(viewsOfComponentClassName) {
-                return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfMatched(__entity__);
+                return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfExists(__entity__);
             });
 
         return macro #if (haxe_ver >= 4) inline #end 

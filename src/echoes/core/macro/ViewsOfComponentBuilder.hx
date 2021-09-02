@@ -46,7 +46,15 @@ class ViewsOfComponentBuilder {
                         views.push(v);
                     }
 
-                    public inline function removeIfMatched(id:Int) {
+                    public inline function addIfMatched(id:Int) {
+                        for (v in views) {
+                            if (v.isActive()) {
+                                 @:privateAccess v.addIfMatched(id);
+                            }
+                        }
+                    }
+
+                    public inline function removeIfExists(id:Int) {
                         for (v in views) {
                             if (v.isActive()) {
                                  @:privateAccess v.removeIfExists(id);
