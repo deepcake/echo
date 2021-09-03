@@ -26,7 +26,7 @@ class EntityTools {
         if (components.length == 0) {
             Context.error("Nothing to add; required one or more components", Context.currentPos());
         }
-        
+
         var types = components
             .map(function(c) {
                 var t = switch(c.expr) {
