@@ -7,12 +7,10 @@ Focused to be simple and fast.
 Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
 
 ### Forks
-deepcake/echo is considered complete, but multiple forks are still under active development.
+deepcake/echo is no longer being maintained, but multiple forks are still under active development.
 
  * [player-03/echoes](https://github.com/player-03/echoes) focuses on ease of use for medium-scale games. Features include entity templates, customizable timesteps, and system priorities.
  * [onehundredfeet/hmecs](https://github.com/onehundredfeet/hmecs) focuses on performance at scale. Features include object pooling, customizable storage, and singleton components.
-
-Disclaimer: this list is not an endorsement, and deepcake can't guarantee that these forks are backwards-compatible. More details can be found in each fork's readme.
 
 ### Overview
  * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
