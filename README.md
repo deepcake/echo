@@ -10,7 +10,7 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
 deepcake/echo is no longer being maintained, but multiple forks are still under active development.
 
  * [player-03/echoes](https://github.com/player-03/echoes) focuses on ease of use for medium-scale games. Features include entity templates, customizable timesteps, and system priorities.
- * [onehundredfeet/hmecs](https://github.com/onehundredfeet/hmecs) focuses on performance at scale. Features include object pooling, customizable storage, and singleton components.
+ * [onehundredfeet/hmecs](https://github.com/onehundredfeet/hmecs) focuses on performance at scale. Features include object pooling, customizable storage, and networking.
 
 ### Overview
  * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
